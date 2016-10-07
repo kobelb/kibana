@@ -50,22 +50,18 @@ export default function (kibana) {
               key: Joi.string()
             }).default()
           })
-        ).default([
-          {
-            match: {
-              protocol: '*',
-              host: '*',
-              port: '*',
-              path: '*'
-            },
-
-            timeout: 180000,
-            ssl: {
-              verify: true
-            }
-          }
-        ])
+        ).default()
       }).default();
+    },
+
+     deprecations: function () {
+      return [
+        (settings, log) => {
+          if (has(settings, 'proxyConfig')) {
+            log('Config key "proxyConfig" is deprecated. Configuration can be inferred from the "elasticsearch" settings');
+          }
+        }
+      ];
     },
 
     init: function (server, options) {
@@ -108,6 +104,14 @@ export default function (kibana) {
 
           const requestHeadersWhitelist = server.config().get('elasticsearch.requestHeadersWhitelist');
           const filterHeaders = server.plugins.elasticsearch.filterHeaders;
+
+          let additionalConfig;
+          if (server.config().get('console.proxyConfig')) {
+            additionalConfig = proxyConfigCollection.configForUri(uri);
+          } else {
+            additionalConfig = getElasticsearchProxyConfig(server);
+          }
+          
           reply.proxy({
             mapUri: function (request, done) {
               done(null, uri, filterHeaders(request.headers, requestHeadersWhitelist));
@@ -121,7 +125,7 @@ export default function (kibana) {
               }
             },
 
-            ...proxyConfigCollection.configForUri(uri)
+            ...additionalConfig
           });
         }
       };

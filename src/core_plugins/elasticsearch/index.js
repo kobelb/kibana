@@ -1,4 +1,5 @@
-import { trim, trimRight, bindKey, get } from 'lodash';
+import { get, has, set, trim, trimRight, bindKey, get } from 'lodash';
+import { unset } from '../../utils';
 import { methodNotAllowed } from 'boom';
 
 import healthCheck from './lib/health_check';
@@ -33,10 +34,11 @@ module.exports = function ({ Plugin }) {
         startupTimeout: number().default(5000),
         logQueries: boolean().default(false),
         ssl: object({
-          verify: boolean().default(true),
-          ca: array().single().items(string()),
-          cert: string(),
-          key: string()
+          verificationMode: string().valid('none', 'certificate', 'full').default('full'),
+          certificateAuthorities: array().single().items(string()),
+          certificate: string(),
+          key: string(),
+          keyPassphrase: string()
         }).default(),
         apiVersion: Joi.string().default('master'),
         healthCheck: object({
@@ -63,6 +65,24 @@ module.exports = function ({ Plugin }) {
           apiVersion: Joi.string().default('master'),
         }).default()
       }).default();
+    },
+
+    deprecations({ rename }) {
+      return [
+        rename('ssl.ca', 'ssl.certificateAuthorities'),
+        rename('ssl.cert', 'ssl.certificate'),
+        (settings, log) => {
+          if (!has(settings, 'ssl.verify')) {
+            return;
+          }
+
+          const verificationMode = get(settings, 'ssl.verify') ? 'full' : 'none';
+          set(settings, 'ssl.verificationMode', verificationMode);
+          unset(settings, 'ssl.verify');
+
+          log(`Config key "ssl.verify" is deprecated. It has been replaced with "ssl.verificationMode"`);
+        }
+      ];
     },
 
     uiExports: {
