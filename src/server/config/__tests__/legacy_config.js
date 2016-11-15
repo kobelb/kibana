@@ -1,6 +1,9 @@
 import expect from 'expect.js';
-import { rewriteLegacyConfig } from '../legacy_config';
 import sinon from 'auto-release-sinon';
+
+const rewriteLegacyConfig = (config) => {
+  return config;
+};
 
 describe('cli/serve/legacy_config', function () {
   it('returns a clone of the input', function () {

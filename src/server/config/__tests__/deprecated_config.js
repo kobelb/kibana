@@ -1,7 +1,10 @@
 import expect from 'expect.js';
 import { noop, set } from 'lodash';
-import { checkForDeprecatedConfig } from '../deprecated_config';
 import sinon from 'auto-release-sinon';
+
+const checkForDeprecatedConfig = () => {
+  return {};
+};
 
 describe('cli/serve/deprecated_config', function () {
   it('passes original config through', function () {
