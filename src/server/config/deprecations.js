@@ -1,5 +1,5 @@
 import _ , { partial } from 'lodash';
-import { rename, unused } from '../../deprecations';
+import { rename, unused, transformDeprecations as createTransformDeprecations } from '../../deprecations';
 
 const serverSslEnabled = (object) => {
   const has = partial(_.has, object);
@@ -13,7 +13,7 @@ const serverSslEnabled = (object) => {
   return null;
 };
 
-export default [
+const deprecations = [
   //server
   rename('port' ,'server.port'),
   rename('host', 'server.host'),
@@ -50,3 +50,5 @@ export default [
   rename('tilemap_subdomains', 'tilemap.options.subdomains'),
   rename('verify_ssl', 'elasticsearch.ssl.verify'),
 ];
+
+export const transformDeprecations = createTransformDeprecations(deprecations);
