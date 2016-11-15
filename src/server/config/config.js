@@ -1,10 +1,10 @@
 import Joi from 'joi';
 import _ from 'lodash';
 import override from './override';
-import unset from './unset';
+import unset from '../../utils/unset';
 import createDefaultSchema from './schema';
 import pkg from '../../utils/package_json';
-import clone from './deep_clone_with_buffers';
+import clone from '../../utils/deep_clone_with_buffers';
 
 const schema = Symbol('Joi Schema');
 const schemaExts = Symbol('Schema Extensions');
