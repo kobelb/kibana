@@ -10,9 +10,25 @@ module.exports = _.memoize(function (server) {
 
   if (!/^https/.test(target.protocol)) return new http.Agent();
 
-  const agentOptions = {
-    rejectUnauthorized: config.get('elasticsearch.ssl.verify')
-  };
+  const agentOptions = {};
+
+  let verificationMode = config.get('elasticsearch.ssl.verificationMode');
+  switch (verificationMode) {
+    case 'none':
+      agentOptions.rejectUnauthorized = false;
+      break;
+    case 'certificate':
+      agentOptions.rejectUnauthorized = true;
+
+      // by default, NodeJS is checking the server identify
+      agentOptions.checkServerIdentity = _.noop;
+      break;
+    case 'full':
+      agentOptions.rejectUnauthorized = true;
+      break;
+    default:
+      throw new Error(`Unknown ssl verificationMode: ${verificationMode}`);
+  }
 
   if (_.size(config.get('elasticsearch.ssl.certificateAuthorities'))) {
     agentOptions.ca = config.get('elasticsearch.ssl.certificateAuthorities').map(readFile);

@@ -28,7 +28,7 @@ module.exports = function (server) {
       url: config.get('elasticsearch.url'),
       username: config.get('elasticsearch.username'),
       password: config.get('elasticsearch.password'),
-      verifySsl: config.get('elasticsearch.ssl.verify'),
+      sslVerificationMode: config.get('elasticsearch.ssl.verificationMode'),
       clientCrt: config.get('elasticsearch.ssl.certificate'),
       clientKey: config.get('elasticsearch.ssl.key'),
       clientKeyPassphrase: config.get('elasticsearch.ssl.keyPassphrase'),
@@ -47,7 +47,25 @@ module.exports = function (server) {
       uri.auth = util.format('%s:%s', options.username, options.password);
     }
 
-    const ssl = { rejectUnauthorized: options.verifySsl };
+    const ssl = { };
+
+    switch (options.sslVerificationMode) {
+      case 'none':
+        ssl.rejectUnauthorized = false;
+        break;
+      case 'certificate':
+        ssl.rejectUnauthorized = true;
+
+        // by default, NodeJS is checking the server identify
+        ssl.checkServerIdentity = _.noop;
+        break;
+      case 'full':
+        ssl.rejectUnauthorized = true;
+        break;
+      default:
+        throw new Error(`Unknown ssl verificationMode: ${options.sslVerificationMode}`);
+    }
+
     if (options.clientCrt && options.clientKey) {
       ssl.cert = readFile(options.clientCrt);
       ssl.key = readFile(options.clientKey);

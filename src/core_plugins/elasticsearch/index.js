@@ -1,4 +1,5 @@
-import { trim, trimRight } from 'lodash';
+import { get, has, set, trim, trimRight } from 'lodash';
+import unset from '../../utils/unset';
 import { methodNotAllowed } from 'boom';
 
 import healthCheck from './lib/health_check';
@@ -27,7 +28,7 @@ module.exports = function ({ Plugin }) {
         pingTimeout: number().default(ref('requestTimeout')),
         startupTimeout: number().default(5000),
         ssl: object({
-          verify: boolean().default(true),
+          verificationMode: string().valid('none', 'certificate', 'full').default('full'),
           certificateAuthorities: array().single().items(string()),
           certificate: string(),
           key: string(),
@@ -42,7 +43,18 @@ module.exports = function ({ Plugin }) {
 
       return [
         rename('ssl.ca', 'ssl.certificateAuthorities'),
-        rename('ssl.cert', 'ssl.certificate')
+        rename('ssl.cert', 'ssl.certificate'),
+        (settings) => {
+          if (!has(settings, 'ssl.verify')) {
+            return;
+          }
+
+          const verificationMode = get(settings, 'ssl.verify') ? 'full' : 'none';
+          set(settings, 'ssl.verificationMode', verificationMode);
+          unset(settings, 'ssl.verify');
+
+          return `Config key "ssl.verify" is deprecated. It has been replaced with "ssl.verificationMode"`;
+        }
       ];
     },
 
