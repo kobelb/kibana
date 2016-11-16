@@ -17,7 +17,7 @@ async function addPluginConfig(pluginCollection, plugin) {
   const pluginSettings = get(transformedSettings, plugin.configPrefix);
   const deprecations = plugin.getDeprecations();
   const transformedPluginSettings = createTransform(deprecations)(pluginSettings, (message) => {
-    server.log(['warning', plugin.configPrefix, 'config'], message);
+    server.log(['warning', plugin.configPrefix, 'config', 'deprecation'], message);
   });
 
   const configSchema = await plugin.getConfigSchema();
