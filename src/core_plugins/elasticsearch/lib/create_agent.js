@@ -14,14 +14,15 @@ module.exports = _.memoize(function (server) {
     rejectUnauthorized: config.get('elasticsearch.ssl.verify')
   };
 
-  if (_.size(config.get('elasticsearch.ssl.ca'))) {
-    agentOptions.ca = config.get('elasticsearch.ssl.ca').map(readFile);
+  if (_.size(config.get('elasticsearch.ssl.certificateAuthorities'))) {
+    agentOptions.ca = config.get('elasticsearch.ssl.certificateAuthorities').map(readFile);
   }
 
   // Add client certificate and key if required by elasticsearch
-  if (config.get('elasticsearch.ssl.cert') && config.get('elasticsearch.ssl.key')) {
-    agentOptions.cert = readFile(config.get('elasticsearch.ssl.cert'));
+  if (config.get('elasticsearch.ssl.certificate') && config.get('elasticsearch.ssl.key')) {
+    agentOptions.cert = readFile(config.get('elasticsearch.ssl.certificate'));
     agentOptions.key = readFile(config.get('elasticsearch.ssl.key'));
+    agentOptions.passphrase = config.get('elasticsearch.ssl.keyPassphrase');
   }
 
   return new https.Agent(agentOptions);

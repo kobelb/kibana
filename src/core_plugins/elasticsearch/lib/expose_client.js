@@ -29,9 +29,10 @@ module.exports = function (server) {
       username: config.get('elasticsearch.username'),
       password: config.get('elasticsearch.password'),
       verifySsl: config.get('elasticsearch.ssl.verify'),
-      clientCrt: config.get('elasticsearch.ssl.cert'),
+      clientCrt: config.get('elasticsearch.ssl.certificate'),
       clientKey: config.get('elasticsearch.ssl.key'),
-      ca: config.get('elasticsearch.ssl.ca'),
+      clientKeyPassphrase: config.get('elasticsearch.ssl.keyPassphrase'),
+      ca: config.get('elasticsearch.ssl.certificateAuthorities'),
       apiVersion: config.get('elasticsearch.apiVersion'),
       pingTimeout: config.get('elasticsearch.pingTimeout'),
       requestTimeout: config.get('elasticsearch.requestTimeout'),
@@ -50,6 +51,7 @@ module.exports = function (server) {
     if (options.clientCrt && options.clientKey) {
       ssl.cert = readFile(options.clientCrt);
       ssl.key = readFile(options.clientKey);
+      ssl.passphrase = options.clientKeyPassphrase;
     }
     if (options.ca) {
       ssl.ca = options.ca.map(readFile);

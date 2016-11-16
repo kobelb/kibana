@@ -45,12 +45,14 @@ const deprecations = [
   rename('request_timeout', 'elasticsearch.requestTimeout'),
   rename('shard_timeout', 'elasticsearch.shardTimeout'),
   rename('startup_timeout', 'elasticsearch.startupTimeout'),
+  rename('verify_ssl', 'elasticsearch.ssl.verify'),
+
+  // tilemap
   rename('tilemap_url', 'tilemap.url'),
   rename('tilemap_min_zoom', 'tilemap.options.minZoom'),
   rename('tilemap_max_zoom', 'tilemap.options.maxZoom'),
   rename('tilemap_attribution', 'tilemap.options.attribution'),
-  rename('tilemap_subdomains', 'tilemap.options.subdomains'),
-  rename('verify_ssl', 'elasticsearch.ssl.verify'),
+  rename('tilemap_subdomains', 'tilemap.options.subdomains')
 ];
 
 export const transformDeprecations = createTransform(deprecations);

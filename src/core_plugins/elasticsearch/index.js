@@ -28,12 +28,22 @@ module.exports = function ({ Plugin }) {
         startupTimeout: number().default(5000),
         ssl: object({
           verify: boolean().default(true),
-          ca: array().single().items(string()),
-          cert: string(),
-          key: string()
+          certificateAuthorities: array().single().items(string()),
+          certificate: string(),
+          key: string(),
+          keyPassphrase: string()
         }).default(),
         apiVersion: Joi.string().default('master'),
       }).default();
+    },
+
+    deprecations(Deprecations) {
+      const { rename } = Deprecations;
+
+      return [
+        rename('ssl.ca', 'ssl.certificateAuthorities'),
+        rename('ssl.cert', 'ssl.certificate')
+      ];
     },
 
     uiExports: {
