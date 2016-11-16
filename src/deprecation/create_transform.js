@@ -1,4 +1,4 @@
-import clone from '../utils/deep_clone_with_buffers';
+import { deepCloneWithBuffers as clone } from '../utils';
 import { forEach, noop } from 'lodash';
 
 export default function (deprecations) {

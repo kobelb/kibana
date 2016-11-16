@@ -1,5 +1,5 @@
 import { get, isUndefined, isNull, set } from 'lodash';
-import unset from '../../utils/unset';
+import { unset } from '../../utils';
 
 export default function (oldKey, newKey) {
   return (settings) => {

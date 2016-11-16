@@ -1,5 +1,5 @@
 import { get, has, set, trim, trimRight } from 'lodash';
-import unset from '../../utils/unset';
+import { unset } from '../../utils';
 import { methodNotAllowed } from 'boom';
 
 import healthCheck from './lib/health_check';
