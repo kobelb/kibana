@@ -44,7 +44,7 @@ module.exports = function ({ Plugin }) {
       return [
         rename('ssl.ca', 'ssl.certificateAuthorities'),
         rename('ssl.cert', 'ssl.certificate'),
-        (settings) => {
+        (settings, log) => {
           if (!has(settings, 'ssl.verify')) {
             return;
           }
@@ -53,7 +53,7 @@ module.exports = function ({ Plugin }) {
           set(settings, 'ssl.verificationMode', verificationMode);
           unset(settings, 'ssl.verify');
 
-          return `Config key "ssl.verify" is deprecated. It has been replaced with "ssl.verificationMode"`;
+          log(`Config key "ssl.verify" is deprecated. It has been replaced with "ssl.verificationMode"`);
         }
       ];
     },

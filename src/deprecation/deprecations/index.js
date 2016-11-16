@@ -1,7 +1,2 @@
-import rename from './rename';
-import unused from './unused';
-
-export {
-  rename,
-  unused
-}
+export rename from './rename';
+export unused from './unused';

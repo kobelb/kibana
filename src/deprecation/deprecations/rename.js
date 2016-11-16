@@ -1,8 +1,8 @@
-import { get, isUndefined, isNull, set } from 'lodash';
+import { get, isUndefined, isNull, noop, set } from 'lodash';
 import { unset } from '../../utils';
 
 export default function (oldKey, newKey) {
-  return (settings) => {
+  return (settings, log = noop) => {
     const value = get(settings, oldKey);
     if (isUndefined(value)) {
       return;
@@ -10,6 +10,7 @@ export default function (oldKey, newKey) {
 
     unset(settings, oldKey);
     set(settings, newKey, value);
-    return `Config key "${oldKey}" is deprecated. It has been replaced with "${newKey}"`;
+
+    log(`Config key "${oldKey}" is deprecated. It has been replaced with "${newKey}"`);
   };
 }

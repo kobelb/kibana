@@ -1,4 +1,5 @@
 import expect from 'expect.js';
+import sinon from 'sinon';
 import unused from '../unused';
 
 describe('unused deprecation', function () {
@@ -30,21 +31,25 @@ describe('unused deprecation', function () {
     expect(settings.old).to.be(undefined);
   });
 
-  it('should return a message when removing unused setting', function () {
+  it('should log when removing unused setting', function () {
     const settings = {
       old: true
     };
 
-    const message = unused('old')(settings);
-    expect(message).to.match(/old.+deprecated/);
+    const log = sinon.spy();
+    unused('old')(settings, log);
+
+    expect(log.calledOnce).to.be(true);
+    expect(log.args[0][0]).to.match(/old.+deprecated/);
   });
 
-  it(`should return undefined when no setting is unused`, function () {
+  it(`shouldn't log when no setting is unused`, function () {
     const settings = {
       new: true
     };
 
-    const message = unused('old')(settings);
-    expect(message).to.be(undefined);
+    const log = sinon.spy();
+    unused('old')(settings, log);
+    expect(log.called).to.be(false);
   });
 });

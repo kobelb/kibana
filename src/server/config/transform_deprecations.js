@@ -3,16 +3,14 @@ import { createTransform, Deprecations } from '../../deprecation';
 
 const { rename, unused } = Deprecations;
 
-const serverSslEnabled = (object) => {
-  const has = partial(_.has, object);
-  const set = partial(_.set, object);
+const serverSslEnabled = (settings, log) => {
+  const has = partial(_.has, settings);
+  const set = partial(_.set, settings);
 
   if (!has('server.ssl.enabled') && has('server.ssl.certificate') && has('server.ssl.key')) {
     set('server.ssl.enabled', true);
-    return 'Enabling ssl by only specifying server.ssl.certificate and server.ssl.key is deprecated. Please set server.ssl.enabled to true';
+    log('Enabling ssl by only specifying server.ssl.certificate and server.ssl.key is deprecated. Please set server.ssl.enabled to true');
   }
-
-  return null;
 };
 
 const deprecations = [
