@@ -12,26 +12,21 @@ const vals = Symbol('config values');
 const pendingSets = Symbol('Pending Settings');
 
 module.exports = class Config {
-  static withDefaultSchema(settings = {}) {
+  static withDefaultSchema(settings) {
     return new Config(createDefaultSchema(), settings);
   }
 
   constructor(initialSchema, initialSettings) {
     this[schemaExts] = Object.create(null);
     this[vals] = Object.create(null);
-    this[pendingSets] = _.merge(Object.create(null), initialSettings || {});
 
-    if (initialSchema) this.extendSchema(initialSchema);
+    this.extendSchema(initialSchema, initialSettings);
   }
 
-  getPendingSets() {
-    return new Map(_.pairs(this[pendingSets]));
-  }
-
-  extendSchema(key, extension) {
-    if (key && key.isJoi) {
-      return _.each(key._inner.children, (child) => {
-        this.extendSchema(child.key, child.schema);
+  extendSchema(extension, settings, key) {
+    if (!key) {
+      return _.each(extension._inner.children, (child) => {
+        this.extendSchema(child.schema, settings[child.key], child.key);
       });
     }
 
@@ -42,13 +37,7 @@ module.exports = class Config {
     _.set(this[schemaExts], key, extension);
     this[schema] = null;
 
-    let initialVals = _.get(this[pendingSets], key);
-    if (initialVals) {
-      this.set(key, initialVals);
-      unset(this[pendingSets], key);
-    } else {
-      this._commit(this[vals]);
-    }
+    this.set(key, settings);
   }
 
   removeSchema(key) {
@@ -58,7 +47,6 @@ module.exports = class Config {
 
     this[schema] = null;
     unset(this[schemaExts], key);
-    unset(this[pendingSets], key);
     unset(this[vals], key);
   }
 

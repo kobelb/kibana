@@ -1,5 +1,5 @@
 import Config from './config';
-import { transformDeprecations } from './deprecations';
+import { transformDeprecations } from './transform_deprecations';
 
 module.exports = function (kbnServer) {
   const settings = transformDeprecations(kbnServer.settings);

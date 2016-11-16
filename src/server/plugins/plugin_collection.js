@@ -4,14 +4,18 @@ import { inspect } from 'util';
 import { get, indexBy } from 'lodash';
 import toPath from 'lodash/internal/toPath';
 import Collection from '../../utils/collection';
+import { createTransform } from '../../deprecation';
 
 let byIdCache = Symbol('byIdCache');
 let pluginApis = Symbol('pluginApis');
 
 async function addPluginConfig(pluginCollection, plugin) {
   const configSchema = await plugin.getConfigSchema();
-  let { config } = pluginCollection.kbnServer;
-  config.extendSchema(plugin.configPrefix, configSchema);
+  const deprecationRules = await plugin.getDeprecations();
+  const { config, settings } = pluginCollection.kbnServer;
+  const pluginSettings = get(settings, plugin.configPrefix);
+  const transformedSettings = createTransform(deprecationRules)(pluginSettings);
+  config.extendSchema(configSchema, transformedSettings, plugin.configPrefix);
 }
 
 function removePluginConfig(pluginCollection, plugin) {

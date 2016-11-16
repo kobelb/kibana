@@ -1,5 +1,7 @@
 import _ , { partial } from 'lodash';
-import { rename, unused, transformDeprecations as createTransformDeprecations } from '../../deprecations';
+import { createTransform, Deprecations } from '../../deprecation';
+
+const { rename, unused } = Deprecations;
 
 const serverSslEnabled = (object) => {
   const has = partial(_.has, object);
@@ -51,4 +53,4 @@ const deprecations = [
   rename('verify_ssl', 'elasticsearch.ssl.verify'),
 ];
 
-export const transformDeprecations = createTransformDeprecations(deprecations);
+export const transformDeprecations = createTransform(deprecations);

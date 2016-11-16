@@ -1,17 +1,17 @@
 import expect from 'expect.js';
 import sinon from 'sinon';
-import transformDeprecations from '../transform_deprecations';
+import createTransform from '../create_transform';
 
-describe('transform deprecations', function () {
+describe('deprecation create transform', function () {
   it('calls single deprecation in array', function () {
     const deprecations = [sinon.spy()];
-    transformDeprecations(deprecations)({});
+    createTransform(deprecations)({});
     expect(deprecations[0].calledOnce).to.be(true);
   });
 
   it('calls multiple deprecations in array', function () {
     const deprecations = [sinon.spy(), sinon.spy()];
-    transformDeprecations(deprecations)({});
+    createTransform(deprecations)({});
     expect(deprecations[0].calledOnce).to.be(true);
     expect(deprecations[1].calledOnce).to.be(true);
   });
@@ -20,7 +20,7 @@ describe('transform deprecations', function () {
     const deprecation = sinon.stub().returns('deprecation message');
     const deprecations = [deprecation];
     const logger = sinon.spy();
-    transformDeprecations(deprecations)({}, logger);
+    createTransform(deprecations)({}, logger);
     expect(logger.calledOnce).to.be(true);
   });
 
@@ -28,7 +28,7 @@ describe('transform deprecations', function () {
     const deprecation = sinon.stub().returns(undefined);
     const deprecations = [deprecation];
     const logger = sinon.spy();
-    transformDeprecations(deprecations)({}, logger);
+    createTransform(deprecations)({}, logger);
     expect(logger.called).to.be(false);
   });
 });

@@ -1,5 +1,5 @@
 import { difference, keys } from 'lodash';
-import { transformDeprecations } from './deprecations';
+import { transformDeprecations } from './transform_deprecations';
 
 const getUnusedSettings = (settings, configValues) => {
   return difference(keys(transformDeprecations(settings)), keys(configValues));

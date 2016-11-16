@@ -1,4 +1,4 @@
-import { transformDeprecations } from './deprecations';
+import { transformDeprecations } from './transform_deprecations';
 import { memoize } from 'lodash';
 
 export default function (kbnServer, server) {
