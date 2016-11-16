@@ -1,7 +1,2 @@
-import createTransform from './create_transform';
-import * as Deprecations from './deprecations';
-
-export {
-  Deprecations,
-  createTransform,
-};
+export createTransform from './create_transform';
+export * as Deprecations from './deprecations';
