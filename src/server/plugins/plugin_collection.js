@@ -11,12 +11,16 @@ let byIdCache = Symbol('byIdCache');
 let pluginApis = Symbol('pluginApis');
 
 async function addPluginConfig(pluginCollection, plugin) {
-  const configSchema = await plugin.getConfigSchema();
-  const deprecationRules = await plugin.getDeprecations();
   const { config, settings } = pluginCollection.kbnServer;
+
   const transformedSettings = transformDeprecations(settings);
   const pluginSettings = get(transformedSettings, plugin.configPrefix);
-  const transformedPluginSettings = createTransform(deprecationRules)(pluginSettings);
+  const deprecations = plugin.getDeprecations();
+  const transformedPluginSettings = createTransform(deprecations)(pluginSettings, (message) => {
+    pluginCollection.server.log(['warning', plugin.configPrefix, 'config'], message);
+  });
+
+  const configSchema = await plugin.getConfigSchema();
   config.extendSchema(configSchema, transformedPluginSettings, plugin.configPrefix);
 }
 
@@ -27,9 +31,10 @@ function removePluginConfig(pluginCollection, plugin) {
 
 module.exports = class Plugins extends Collection {
 
-  constructor(kbnServer) {
+  constructor(kbnServer, server) {
     super();
     this.kbnServer = kbnServer;
+    this.server = server;
     this[pluginApis] = new Set();
   }
 

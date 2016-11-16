@@ -101,8 +101,8 @@ module.exports = class Plugin {
     return schema || defaultConfigSchema;
   }
 
-  async getDeprecations() {
-    let rules = await this.getExternalDeprecations(Deprecations);
+  getDeprecations() {
+    let rules = this.getExternalDeprecations(Deprecations);
     return rules || [];
   }
 
