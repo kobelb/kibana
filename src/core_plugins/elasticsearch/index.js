@@ -38,9 +38,7 @@ module.exports = function ({ Plugin }) {
       }).default();
     },
 
-    deprecations(Deprecations) {
-      const { rename } = Deprecations;
-
+    deprecations({ rename }) {
       return [
         rename('ssl.ca', 'ssl.certificateAuthorities'),
         rename('ssl.cert', 'ssl.certificate'),
