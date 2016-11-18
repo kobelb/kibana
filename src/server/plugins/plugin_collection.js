@@ -12,6 +12,8 @@ let pluginApis = Symbol('pluginApis');
 
 async function addPluginConfig(pluginCollection, plugin) {
   const { config, server, settings } = pluginCollection.kbnServer;
+  const configSchema = await plugin.getConfigSchema();
+  config.extendSchema(plugin.configPrefix, configSchema);
 
   const transformedSettings = transformDeprecations(settings);
   const pluginSettings = get(transformedSettings, plugin.configPrefix);
@@ -20,8 +22,7 @@ async function addPluginConfig(pluginCollection, plugin) {
     server.log(['warning', plugin.configPrefix, 'config', 'deprecation'], message);
   });
 
-  const configSchema = await plugin.getConfigSchema();
-  config.extendSchema(configSchema, transformedPluginSettings, plugin.configPrefix);
+  config.set(plugin.configPrefix, transformedPluginSettings);
 }
 
 function removePluginConfig(pluginCollection, plugin) {

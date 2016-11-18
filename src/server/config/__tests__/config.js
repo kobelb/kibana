@@ -43,26 +43,33 @@ describe('lib/config/config', function () {
 
     describe('constructor', function () {
 
-      it('should not allow any config if the schema is not passed', function () {
-        let config = new Config();
+      it(`shouldn't require schema or settings`, function () {
         let run = function () {
-          config.set('something.enable', true);
+          new Config();
         };
-        expect(run).to.throwException();
+        expect(run).to.not.throwException();
       });
 
-      it('should allow keys in the schema', function () {
-        let config = new Config(schema);
+      it('should allow keys defined in the schema', function () {
+        let settings = {
+          test: {
+            client: {
+              host: 'http://localhost'
+            }
+          }
+        };
         let run = function () {
-          config.set('test.client.host', 'http://localhost');
+          new Config(schema, settings);
         };
         expect(run).to.not.throwException();
       });
 
       it('should not allow keys not in the schema', function () {
-        let config = new Config(schema);
+        let settings = {
+          paramNotDefinedInTheSchema: true
+        };
         let run = function () {
-          config.set('paramNotDefinedInTheSchema', true);
+          new Config(schema, settings);
         };
         expect(run).to.throwException();
       });
@@ -126,6 +133,27 @@ describe('lib/config/config', function () {
 
       beforeEach(function () {
         config = new Config(schema);
+      });
+
+      it('should allow keys in the schema', function () {
+        let run = function () {
+          config.set('test.client.host', 'http://localhost');
+        };
+        expect(run).to.not.throwException();
+      });
+
+      it('should not allow keys not in the schema', function () {
+        let run = function () {
+          config.set('paramNotDefinedInTheSchema', true);
+        };
+        expect(run).to.throwException();
+      });
+
+      it('should not allow child keys not in the schema', function () {
+        let run = function () {
+          config.set('test.client.paramNotDefinedInTheSchema', true);
+        };
+        expect(run).to.throwException();
       });
 
       it('should use a key and value to set a config value', function () {
