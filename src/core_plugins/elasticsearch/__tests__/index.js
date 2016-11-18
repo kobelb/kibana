@@ -5,7 +5,7 @@ import { noop } from 'lodash';
 import sinon from 'sinon';
 
 describe('plugins/elasticsearch', function () {
-  describe('deprecations', function () {
+  describe('#deprecations()', function () {
     let transformDeprecations;
 
     before(function () {
