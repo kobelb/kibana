@@ -8,10 +8,9 @@ import { deepCloneWithBuffers as clone } from '../../utils';
 const schema = Symbol('Joi Schema');
 const schemaExts = Symbol('Schema Extensions');
 const vals = Symbol('config values');
-const pendingSets = Symbol('Pending Settings');
 
 module.exports = class Config {
-  static withDefaultSchema(settings) {
+  static withDefaultSchema(settings = {}) {
     return new Config(createDefaultSchema(), settings);
   }
 
@@ -23,9 +22,13 @@ module.exports = class Config {
   }
 
   extendSchema(extension, settings, key) {
+    if (!extension) {
+      return;
+    }
+
     if (!key) {
       return _.each(extension._inner.children, (child) => {
-        this.extendSchema(child.schema, settings[child.key], child.key);
+        this.extendSchema(child.schema, _.get(settings, child.key), child.key);
       });
     }
 
