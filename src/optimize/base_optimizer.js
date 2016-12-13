@@ -6,6 +6,7 @@ import CommonsChunkPlugin from 'webpack/lib/optimize/CommonsChunkPlugin';
 import DefinePlugin from 'webpack/lib/DefinePlugin';
 import UglifyJsPlugin from 'webpack/lib/optimize/UglifyJsPlugin';
 
+import autoprefixer from 'autoprefixer';
 import fromRoot from '../utils/from_root';
 import babelOptions from './babel_options';
 import { inherits } from 'util';
@@ -105,14 +106,14 @@ class BaseOptimizer {
             test: /\.less$/,
             loader: ExtractTextPlugin.extract(
               'style',
-              `css${mapQ}!autoprefixer${mapQPre}{ "browsers": ["last 2 versions","> 5%"] }!less${mapQPre}dumpLineNumbers=comments`
+              `css${mapQ}!postcss${mapQ}!less${mapQPre}dumpLineNumbers=comments`
             )
           },
           {
             test: /\.scss$/,
             loader: ExtractTextPlugin.extract(
               'style',
-              `css${mapQ}!autoprefixer${mapQPre}{ "browsers": ["last 2 versions","> 5%"] }!sass${mapQPre}`
+              `css${mapQ}!postcss${mapQ}!sass${mapQPre}`
             )
           },
           { test: /\.css$/, loader: ExtractTextPlugin.extract('style', `css${mapQ}`) },
@@ -140,6 +141,12 @@ class BaseOptimizer {
         postLoaders: this.env.postLoaders || [],
         noParse: this.env.noParse,
       },
+
+      postcss: [
+        autoprefixer({
+          browsers: ['last 2 versions','> 5%', 'Safari 7']
+        })
+      ],
 
       resolve: {
         extensions: ['.js', '.json', '.jsx', '.less', ''],
