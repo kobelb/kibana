@@ -185,7 +185,7 @@ class TagCloud extends EventEmitter {
     });
 
     const movingTags = stage.transition();
-    movingTags.duration(600);
+    movingTags.duration(300);
     movingTags.style('font-size', getSizeInPixels);
     movingTags.style('font-style', this._fontStyle);
     movingTags.style('font-weight', () => this._fontWeight);
@@ -194,7 +194,7 @@ class TagCloud extends EventEmitter {
 
     const exitingTags = stage.exit();
     const exitTransition = exitingTags.transition();
-    exitTransition.duration(200);
+    exitTransition.duration(100);
     exitingTags.style('fill-opacity', 1e-6);
     exitingTags.attr('font-size', 1);
     exitingTags.remove();
