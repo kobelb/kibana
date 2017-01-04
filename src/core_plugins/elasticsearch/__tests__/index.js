@@ -1,7 +1,7 @@
 import { Deprecations } from '../../../deprecation';
 import expect from 'expect.js';
 import index from '../index';
-import { noop } from 'lodash';
+import { compact, noop, set } from 'lodash';
 import sinon from 'sinon';
 
 describe('plugins/elasticsearch', function () {
@@ -21,72 +21,63 @@ describe('plugins/elasticsearch', function () {
       };
     });
 
-    context('verificationMode', function () {
-      it('sets ssl.verificationMode to none when verify is false', function () {
-        const settings = {
-          ssl: {
-            verify: false
-          }
-        };
+    [null, 'tribe'].forEach((basePath) => {
+      const getKey = (path) => {
+        return compact([basePath, path]).join('.');
+      };
 
-        transformDeprecations(settings);
-        expect(settings.ssl.verificationMode).to.be('none');
-        expect(settings.ssl.verify).to.be(undefined);
-      });
+      context(getKey('ssl.verificationMode'), function () {
+        let settings;
+        let sslSettings;
 
-      it('should log when deprecating verify from false', function () {
-        const settings = {
-          ssl: {
-            verify: false
-          }
-        };
+        beforeEach(function () {
+          settings = {};
+          sslSettings = {};
+          set(settings, getKey('ssl'), sslSettings);
+        });
 
-        const log = sinon.spy();
-        transformDeprecations(settings, log);
-        expect(log.calledOnce).to.be(true);
-      });
+        it(`sets verificationMode to none when verify is false`, function () {
+          sslSettings.verify = false;
 
-      it('sets ssl.verificationMode to full when verify is true', function () {
-        const settings = {
-          ssl: {
-            verify: true
-          }
-        };
+          transformDeprecations(settings);
+          expect(sslSettings.verificationMode).to.be('none');
+          expect(sslSettings.verify).to.be(undefined);
+        });
 
-        transformDeprecations(settings);
-        expect(settings.ssl.verificationMode).to.be('full');
-        expect(settings.ssl.verify).to.be(undefined);
-      });
+        it('should log when deprecating verify from false', function () {
+          sslSettings.verify = false;
 
-      it('should log when deprecating verify from true', function () {
-        const settings = {
-          ssl: {
-            verify: true
-          }
-        };
+          const log = sinon.spy();
+          transformDeprecations(settings, log);
+          expect(log.calledOnce).to.be(true);
+        });
 
-        const log = sinon.spy();
-        transformDeprecations(settings, log);
-        expect(log.calledOnce).to.be(true);
-      });
+        it('sets verificationMode to full when verify is true', function () {
+          sslSettings.verify = true;
 
-      it(`shouldn't set verificationMode when verify isn't present`, function () {
-        const settings = {
-          ssl: {}
-        };
+          transformDeprecations(settings);
+          expect(sslSettings.verificationMode).to.be('full');
+          expect(sslSettings.verify).to.be(undefined);
+        });
 
-        transformDeprecations(settings);
-        expect(settings.ssl.verificationMode).to.be(undefined);
-      });
+        it('should log when deprecating verify from true', function () {
+          sslSettings.verify = true;
 
-      it(`shouldn't log when verify isn't present`, function () {
-        const settings = {
-          ssl: {}
-        };
+          const log = sinon.spy();
+          transformDeprecations(settings, log);
+          expect(log.calledOnce).to.be(true);
+        });
 
-        const log = sinon.spy();
-        transformDeprecations(settings, log);
-        expect(log.called).to.be(false);
+        it(`shouldn't set verificationMode when verify isn't present`, function () {
+          transformDeprecations(settings);
+          expect(sslSettings.verificationMode).to.be(undefined);
+        });
+
+        it(`shouldn't log when verify isn't present`, function () {
+          const log = sinon.spy();
+          transformDeprecations(settings, log);
+          expect(log.called).to.be(false);
+        });
       });
     });
   });
