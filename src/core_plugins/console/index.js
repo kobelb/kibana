@@ -3,8 +3,9 @@ import Boom from 'boom';
 import apiServer from './api_server/server';
 import { existsSync } from 'fs';
 import { resolve, join, sep } from 'path';
-import { startsWith, endsWith } from 'lodash';
+import { has, startsWith, endsWith } from 'lodash';
 import { ProxyConfigCollection } from './server/proxy_config_collection';
+import { getElasticsearchProxyConfig } from './server/elasticsearch_proxy_config';
 
 export default function (kibana) {
   const modules = resolve(__dirname, 'public/webpackShims/');
@@ -54,7 +55,7 @@ export default function (kibana) {
       }).default();
     },
 
-     deprecations: function () {
+    deprecations: function () {
       return [
         (settings, log) => {
           if (has(settings, 'proxyConfig')) {
@@ -111,7 +112,7 @@ export default function (kibana) {
           } else {
             additionalConfig = getElasticsearchProxyConfig(server);
           }
-          
+
           reply.proxy({
             mapUri: function (request, done) {
               done(null, uri, filterHeaders(request.headers, requestHeadersWhitelist));

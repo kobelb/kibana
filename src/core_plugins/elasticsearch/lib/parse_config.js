@@ -50,15 +50,15 @@ export function parseConfig(serverConfig = {}) {
       throw new Error(`Unknown ssl verificationMode: ${verificationMode}`);
   }
 
-  if (size(get(serverConfig, 'ssl.ca'))) {
+  if (size(get(serverConfig, 'ssl.certificateAuthorities'))) {
     config.ssl.ca = serverConfig.ssl.certificateAuthorities.map(readFile);
   }
 
   // Add client certificate and key if required by elasticsearch
   if (get(serverConfig, 'ssl.certificate') && get(serverConfig, 'ssl.key')) {
-    config.cert = readFile(serverConfig.ssl.certificate);
-    config.key = readFile(serverConfig.ssl.key);
-    config.passphrase = serverConfig.ssl.keyPassphrase;
+    config.ssl.cert = readFile(serverConfig.ssl.certificate);
+    config.ssl.key = readFile(serverConfig.ssl.key);
+    config.ssl.passphrase = serverConfig.ssl.keyPassphrase;
   }
 
   config.defer = () => Bluebird.defer();

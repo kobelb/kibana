@@ -1,4 +1,4 @@
-import { get, has, set, trim, trimRight, bindKey, get } from 'lodash';
+import { bindKey, get, has, set, trim, trimRight } from 'lodash';
 import { unset } from '../../utils';
 import { methodNotAllowed } from 'boom';
 

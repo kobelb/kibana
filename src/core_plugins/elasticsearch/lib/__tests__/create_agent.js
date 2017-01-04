@@ -2,63 +2,67 @@ import expect from 'expect.js';
 import createAgent from '../create_agent';
 import https from 'https';
 import http from 'http';
-import sinon from 'sinon';
+import { set } from 'lodash';
 
 describe('plugins/elasticsearch', function () {
   describe('lib/create_agent', function () {
 
-    let server;
-
-    beforeEach(function () {
-      const stub = sinon.stub();
-      server = {
-        config() {
-          return {
-            get: stub
-          };
-        }
-      };
-
-      server.config().get.withArgs('elasticsearch.url').returns('http://localhost:9200');
-      server.config().get.withArgs('elasticsearch.ssl.verificationMode').returns('full');
-    });
-
-    const setElasticsearchConfig = (key, value) => {
-      server.config().get.withArgs(`elasticsearch.${key}`).returns(value);
-    };
-
-    it(`uses https.Agent when url's protocol is https`, function () {
-      setElasticsearchConfig('url', 'https://localhost:9200');
-      const agent = createAgent(server);
-      expect(agent).to.be.a(https.Agent);
-    });
-
     it(`uses http.Agent when url's protocol is http`, function () {
-      setElasticsearchConfig('url', 'http://localhost:9200');
-      const agent = createAgent(server);
+      const config = {
+        url: 'http://localhost:9200'
+      };
+      
+      const agent = createAgent(config);
       expect(agent).to.be.a(http.Agent);
     });
 
+    it(`throws an Error when url's protocol is https and ssl.verificationMode isn't set`, function () {
+      const config = {
+        url: 'https://localhost:9200'
+      };
+
+      expect(createAgent).withArgs(config).to.throwException();
+    });
+
+    it(`uses https.Agent when url's protocol is https and ssl.verificationMode is full`, function () {
+      const config = {
+         url: 'https://localhost:9200',
+         ssl: {
+           verificationMode: 'full'
+         }
+      };
+
+      const agent = createAgent(config);
+      expect(agent).to.be.a(https.Agent);
+    });
+
     context('ssl', function () {
+      let config;
+
       beforeEach(function () {
-        setElasticsearchConfig('url', 'https://localhost:9200');
+        config = {
+          url: 'https://localhost:9200',
+          ssl: {
+            verificationMode: 'full'
+          }
+        };
       });
 
       it('sets rejectUnauthorized to false when verificationMode is none', function () {
-        setElasticsearchConfig('ssl.verificationMode', 'none');
-        const agent = createAgent(server);
+        config.ssl.verificationMode = 'none';
+        const agent = createAgent(config);
         expect(agent.options.rejectUnauthorized).to.be(false);
       });
 
       it('sets rejectUnauthorized to true when verificationMode is certificate', function () {
-        setElasticsearchConfig('ssl.verificationMode', 'certificate');
-        const agent = createAgent(server);
+        config.ssl.verificationMode = 'certificate';
+        const agent = createAgent(config);
         expect(agent.options.rejectUnauthorized).to.be(true);
       });
 
       it('sets checkServerIdentity to not check hostname when verificationMode is certificate', function () {
-        setElasticsearchConfig('ssl.verificationMode', 'certificate');
-        const agent = createAgent(server);
+        config.ssl.verificationMode = 'certificate';
+        const agent = createAgent(config);
 
         const cert = {
           subject: {
@@ -72,41 +76,41 @@ describe('plugins/elasticsearch', function () {
       });
 
       it('sets rejectUnauthorized to true when verificationMode is full', function () {
-        setElasticsearchConfig('ssl.verificationMode', 'full');
-        const agent = createAgent(server);
+        config.ssl.verificationMode = 'full';
+        const agent = createAgent(config);
 
         expect(agent.options.rejectUnauthorized).to.be(true);
       });
 
       it(`doesn't set checkServerIdentity when verificationMode is full`, function () {
-        setElasticsearchConfig('ssl.verificationMode', 'full');
-        const agent = createAgent(server);
+        config.ssl.verificationMode = 'full';
+        const agent = createAgent(config);
 
         expect(agent.options.checkServerIdentity).to.be(undefined);
       });
 
       it(`sets ca when certificateAuthorities are specified`, function () {
-        setElasticsearchConfig('ssl.certificateAuthorities', [__dirname + '/fixtures/ca.crt']);
+        config.ssl.certificateAuthorities = [__dirname + '/fixtures/ca.crt'];
 
-        const agent = createAgent(server);
+        const agent = createAgent(config);
         expect(agent.options.ca).to.contain('test ca certificate\n');
       });
 
       it(`sets cert and key when certificate and key paths are specified`, function () {
-        setElasticsearchConfig('ssl.certificate', __dirname + '/fixtures/cert.crt');
-        setElasticsearchConfig('ssl.key', __dirname + '/fixtures/cert.key');
+        config.ssl.certificate = __dirname + '/fixtures/cert.crt';
+        config.ssl.key = __dirname + '/fixtures/cert.key';
 
-        const agent = createAgent(server);
+        const agent = createAgent(config);
         expect(agent.options.cert).to.be('test certificate\n');
         expect(agent.options.key).to.be('test key\n');
       });
 
       it(`sets passphrase when certificate, key and keyPassphrase are specified`, function () {
-        setElasticsearchConfig('ssl.certificate', __dirname + '/fixtures/cert.crt');
-        setElasticsearchConfig('ssl.key', __dirname + '/fixtures/cert.key');
-        setElasticsearchConfig('ssl.keyPassphrase', 'secret');
+        config.ssl.certificate = __dirname + '/fixtures/cert.crt';
+        config.ssl.key = __dirname + '/fixtures/cert.key';
+        config.ssl.keyPassphrase = 'secret';
 
-        const agent = createAgent(server);
+        const agent = createAgent(config);
         expect(agent.options.passphrase).to.be('secret');
       });
     });
