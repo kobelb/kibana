@@ -155,6 +155,9 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   const $appStatus = $scope.appStatus = this.appStatus = {
     dirty: !savedSearch.id
   };
+  this.getESQuery = () => {
+    return 'test';
+  };
   const $state = $scope.state = new AppState(getStateDefaults());
   $scope.uiState = $state.makeStateful('uiState');
 
