@@ -156,10 +156,30 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     dirty: !savedSearch.id
   };
   const $state = $scope.state = new AppState(getStateDefaults());
-  this.getSharingQuery = async () => {
-    const esQuery = await $scope.searchSource.getESQuery();
-    delete esQuery.body.size;
-    return esQuery;
+  this.getSharingData = async () => {
+    if ($state.columns.length === 1 && $state.columns[0] ===  '_source') {
+      const { body, index } = await $scope.searchSource.getESQuery();
+      const esQuery = {
+        index,
+        body: {
+          query: body.query,
+          sort: body.sort,
+          docvalue_fields: body.docvalue_fields,
+          stored_fields: body.stored_fields,
+          script_fields: body.script_fields,
+          _source: body._source,
+          version: body.version
+        }
+      };
+
+      const columns = $scope.indexPattern.fields.map(f => f.name).sort();
+      const metaFields = $scope.indexPattern.metaFields;
+      return {
+        esQuery,
+        columns,
+        metaFields
+      };
+    }
   };
   $scope.uiState = $state.makeStateful('uiState');
 
