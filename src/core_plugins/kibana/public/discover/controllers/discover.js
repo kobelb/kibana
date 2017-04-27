@@ -152,9 +152,9 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   }
 
   let stateMonitor;
-  const $appStatus = $scope.appStatus = this.appStatus = {
-    dirty: !savedSearch.id
-  };
+  // const $appStatus = $scope.appStatus = this.appStatus = {
+  //   dirty: !savedSearch.id
+  // };
   const $state = $scope.state = new AppState(getStateDefaults());
   this.getSharingData = async () => {
     if ($state.columns.length === 1 && $state.columns[0] ===  '_source') {
@@ -223,9 +223,9 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     };
 
     stateMonitor = stateMonitorFactory.create($state, getStateDefaults());
-    stateMonitor.onChange((status) => {
-      $appStatus.dirty = status.dirty || !savedSearch.id;
-    });
+    // stateMonitor.onChange((status) => {
+    //   $appStatus.dirty = status.dirty || !savedSearch.id;
+    // });
     $scope.$on('$destroy', () => stateMonitor.destroy());
 
     $scope.updateDataSource()
