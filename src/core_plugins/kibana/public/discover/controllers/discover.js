@@ -161,18 +161,18 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
       const { body, index } = await $scope.searchSource.getESQuery();
       const esQuery = {
         index,
-        body: {
-          query: body.query,
-          sort: body.sort,
-          docvalue_fields: body.docvalue_fields,
-          stored_fields: body.stored_fields,
-          script_fields: body.script_fields,
-          _source: body._source,
-          version: body.version
-        }
+        body: _.pick(body, [
+          'query',
+          'sort',
+          'docvalue_fields',
+          'script_fields',
+          'stored_fields',
+          '_source',
+          'version'
+        ])
       };
 
-      const columns = $scope.indexPattern.fields.filter(f => f.type !== 'conflict').map(f => f.name).sort();
+      const columns = _.keys($scope.fieldCounts).sort();
       const metaFields = $scope.indexPattern.metaFields;
       return {
         esQuery,
