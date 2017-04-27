@@ -159,9 +159,9 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   this.getSharingData = async () => {
     const { body, index } = await $scope.searchSource.getESQuery();
     const metaFields = $scope.indexPattern.metaFields;
-    const selectedColumns = $state.columns;
+    const selectedFields = $state.columns;
 
-    if (selectedColumns.length === 1 && selectedColumns[0] ===  '_source') {
+    if (selectedFields.length === 1 && selectedFields[0] ===  '_source') {
       const esQuery = {
         index,
         body: _.pick(body, [
@@ -175,10 +175,10 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
         ])
       };
 
-      const columns = _.keys($scope.fieldCounts).sort();
+      const fields = _.keys($scope.fieldCounts).sort();
       return {
         esQuery,
-        columns,
+        fields,
         metaFields
       };
     }
@@ -186,11 +186,11 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     const timeFieldName = $scope.indexPattern.timeFieldName;
     const computedFields = $scope.indexPattern.getComputedFields();
 
-    const columns = timeFieldName ? [timeFieldName, ...selectedColumns] : selectedColumns;
-    const docvalueFields = _.intersection(computedFields.docvalueFields, columns);
-    const scriptFields = _.pick(computedFields.scriptFields, columns);
+    const fields = timeFieldName ? [timeFieldName, ...selectedFields] : selectedFields;
+    const docvalueFields = _.intersection(computedFields.docvalueFields, fields);
+    const scriptFields = _.pick(computedFields.scriptFields, fields);
     const storedFields = computedFields.storedFields;
-    const sourceFields = _.difference(columns, [...docvalueFields, ..._.keys(scriptFields)]);
+    const sourceFields = _.difference(fields, [...docvalueFields, ..._.keys(scriptFields)]);
 
     const esQuery = {
       index,
@@ -207,7 +207,7 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
 
     return {
       esQuery,
-      columns,
+      fields,
       metaFields
     };
 
