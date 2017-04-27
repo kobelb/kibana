@@ -157,8 +157,11 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   // };
   const $state = $scope.state = new AppState(getStateDefaults());
   this.getSharingData = async () => {
-    if ($state.columns.length === 1 && $state.columns[0] ===  '_source') {
-      const { body, index } = await $scope.searchSource.getESQuery();
+    const { body, index } = await $scope.searchSource.getESQuery();
+    const metaFields = $scope.indexPattern.metaFields;
+    const selectedColumns = $state.columns;
+
+    if (selectedColumns.length === 1 && selectedColumns[0] ===  '_source') {
       const esQuery = {
         index,
         body: _.pick(body, [
@@ -173,13 +176,41 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
       };
 
       const columns = _.keys($scope.fieldCounts).sort();
-      const metaFields = $scope.indexPattern.metaFields;
       return {
         esQuery,
         columns,
         metaFields
       };
     }
+
+    const timeFieldName = $scope.indexPattern.timeFieldName;
+    const computedFields = $scope.indexPattern.getComputedFields();
+
+    const columns = timeFieldName ? [timeFieldName, ...selectedColumns] : selectedColumns;
+    const docvalueFields = _.intersection(computedFields.docvalueFields, columns);
+    const scriptFields = _.pick(computedFields.scriptFields, columns);
+    const storedFields = computedFields.storedFields;
+    const sourceFields = _.difference(columns, [...docvalueFields, ..._.keys(scriptFields)]);
+
+    const esQuery = {
+      index,
+      body: {
+        query: body.query,
+        sort: body.sort,
+        version: body.version,
+        docvalue_fields: docvalueFields,
+        script_fields: scriptFields,
+        stored_fields: storedFields,
+        _source: sourceFields
+      }
+    };
+
+    return {
+      esQuery,
+      columns,
+      metaFields
+    };
+
   };
   $scope.uiState = $state.makeStateful('uiState');
 
