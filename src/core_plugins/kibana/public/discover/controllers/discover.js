@@ -172,7 +172,7 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
         }
       };
 
-      const columns = $scope.indexPattern.fields.map(f => f.name).sort();
+      const columns = $scope.indexPattern.fields.filter(f => f.type !== 'conflict').map(f => f.name).sort();
       const metaFields = $scope.indexPattern.metaFields;
       return {
         esQuery,
