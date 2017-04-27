@@ -155,38 +155,41 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   // const $appStatus = $scope.appStatus = this.appStatus = {
   //   dirty: !savedSearch.id
   // };
+
   const $state = $scope.state = new AppState(getStateDefaults());
-  this.getSharingData = async () => {
+
+  const getSourceFieldSharingData = async () => {
     const { body, index } = await $scope.searchSource.getESQuery();
-    const metaFields = $scope.indexPattern.metaFields;
-    const selectedFields = $state.columns;
 
-    if (selectedFields.length === 1 && selectedFields[0] ===  '_source') {
-      const esQuery = {
-        index,
-        body: _.pick(body, [
-          'query',
-          'sort',
-          'docvalue_fields',
-          'script_fields',
-          'stored_fields',
-          '_source',
-          'version'
-        ])
-      };
+    const esQuery = {
+      index,
+      body: _.pick(body, [
+        'query',
+        'sort',
+        'docvalue_fields',
+        'script_fields',
+        'stored_fields',
+        '_source',
+        'version'
+      ])
+    };
 
-      const fields = _.keys($scope.fieldCounts).sort();
-      return {
-        esQuery,
-        fields,
-        metaFields
-      };
-    }
+    const fields = _.keys($scope.fieldCounts).sort();
+    return {
+      esQuery,
+      fields,
+      metaFields: $scope.indexPattern.metaFields
+    };
+  };
+
+  const getSelectedFieldsSharingData = async () => {
+    const { body, index } = await $scope.searchSource.getESQuery();
 
     const timeFieldName = $scope.indexPattern.timeFieldName;
-    const computedFields = $scope.indexPattern.getComputedFields();
-
+    const selectedFields = $state.columns;
     const fields = timeFieldName ? [timeFieldName, ...selectedFields] : selectedFields;
+
+    const computedFields = $scope.indexPattern.getComputedFields();
     const docvalueFields = _.intersection(computedFields.docvalueFields, fields);
     const scriptFields = _.pick(computedFields.scriptFields, fields);
     const storedFields = computedFields.storedFields;
@@ -208,10 +211,20 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     return {
       esQuery,
       fields,
-      metaFields
+      metaFields: $scope.indexPattern.metaFields
     };
-
   };
+
+  this.getSharingData = async () => {
+    const selectedFields = $state.columns;
+
+    if (selectedFields.length === 1 && selectedFields[0] ===  '_source') {
+      return await getSourceFieldSharingData();
+    }
+
+    return await getSelectedFieldsSharingData();
+  };
+
   $scope.uiState = $state.makeStateful('uiState');
 
   function getStateDefaults() {
