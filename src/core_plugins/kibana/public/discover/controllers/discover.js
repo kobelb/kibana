@@ -163,22 +163,22 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
 
     const esQuery = {
       index,
-      body: _.pick(body, [
-        'query',
-        'sort',
-        'docvalue_fields',
-        'script_fields',
-        'stored_fields',
-        '_source',
-        'version'
-      ])
+      body: {
+        query: body.query,
+        sort: body.sort,
+        version: body.version,
+        docvalue_fields: body.docvalue_fields,
+        script_fields: body.script_fields,
+        stored_fields: body.stored_fields,
+        _source: body._source,
+      }
     };
 
     const fields = _.keys($scope.fieldCounts).sort();
     return {
       esQuery,
       fields,
-      metaFields: $scope.indexPattern.metaFields
+      metaFields: $scope.indexPattern.metaFields,
     };
   };
 
@@ -187,12 +187,17 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
 
     const timeFieldName = $scope.indexPattern.timeFieldName;
     const selectedFields = $state.columns;
+
+    // add the timeFieldName to the list of selectedFields if it's there
     const fields = timeFieldName ? [timeFieldName, ...selectedFields] : selectedFields;
 
+    // the query that Discover executes against Elasticsearch includes all of the fields so that
+    // we have the Table/JSON view in the expanded row, but when we're sharing the data
+    // we only want to include the selected fields, so we're manually limiting this in the query here
     const computedFields = $scope.indexPattern.getComputedFields();
     const docvalueFields = _.intersection(computedFields.docvalueFields, fields);
     const scriptFields = _.pick(computedFields.scriptFields, fields);
-    const storedFields = computedFields.storedFields;
+    const storedFields = computedFields.storedFields; // indexPattern has this hardcoded to ['*'] so we can't filter
     const sourceFields = _.difference(fields, [...docvalueFields, ..._.keys(scriptFields)]);
 
     const esQuery = {
@@ -204,14 +209,14 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
         docvalue_fields: docvalueFields,
         script_fields: scriptFields,
         stored_fields: storedFields,
-        _source: sourceFields
+        _source: sourceFields,
       }
     };
 
     return {
       esQuery,
       fields,
-      metaFields: $scope.indexPattern.metaFields
+      metaFields: $scope.indexPattern.metaFields,
     };
   };
 
