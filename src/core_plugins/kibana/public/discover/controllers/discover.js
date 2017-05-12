@@ -232,6 +232,14 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     return await getSelectedFieldsSharingData();
   };
 
+  this.getSharingType = () => {
+    return 'search';
+  };
+
+  this.getSharingTitle = () => {
+    return savedSearch.title;
+  };
+
   $scope.uiState = $state.makeStateful('uiState');
 
   function getStateDefaults() {
