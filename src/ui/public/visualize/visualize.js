@@ -190,9 +190,7 @@ uiModules
           $scope.$broadcast('render');
         }, 200);
 
-        let resizeInit = false;
         resizeChecker.on('resize',  () => {
-          if (!resizeInit) return resizeInit = true;
           resizeFunc();
         });
 
