@@ -16,7 +16,7 @@ uiRoutes
 
 uiModules
   .get('kibana')
-  .service('timefilter', function (Private, globalState, $rootScope, config) {
+  .service('timefilter', function (Private, globalState, $rootScope, config, $location) {
     const Events = Private(EventsProvider);
 
     function convertISO8601(stringTime) {
@@ -102,9 +102,26 @@ uiModules
     };
 
     Timefilter.prototype.getBounds = function () {
+      const overrideNow = time => {
+        const now = $location.search().overrideNow;
+        if (!now) {
+          return time;
+        }
+
+        if (time.substring(0, 3) !== 'now') {
+          return time;
+        }
+
+        if (time === 'now') {
+          return now;
+        }
+
+        return time.replace('now', `${now}||`);
+      };
+
       return {
-        min: dateMath.parse(this.time.from),
-        max: dateMath.parse(this.time.to, true)
+        min: dateMath.parse(overrideNow(this.time.from)),
+        max: dateMath.parse(overrideNow(this.time.to), true)
       };
     };
 
