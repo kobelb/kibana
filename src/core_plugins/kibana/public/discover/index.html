@@ -88,7 +88,7 @@
             <section aria-label="Histogram of found documents" class="discover-timechart" ng-if="opts.timefield">
               <header>
                 <center class="small">
-                  <span tooltip="To change the time, click the clock icon in the navigation bar">{{timeRange.from | moment}} - {{timeRange.to | moment}}</span>
+                  <span tooltip="To change the time, click the clock icon in the navigation bar">{{timeBounds.min | moment}} - {{timeBounds.max | moment}}</span>
 
                   &mdash;
 
