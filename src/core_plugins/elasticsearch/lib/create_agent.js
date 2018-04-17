@@ -10,5 +10,14 @@ export default function (config) {
 
   if (!/^https/.test(target.protocol)) return new http.Agent();
 
-  return new https.Agent(parseConfig(config).ssl);
+  const ssl = {
+    ...parseConfig(config).ssl,
+    certificate: null,
+    key: null,
+    passphrase: null,
+    pfx: null,
+  };
+
+
+  return new https.Agent(ssl);
 }
