@@ -40,16 +40,14 @@ Building:
 
 
 ```
-docker build -t kbn-sandbox/build -f docker/Dockerfile.build .
-docker run -it --rm -v `pwd`:/kbn-sandbox kbn-sandbox/build:latest bash -c 'cd /kbn-sandbox && npm run build'
+vagrant up centos-7 && vagrant ssh centos-7 -c 'cd /kbn-sandbox && npm run build' && vagrant halt centos-7
 ```
 
 Testing:
 
 ```
 # CentOS 7
-docker build -t kbn-sandbox/centos7 -f docker/Dockerfile.centos7 .
-docker run -it --rm -v `pwd`:/kbn-sandbox kbn-sandbox/centos7:latest bash -c 'cd /kbn-sandbox && npm run test'
+vagrant up centos-7 && vagrant ssh centos-7 -c 'cd /kbn-sandbox && npm run test' && vagrant halt centos-7
 
 # Ubuntu 14.04
 docker build -t kbn-sandbox/ubuntu1404 -f docker/Dockerfile.ubuntu1404 .
@@ -72,12 +70,7 @@ docker build -t kbn-sandbox/debian7 -f docker/Dockerfile.debian7 .
 docker run -it --rm -v `pwd`:/kbn-sandbox kbn-sandbox/debian7:latest bash -c 'cd /kbn-sandbox && npm run test'
 
 # Debian 8
-docker build -t kbn-sandbox/debian8 -f docker/Dockerfile.debian8 .
-docker run -it --rm -v `pwd`:/kbn-sandbox kbn-sandbox/debian8:latest bash -c 'cd /kbn-sandbox && npm run test'
-
-# Debian 8 i386
-docker build -t kbn-sandbox/debian8-i386 -f docker/Dockerfile.debian8-i386 .
-docker run -it --rm -v `pwd`:/kbn-sandbox kbn-sandbox/debian8-i386:latest bash -c 'cd /kbn-sandbox && npm run test'
+vagrant up debian-8 && vagrant ssh debian-8 -c 'cd /kbn-sandbox && npm run test' && vagrant halt debian-8
 
 # Debian 9
 docker build -t kbn-sandbox/debian9 -f docker/Dockerfile.debian9 .
