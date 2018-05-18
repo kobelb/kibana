@@ -6,6 +6,10 @@
 
 import { get, uniq } from 'lodash';
 
+const getPrivilege = (type, action) => {
+  return `action:saved-objects/${type}/${action}`;
+};
+
 export class SecureSavedObjectsClient {
   constructor({
     errors,
@@ -37,7 +41,16 @@ export class SecureSavedObjectsClient {
   }
 
   async find(options = {}) {
-    await this._performAuthorizationCheck(options.type, 'search');
+    const types = this._repository.getTypes();
+    const typesToPrivilegesMap = new Map(types.map(type => [type, getPrivilege(type, 'search')]));
+    const result = await this._hasSavedObjectPrivileges(typesToPrivilegesMap.values());
+    const authorizedTypes = Array.from(typesToPrivilegesMap.entries())
+      .filter(([ , privilege]) => !result.missing.includes(privilege))
+      .map(([type]) => type);
+
+    if (authorizedTypes.length === 0) {
+      throw this.errors.decorateForbiddenError(new Error(`Not authorized to search any types`));
+    }
 
     return await this._repository.find(options);
   }
@@ -64,19 +77,21 @@ export class SecureSavedObjectsClient {
 
   async _performAuthorizationCheck(typeOrTypes, action) {
     const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes];
-    const actions = types.map(type => `action:saved-objects/${type}/${action}`);
+    const privileges = types.map(type => getPrivilege(type, action));
+    const result = await this._hasSavedObjectPrivileges(privileges);
 
-    let result;
+    if (!result.success) {
+      const msg = `Not authorized to ${action} ${types.join(',')}, missing ${result.missing.join(',')}`;
+      throw this.errors.decorateForbiddenError(new Error(msg));
+    }
+  }
+
+  async _hasSavedObjectPrivileges(privileges) {
     try {
-      result = await this._hasPrivileges(actions);
+      return await this._hasPrivileges(privileges);
     } catch(error) {
       const { reason } = get(error, 'body.error', {});
       throw this.errors.decorateGeneralError(error, reason);
-    }
-
-    if (!result.success) {
-      const msg = `Unable to ${action} ${types.join(',')}, missing ${result.missing.join(',')}`;
-      throw this.errors.decorateForbiddenError(new Error(msg));
     }
   }
 }
