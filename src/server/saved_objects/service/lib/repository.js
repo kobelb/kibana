@@ -1,6 +1,6 @@
 import uuid from 'uuid';
 
-import { getRootType } from '../../../mappings';
+import { getRootType, getRootPropertiesObjects } from '../../../mappings';
 import { getSearchDsl } from './search_dsl';
 import { trimIdPrefix } from './trim_id_prefix';
 import { includedFields } from './included_fields';
@@ -381,6 +381,10 @@ export class SavedObjectsRepository {
       version: response._version,
       attributes
     };
+  }
+
+  getTypes() {
+    return Object.keys(getRootPropertiesObjects(this._mappings));
   }
 
   async _writeToCluster(method, params) {
