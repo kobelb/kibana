@@ -189,6 +189,7 @@ export class SavedObjectsRepository {
    * @property {string} [options.sortField]
    * @property {string} [options.sortOrder]
    * @property {Array<string>} [options.fields]
+   * @property {Array<Object>} [options.filters]
    * @returns {promise} - { saved_objects: [{ id, type, version, attributes }], total, per_page, page }
    */
   async find(options = {}) {
@@ -201,6 +202,7 @@ export class SavedObjectsRepository {
       sortField,
       sortOrder,
       fields,
+      filters,
     } = options;
 
     if (searchFields && !Array.isArray(searchFields)) {
@@ -224,7 +226,8 @@ export class SavedObjectsRepository {
           searchFields,
           type,
           sortField,
-          sortOrder
+          sortOrder,
+          filters,
         })
       }
     };

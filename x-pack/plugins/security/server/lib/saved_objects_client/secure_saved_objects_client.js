@@ -52,6 +52,12 @@ export class SecureSavedObjectsClient {
       throw this.errors.decorateForbiddenError(new Error(`Not authorized to search any types`));
     }
 
+    options.filters = [...(options.filters || []), {
+      terms: {
+        'type': authorizedTypes
+      }
+    }];
+
     return await this._repository.find(options);
   }
 

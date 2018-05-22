@@ -29,17 +29,13 @@ function getFieldsForTypes(searchFields, types) {
  *  @param  {Array<string>} searchFields
  *  @return {Object}
  */
-export function getQueryParams(mappings, type, search, searchFields) {
-  if (!type && !search) {
-    return {};
-  }
-
-  const bool = {};
+export function getQueryParams(mappings, type, search, searchFields, filters = []) {
+  const bool = {
+    filter: [...filters],
+  };
 
   if (type) {
-    bool.filter = [
-      { term: { type } }
-    ];
+    bool.filter = [...bool.filter, { term: { type } }];
   }
 
   if (search) {
