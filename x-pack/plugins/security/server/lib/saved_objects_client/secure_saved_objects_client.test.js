@@ -283,3 +283,125 @@ describe('#bulkGet', () => {
     expect(mockRepository.bulkGet).toHaveBeenCalledWith(objects);
   });
 });
+
+describe('#get', () => {
+  test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: false,
+      missing: [
+        'action:saved-objects/foo/get'
+      ]
+    }));
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type = 'foo';
+
+    await expect(client.get(type, 'foo-id')).rejects.toThrowError(mockErrors.forbiddenError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type}/get`]);
+    expect(mockErrors.decorateForbiddenError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => {
+      throw new Error();
+    });
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type = 'foo';
+
+    await expect(client.get(type)).rejects.toThrowError(mockErrors.generalError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type}/get`]);
+    expect(mockErrors.decorateGeneralError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`calls and returns result of repository.get`, async () => {
+    const returnValue = Symbol();
+    const mockRepository = {
+      get: jest.fn().mockReturnValue(returnValue)
+    };
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: true
+    }));
+    const client = new SecureSavedObjectsClient({
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type = 'foo';
+    const id = Symbol();
+
+    const result = await client.get(type, id);
+
+    expect(result).toBe(returnValue);
+    expect(mockRepository.get).toHaveBeenCalledWith(type, id);
+  });
+});
+
+describe('#update', () => {
+  test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: false,
+      missing: [
+        'action:saved-objects/foo/update'
+      ]
+    }));
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type = 'foo';
+
+    await expect(client.update(type)).rejects.toThrowError(mockErrors.forbiddenError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type}/update`]);
+    expect(mockErrors.decorateForbiddenError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => {
+      throw new Error();
+    });
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type = 'foo';
+
+    await expect(client.update(type)).rejects.toThrowError(mockErrors.generalError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type}/update`]);
+    expect(mockErrors.decorateGeneralError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`calls and returns result of repository.update`, async () => {
+    const returnValue = Symbol();
+    const mockRepository = {
+      update: jest.fn().mockReturnValue(returnValue)
+    };
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: true
+    }));
+    const client = new SecureSavedObjectsClient({
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type = 'foo';
+    const id = Symbol();
+    const attributes = Symbol();
+    const options = Symbol();
+
+    const result = await client.update(type, id, attributes, options);
+
+    expect(result).toBe(returnValue);
+    expect(mockRepository.update).toHaveBeenCalledWith(type, id, attributes, options);
+  });
+});
