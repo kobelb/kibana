@@ -62,9 +62,8 @@ export class SecureSavedObjectsClient {
   }
 
   async bulkGet(objects = []) {
-    for (const object of objects) {
-      await this._performAuthorizationCheck(object.type, 'mget');
-    }
+    const types = uniq(objects.map(o => o.type));
+    await this._performAuthorizationCheck(types, 'mget');
 
     return await this._repository.bulkGet(objects);
   }

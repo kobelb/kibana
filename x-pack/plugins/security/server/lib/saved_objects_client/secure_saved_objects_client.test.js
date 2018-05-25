@@ -28,7 +28,7 @@ describe('#errors', () => {
   });
 });
 
-describe(`#create`, () => {
+describe('#create', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
@@ -89,7 +89,7 @@ describe(`#create`, () => {
   });
 });
 
-describe(`#bulkCreate`, () => {
+describe('#bulkCreate', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
@@ -214,5 +214,72 @@ describe('#delete', () => {
 
     expect(result).toBe(returnValue);
     expect(mockRepository.delete).toHaveBeenCalledWith(type, id);
+  });
+});
+
+describe('#bulkGet', () => {
+  test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: false,
+      missing: [
+        'action:saved-objects/foo/create'
+      ]
+    }));
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      hasPrivileges: mockHasPrivileges
+    });
+    const type1 = 'foo';
+    const type2 = 'bar';
+    const objects = [
+      { type: type1 },
+      { type: type1 },
+      { type: type2 },
+    ];
+
+    await expect(client.bulkGet(objects)).rejects.toThrowError(mockErrors.forbiddenError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type1}/mget`, `action:saved-objects/${type2}/mget`]);
+    expect(mockErrors.decorateForbiddenError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => {
+      throw new Error();
+    });
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      hasPrivileges: mockHasPrivileges
+    });
+
+    await expect(client.bulkGet([{ type: 'foo' }])).rejects.toThrowError(mockErrors.generalError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith(['action:saved-objects/foo/mget']);
+    expect(mockErrors.decorateGeneralError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`calls and returns result of repository.bulkGet`, async () => {
+    const returnValue = Symbol();
+    const mockRepository = {
+      bulkGet: jest.fn().mockReturnValue(returnValue)
+    };
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: true
+    }));
+    const client = new SecureSavedObjectsClient({
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+    const objects = [
+      { type: 'foo', id: 'foo-id' },
+      { type: 'bar', id: 'bar-id' },
+    ];
+
+    const result = await client.bulkGet(objects);
+
+    expect(result).toBe(returnValue);
+    expect(mockRepository.bulkGet).toHaveBeenCalledWith(objects);
   });
 });
