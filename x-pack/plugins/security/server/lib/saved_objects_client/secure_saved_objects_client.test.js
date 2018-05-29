@@ -217,6 +217,129 @@ describe('#delete', () => {
   });
 });
 
+describe('#find', () => {
+  test(`throws decorated ForbiddenError when user has no authorized types`, async () => {
+    const type = 'foo';
+    const mockRepository = {
+      getTypes: jest.fn().mockReturnValue([type])
+    };
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: false,
+      missing: [
+        `action:saved-objects/${type}/search`
+      ]
+    }));
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+
+    await expect(client.find()).rejects.toThrowError(mockErrors.forbiddenError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type}/search`]);
+    expect(mockErrors.decorateForbiddenError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type1 = 'foo';
+    const type2 = 'bar';
+    const mockRepository = {
+      getTypes: jest.fn().mockReturnValue([type1, type2])
+    };
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => {
+      throw new Error();
+    });
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+
+    await expect(client.find()).rejects.toThrowError(mockErrors.generalError);
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type1}/search`, `action:saved-objects/${type2}/search`]);
+    expect(mockErrors.decorateGeneralError).toHaveBeenCalledTimes(1);
+  });
+
+  test(`specifies terms filter for authorized types when there are no other filters`, async () => {
+    const type1 = 'foo';
+    const type2 = 'bar';
+    const mockRepository = {
+      getTypes: jest.fn().mockReturnValue([type1, type2]),
+      find: jest.fn(),
+    };
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: false,
+      missing: [
+        `action:saved-objects/${type1}/search`
+      ]
+    }));
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+
+    await client.find();
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type1}/search`, `action:saved-objects/${type2}/search`]);
+    expect(mockRepository.find).toHaveBeenCalledWith(expect.objectContaining({
+      filters: [{
+        terms: {
+          type: [type2]
+        }
+      }]
+    }));
+  });
+
+  test(`appends terms filter for authorized types when there are other filters`, async () => {
+    const type1 = 'foo';
+    const type2 = 'bar';
+    const mockRepository = {
+      getTypes: jest.fn().mockReturnValue([type1, type2]),
+      find: jest.fn(),
+    };
+    const mockErrors = createMockErrors();
+    const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
+      success: false,
+      missing: [
+        `action:saved-objects/${type1}/search`
+      ]
+    }));
+    const client = new SecureSavedObjectsClient({
+      errors: mockErrors,
+      repository: mockRepository,
+      hasPrivileges: mockHasPrivileges
+    });
+
+    await client.find({
+      filters: [{
+        term: {
+          'quz': 'baz'
+        }
+      }]
+    });
+
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type1}/search`, `action:saved-objects/${type2}/search`]);
+    expect(mockRepository.find).toHaveBeenCalledWith(expect.objectContaining({
+      filters: [{
+        term: {
+          'quz': 'baz'
+        }
+      }, {
+        terms: {
+          type: [type2]
+        }
+      }]
+    }));
+  });
+
+});
+
 describe('#bulkGet', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
     const mockErrors = createMockErrors();

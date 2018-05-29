@@ -43,7 +43,7 @@ export class SecureSavedObjectsClient {
   async find(options = {}) {
     const types = this._repository.getTypes();
     const typesToPrivilegesMap = new Map(types.map(type => [type, getPrivilege(type, 'search')]));
-    const result = await this._hasSavedObjectPrivileges(typesToPrivilegesMap.values());
+    const result = await this._hasSavedObjectPrivileges(Array.from(typesToPrivilegesMap.values()));
     const authorizedTypes = Array.from(typesToPrivilegesMap.entries())
       .filter(([ , privilege]) => !result.missing.includes(privilege))
       .map(([type]) => type);
@@ -54,7 +54,7 @@ export class SecureSavedObjectsClient {
 
     options.filters = [...(options.filters || []), {
       terms: {
-        'type': authorizedTypes
+        type: authorizedTypes
       }
     }];
 
