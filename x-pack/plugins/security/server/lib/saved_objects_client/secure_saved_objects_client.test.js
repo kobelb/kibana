@@ -30,18 +30,18 @@ describe('#errors', () => {
 
 describe('#create', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
       success: false,
       missing: [
-        'action:saved-objects/foo/create'
+        `action:saved-objects/${type}/create`
       ]
     }));
     const client = new SecureSavedObjectsClient({
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.create(type)).rejects.toThrowError(mockErrors.forbiddenError);
 
@@ -50,6 +50,7 @@ describe('#create', () => {
   });
 
   test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => {
       throw new Error();
@@ -58,7 +59,6 @@ describe('#create', () => {
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.create(type)).rejects.toThrowError(mockErrors.generalError);
 
@@ -67,6 +67,7 @@ describe('#create', () => {
   });
 
   test(`calls and returns result of repository.create`, async () => {
+    const type = 'foo';
     const returnValue = Symbol();
     const mockRepository = {
       create: jest.fn().mockReturnValue(returnValue)
@@ -78,7 +79,6 @@ describe('#create', () => {
       repository: mockRepository,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
     const attributes = Symbol();
     const options = Symbol();
 
@@ -91,19 +91,19 @@ describe('#create', () => {
 
 describe('#bulkCreate', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const type1 = 'foo';
+    const type2 = 'bar';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
       success: false,
       missing: [
-        'action:saved-objects/foo/create'
+        `action:saved-objects/${type1}/create`
       ]
     }));
     const client = new SecureSavedObjectsClient({
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type1 = 'foo';
-    const type2 = 'bar';
     const objects = [
       { type: type1 },
       { type: type1 },
@@ -117,6 +117,7 @@ describe('#bulkCreate', () => {
   });
 
   test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => {
       throw new Error();
@@ -126,9 +127,9 @@ describe('#bulkCreate', () => {
       hasPrivileges: mockHasPrivileges
     });
 
-    await expect(client.bulkCreate([{ type: 'foo' }])).rejects.toThrowError(mockErrors.generalError);
+    await expect(client.bulkCreate([{ type }])).rejects.toThrowError(mockErrors.generalError);
 
-    expect(mockHasPrivileges).toHaveBeenCalledWith(['action:saved-objects/foo/create']);
+    expect(mockHasPrivileges).toHaveBeenCalledWith([`action:saved-objects/${type}/create`]);
     expect(mockErrors.decorateGeneralError).toHaveBeenCalledTimes(1);
   });
 
@@ -159,18 +160,18 @@ describe('#bulkCreate', () => {
 
 describe('#delete', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
       success: false,
       missing: [
-        'action:saved-objects/foo/create'
+        `action:saved-objects/${type}/delete`
       ]
     }));
     const client = new SecureSavedObjectsClient({
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.delete(type, 'foo-id')).rejects.toThrowError(mockErrors.forbiddenError);
 
@@ -179,6 +180,7 @@ describe('#delete', () => {
   });
 
   test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => {
       throw new Error();
@@ -187,7 +189,6 @@ describe('#delete', () => {
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.delete(type)).rejects.toThrowError(mockErrors.generalError);
 
@@ -196,6 +197,7 @@ describe('#delete', () => {
   });
 
   test(`calls and returns result of repository.delete`, async () => {
+    const type = 'foo';
     const returnValue = Symbol();
     const mockRepository = {
       delete: jest.fn().mockReturnValue(returnValue)
@@ -207,7 +209,6 @@ describe('#delete', () => {
       repository: mockRepository,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
     const id = Symbol();
 
     const result = await client.delete(type, id);
@@ -342,19 +343,19 @@ describe('#find', () => {
 
 describe('#bulkGet', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const type1 = 'foo';
+    const type2 = 'bar';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
       success: false,
       missing: [
-        'action:saved-objects/foo/create'
+        `action:saved-objects/${type1}/mget`
       ]
     }));
     const client = new SecureSavedObjectsClient({
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type1 = 'foo';
-    const type2 = 'bar';
     const objects = [
       { type: type1 },
       { type: type1 },
@@ -368,6 +369,7 @@ describe('#bulkGet', () => {
   });
 
   test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => {
       throw new Error();
@@ -377,13 +379,15 @@ describe('#bulkGet', () => {
       hasPrivileges: mockHasPrivileges
     });
 
-    await expect(client.bulkGet([{ type: 'foo' }])).rejects.toThrowError(mockErrors.generalError);
+    await expect(client.bulkGet([{ type }])).rejects.toThrowError(mockErrors.generalError);
 
     expect(mockHasPrivileges).toHaveBeenCalledWith(['action:saved-objects/foo/mget']);
     expect(mockErrors.decorateGeneralError).toHaveBeenCalledTimes(1);
   });
 
   test(`calls and returns result of repository.bulkGet`, async () => {
+    const type1 = 'foo';
+    const type2 = 'bar';
     const returnValue = Symbol();
     const mockRepository = {
       bulkGet: jest.fn().mockReturnValue(returnValue)
@@ -396,8 +400,8 @@ describe('#bulkGet', () => {
       hasPrivileges: mockHasPrivileges
     });
     const objects = [
-      { type: 'foo', id: 'foo-id' },
-      { type: 'bar', id: 'bar-id' },
+      { type: type1, id: 'foo-id' },
+      { type: type2, id: 'bar-id' },
     ];
 
     const result = await client.bulkGet(objects);
@@ -409,18 +413,18 @@ describe('#bulkGet', () => {
 
 describe('#get', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
       success: false,
       missing: [
-        'action:saved-objects/foo/get'
+        `action:saved-objects/${type}/get`
       ]
     }));
     const client = new SecureSavedObjectsClient({
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.get(type, 'foo-id')).rejects.toThrowError(mockErrors.forbiddenError);
 
@@ -429,6 +433,7 @@ describe('#get', () => {
   });
 
   test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => {
       throw new Error();
@@ -437,7 +442,6 @@ describe('#get', () => {
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.get(type)).rejects.toThrowError(mockErrors.generalError);
 
@@ -446,6 +450,7 @@ describe('#get', () => {
   });
 
   test(`calls and returns result of repository.get`, async () => {
+    const type = 'foo';
     const returnValue = Symbol();
     const mockRepository = {
       get: jest.fn().mockReturnValue(returnValue)
@@ -457,7 +462,6 @@ describe('#get', () => {
       repository: mockRepository,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
     const id = Symbol();
 
     const result = await client.get(type, id);
@@ -469,6 +473,7 @@ describe('#get', () => {
 
 describe('#update', () => {
   test(`throws decorated ForbiddenError when user doesn't have privileges`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => ({
       success: false,
@@ -480,7 +485,6 @@ describe('#update', () => {
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.update(type)).rejects.toThrowError(mockErrors.forbiddenError);
 
@@ -489,6 +493,7 @@ describe('#update', () => {
   });
 
   test(`throws decorated GeneralError when hasPrivileges rejects promise`, async () => {
+    const type = 'foo';
     const mockErrors = createMockErrors();
     const mockHasPrivileges = jest.fn().mockImplementation(async () => {
       throw new Error();
@@ -497,7 +502,6 @@ describe('#update', () => {
       errors: mockErrors,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
 
     await expect(client.update(type)).rejects.toThrowError(mockErrors.generalError);
 
@@ -506,6 +510,7 @@ describe('#update', () => {
   });
 
   test(`calls and returns result of repository.update`, async () => {
+    const type = 'foo';
     const returnValue = Symbol();
     const mockRepository = {
       update: jest.fn().mockReturnValue(returnValue)
@@ -517,7 +522,6 @@ describe('#update', () => {
       repository: mockRepository,
       hasPrivileges: mockHasPrivileges
     });
-    const type = 'foo';
     const id = Symbol();
     const attributes = Symbol();
     const options = Symbol();
