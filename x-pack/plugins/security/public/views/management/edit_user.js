@@ -12,6 +12,7 @@ import 'angular-resource';
 import 'angular-ui-select';
 import 'plugins/security/services/shield_user';
 import 'plugins/security/services/shield_role';
+import 'plugins/security/services/initialize_rbac';
 import { checkLicenseError } from 'plugins/security/lib/check_license_error';
 import { EDIT_USERS_PATH, USERS_PATH } from './management_urls';
 
@@ -40,9 +41,10 @@ routes.when(`${EDIT_USERS_PATH}/:username?`, {
       return new ShieldUser({ roles: [] });
     },
 
-    roles(ShieldRole, kbnUrl, Promise, Private) {
+    roles(ShieldRole, kbnUrl, Promise, Private, initializeRbac) {
       // $promise is used here because the result is an ngResource, not a promise itself
-      return ShieldRole.query().$promise
+      return initializeRbac()
+        .then(() => ShieldRole.query().$promise)
         .then((roles) => _.map(roles, 'name'))
         .catch(checkLicenseError(kbnUrl, Promise, Private));
     }
