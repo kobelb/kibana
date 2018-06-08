@@ -5,73 +5,53 @@
  */
 
 import { createDefaultRoles } from './create_default_roles';
-import { getClient } from '../../../../../server/lib/get_client_shield';
 import { DEFAULT_RESOURCE } from '../../../common/constants';
 
 jest.mock('../../../../../server/lib/get_client_shield', () => ({
   getClient: jest.fn()
 }));
 
-const mockShieldClient = () => {
-  const mockCallWithInternalUser = jest.fn();
-  getClient.mockReturnValue({
-    callWithInternalUser: mockCallWithInternalUser
-  });
-
-  return {
-    mockCallWithInternalUser
-  };
-};
-
 const defaultApplication = 'foo-application';
 
-const createMockServer = ({ settings = {} } = {}) => {
-  const mockServer = {
-    config: jest.fn().mockReturnValue({
-      get: jest.fn()
-    })
-  };
-
+const createMockConfig = (settings = {}) => {
   const defaultSettings = {
     'xpack.security.rbac.createDefaultRoles': true,
     'xpack.security.rbac.application': defaultApplication
   };
 
-  mockServer.config().get.mockImplementation(key => {
-    return key in settings ? settings[key] : defaultSettings[key];
-  });
-
-  return mockServer;
+  return {
+    get: jest.fn().mockImplementation(key => {
+      return key in settings ? settings[key] : defaultSettings[key];
+    })
+  };
 };
 
 test(`doesn't create roles if createDefaultRoles is false`, async () => {
-  const { mockCallWithInternalUser } = mockShieldClient();
-  const mockServer = createMockServer({
-    settings: {
-      'xpack.security.rbac.createDefaultRoles': false
-    }
+  const mockCallCluster = jest.fn();
+  const mockConfig = createMockConfig({
+    'xpack.security.rbac.createDefaultRoles': false
   });
 
-  await createDefaultRoles(mockServer);
+  await createDefaultRoles(mockConfig, mockCallCluster);
 
-  expect(mockCallWithInternalUser).toHaveBeenCalledTimes(0);
+  expect(mockCallCluster).toHaveBeenCalledTimes(0);
 });
 
 describe(`rbac_user`, () => {
   test(`doesn't create \${application}_rbac_user when it exists`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockReturnValue(null);
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockReturnValue(null);
 
-    await createDefaultRoles(mockServer);
+    await createDefaultRoles(mockConfig, mockCallCluster);
 
-    expect(mockCallWithInternalUser).not.toHaveBeenCalledWith('shield.putRole', expect.anything());
+    expect(mockCallCluster).not.toHaveBeenCalledWith('shield.putRole', expect.anything());
   });
 
   test(`creates \${application}_rbac_user when it doesn't exist`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockImplementation(async (endpoint, params) => {
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockImplementation(async (endpoint, params) => {
       if (endpoint === 'shield.getRole' && params.name === `${defaultApplication}_rbac_user`) {
         throw {
           statusCode: 404
@@ -81,9 +61,9 @@ describe(`rbac_user`, () => {
       return null;
     });
 
-    await createDefaultRoles(mockServer);
+    await createDefaultRoles(mockConfig, mockCallCluster);
 
-    expect(mockCallWithInternalUser).toHaveBeenCalledWith('shield.putRole', {
+    expect(mockCallCluster).toHaveBeenCalledWith('shield.putRole', {
       name: `${defaultApplication}_rbac_user`,
       body: {
         cluster: [],
@@ -100,9 +80,9 @@ describe(`rbac_user`, () => {
   });
 
   test(`throws error when shield.getRole throws non 404 error`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockImplementation(async (endpoint, params) => {
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockImplementation(async (endpoint, params) => {
       if (endpoint === 'shield.getRole' && params.name === `${defaultApplication}_rbac_user`) {
         throw {
           statusCode: 500
@@ -112,13 +92,13 @@ describe(`rbac_user`, () => {
       return null;
     });
 
-    expect(createDefaultRoles(mockServer)).rejects.toThrowErrorMatchingSnapshot();
+    expect(createDefaultRoles(mockConfig, mockCallCluster)).rejects.toThrowErrorMatchingSnapshot();
   });
 
   test(`throws error when shield.putRole throws error`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockImplementation(async (endpoint, params) => {
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockImplementation(async (endpoint, params) => {
       if (endpoint === 'shield.getRole' && params.name === `${defaultApplication}_rbac_user`) {
         throw {
           statusCode: 404
@@ -132,25 +112,25 @@ describe(`rbac_user`, () => {
       return null;
     });
 
-    await expect(createDefaultRoles(mockServer)).rejects.toThrowErrorMatchingSnapshot();
+    await expect(createDefaultRoles(mockConfig, mockCallCluster)).rejects.toThrowErrorMatchingSnapshot();
   });
 });
 
 describe(`dashboard_only_user`, () => {
   test(`doesn't create \${application}_rbac_dashboard_only_user when it exists`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockReturnValue(null);
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockReturnValue(null);
 
-    await createDefaultRoles(mockServer);
+    await createDefaultRoles(mockConfig, mockCallCluster);
 
-    expect(mockCallWithInternalUser).not.toHaveBeenCalledWith('shield.putRole', expect.anything());
+    expect(mockCallCluster).not.toHaveBeenCalledWith('shield.putRole', expect.anything());
   });
 
   test(`creates \${application}_rbac_dashboard_only_user when it doesn't exist`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockImplementation(async (endpoint, params) => {
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockImplementation(async (endpoint, params) => {
       if (endpoint === 'shield.getRole' && params.name === `${defaultApplication}_rbac_dashboard_only_user`) {
         throw {
           statusCode: 404
@@ -160,9 +140,9 @@ describe(`dashboard_only_user`, () => {
       return null;
     });
 
-    await createDefaultRoles(mockServer);
+    await createDefaultRoles(mockConfig, mockCallCluster);
 
-    expect(mockCallWithInternalUser).toHaveBeenCalledWith('shield.putRole', {
+    expect(mockCallCluster).toHaveBeenCalledWith('shield.putRole', {
       name: `${defaultApplication}_rbac_dashboard_only_user`,
       body: {
         cluster: [],
@@ -179,9 +159,9 @@ describe(`dashboard_only_user`, () => {
   });
 
   test(`throws error when shield.getRole throws non 404 error`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockImplementation(async (endpoint, params) => {
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockImplementation(async (endpoint, params) => {
       if (endpoint === 'shield.getRole' && params.name === `${defaultApplication}_rbac_dashboard_only_user`) {
         throw {
           statusCode: 500
@@ -191,13 +171,13 @@ describe(`dashboard_only_user`, () => {
       return null;
     });
 
-    await expect(createDefaultRoles(mockServer)).rejects.toThrowErrorMatchingSnapshot();
+    await expect(createDefaultRoles(mockConfig, mockCallCluster)).rejects.toThrowErrorMatchingSnapshot();
   });
 
   test(`throws error when shield.putRole throws error`, async () => {
-    const { mockCallWithInternalUser } = mockShieldClient();
-    const mockServer = createMockServer();
-    mockCallWithInternalUser.mockImplementation(async (endpoint, params) => {
+    const mockCallCluster = jest.fn();
+    const mockConfig = createMockConfig();
+    mockCallCluster.mockImplementation(async (endpoint, params) => {
       if (endpoint === 'shield.getRole' && params.name === `${defaultApplication}_rbac_dashboard_only_user`) {
         throw {
           statusCode: 404
@@ -211,6 +191,6 @@ describe(`dashboard_only_user`, () => {
       return null;
     });
 
-    await expect(createDefaultRoles(mockServer)).rejects.toThrowErrorMatchingSnapshot();
+    await expect(createDefaultRoles(mockConfig, mockCallCluster)).rejects.toThrowErrorMatchingSnapshot();
   });
 });
