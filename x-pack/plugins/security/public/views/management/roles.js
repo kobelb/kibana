@@ -11,15 +11,17 @@ import { toggle, toggleSort } from 'plugins/security/lib/util';
 import { isRoleEnabled } from 'plugins/security/lib/role';
 import template from 'plugins/security/views/management/roles.html';
 import 'plugins/security/services/shield_role';
+import 'plugins/security/services/initialize_rbac';
 import { checkLicenseError } from 'plugins/security/lib/check_license_error';
 import { ROLES_PATH, EDIT_ROLES_PATH } from './management_urls';
 
 routes.when(ROLES_PATH, {
   template,
   resolve: {
-    roles(ShieldRole, kbnUrl, Promise, Private) {
+    roles(ShieldRole, kbnUrl, Promise, Private, initializeRbac) {
       // $promise is used here because the result is an ngResource, not a promise itself
-      return ShieldRole.query().$promise
+      return initializeRbac()
+        .then(() => ShieldRole.query().$promise)
         .catch(checkLicenseError(kbnUrl, Promise, Private))
         .catch(_.identity); // Return the error if there is one
     }

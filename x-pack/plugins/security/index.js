@@ -10,6 +10,7 @@ import { initAuthenticateApi } from './server/routes/api/v1/authenticate';
 import { initUsersApi } from './server/routes/api/v1/users';
 import { initRolesApi } from './server/routes/api/v1/roles';
 import { initIndicesApi } from './server/routes/api/v1/indices';
+import { initInitializeRbacApi } from './server/routes/api/v1/initialize_rbac';
 import { initLoginView } from './server/routes/views/login';
 import { initLogoutView } from './server/routes/views/logout';
 import { validateConfig } from './server/lib/validate_config';
@@ -18,7 +19,6 @@ import { checkLicense } from './server/lib/check_license';
 import { initAuthenticator } from './server/lib/authentication/authenticator';
 import { mirrorStatusAndInitialize } from './server/lib/mirror_status_and_initialize';
 import { registerPrivilegesWithCluster } from './server/lib/privileges';
-import { createDefaultRoles } from './server/lib/authorization/create_default_roles';
 import { initPrivilegesApi } from './server/routes/api/v1/privileges';
 import { hasPrivilegesWithServer } from './server/lib/authorization/has_privileges';
 import { SecurityAuditLogger } from './server/lib/audit_logger';
@@ -99,7 +99,6 @@ export const security = (kibana) => new kibana.Plugin({
       }
 
       await registerPrivilegesWithCluster(server);
-      await createDefaultRoles(server);
     });
 
     // Register a function that is called whenever the xpack info changes,
@@ -154,6 +153,7 @@ export const security = (kibana) => new kibana.Plugin({
     initUsersApi(server);
     initRolesApi(server);
     initIndicesApi(server);
+    initInitializeRbacApi(server);
     initPrivilegesApi(server);
     initLoginView(server, xpackMainPlugin);
     initLogoutView(server);

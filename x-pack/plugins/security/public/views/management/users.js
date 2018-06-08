@@ -10,6 +10,7 @@ import { toastNotifications } from 'ui/notify';
 import { toggle, toggleSort } from 'plugins/security/lib/util';
 import template from 'plugins/security/views/management/users.html';
 import 'plugins/security/services/shield_user';
+import 'plugins/security/services/initialize_rbac';
 import { checkLicenseError } from 'plugins/security/lib/check_license_error';
 import { SECURITY_PATH, USERS_PATH, EDIT_USERS_PATH, EDIT_ROLES_PATH } from './management_urls';
 
@@ -25,7 +26,7 @@ routes.when(USERS_PATH, {
       return ShieldUser.query().$promise
         .catch(checkLicenseError(kbnUrl, Promise, Private))
         .catch(_.identity); // Return the error if there is one
-    }
+    },
   },
 
   controller($scope, $route, $q, confirmModal) {
