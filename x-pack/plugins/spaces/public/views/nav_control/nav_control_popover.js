@@ -86,7 +86,7 @@ export class NavControlPopover extends Component {
     }
 
     // 0 or 1 spaces are available. Either either way, there is no need to render a space selection button
-    if (this.state.spaces.length < 2) {
+    if (this.state.spaces.length < 1) {
       return null;
     }
 
