@@ -9,6 +9,7 @@ import { get } from 'lodash';
 import { toastNotifications } from 'ui/notify';
 import {
   EuiPanel,
+  EuiText,
   EuiTitle,
   EuiSpacer,
   EuiPage,
@@ -59,6 +60,8 @@ export class EditRolePage extends Component {
           <EuiForm {...this.state.formError}>
             {this.getFormTitle()}
 
+            {this.getReservedRoleText()}
+
             <EuiSpacer />
 
             {this.getRoleName()}
@@ -89,6 +92,19 @@ export class EditRolePage extends Component {
     return (
       <EuiTitle size="l"><h1>{titleText} <ReservedRoleBadge role={this.props.role} /></h1></EuiTitle>
     );
+  };
+
+  getReservedRoleText = () => {
+    if (isReservedRole(this.props.role)) {
+      return (
+        <EuiText size="s" color="subdued">
+          <p>
+          Reserved roles are built-in and cannot be removed or modified.
+          </p>
+        </EuiText>
+      );
+    }
+    return null;
   };
 
   getActionButton = () => {
