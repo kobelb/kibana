@@ -9,7 +9,7 @@ import { resolveKibanaPath } from '@kbn/plugin-helpers';
 import { EsProvider } from './services/es';
 
 
-export function createTestConfig(name, { license = 'trial', disabledPlugins = [], securityEnabled = true } = {}) {
+export function createTestConfig(name, { license = 'trial', disabledPlugins = [] } = {}) {
 
   return async function ({ readConfigFile }) {
 
@@ -28,11 +28,6 @@ export function createTestConfig(name, { license = 'trial', disabledPlugins = []
       servers: config.xpack.api.get('servers'),
       services: {
         es: EsProvider,
-        // Provide license and list of disabled plugins to tests so they can alter their configuration
-        testEnv: () => ({
-          license,
-          disabledPlugins,
-        }),
         esSupertestWithoutAuth: config.xpack.api.get('services.esSupertestWithoutAuth'),
         supertest: config.kibana.api.get('services.supertest'),
         supertestWithoutAuth: config.xpack.api.get('services.supertestWithoutAuth'),
@@ -48,11 +43,11 @@ export function createTestConfig(name, { license = 'trial', disabledPlugins = []
       },
 
       esTestCluster: {
+        ...config.xpack.api.get('esTestCluster'),
         license,
-        from: 'snapshot',
-        securityEnabled,
         serverArgs: [
-          ...license === 'trial' ? ['xpack.license.self_generated.type=trial'] : [],
+          `xpack.license.self_generated.type=${license}`,
+          `xpack.security.enabled=${!disabledPlugins.includes('security') && license === 'trial'}`,
         ],
       },
 
@@ -62,8 +57,8 @@ export function createTestConfig(name, { license = 'trial', disabledPlugins = []
           ...config.xpack.api.get('kbnTestServer.serverArgs'),
           '--optimize.enabled=false',
           '--server.xsrf.disableProtection=true',
+          `--plugin-path=${path.join(__dirname, 'fixtures', 'namespace_agnostic_type_plugin')}`,
           ...disabledPlugins.map(key => `--xpack.${key}.enabled=false`),
-          `--plugin-path=${path.join(__dirname, 'fixtures', 'namespace_agnostic_type_plugin')}`
         ],
       },
     };

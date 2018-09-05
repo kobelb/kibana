@@ -25,27 +25,25 @@ import { setupUsers, DEFAULT_SUPERUSER_PASS } from './auth';
 
 export async function runElasticsearch({ config, options }) {
   const { log, esFrom } = options;
-  const securityEnabled = config.get('esTestCluster.securityEnabled');
+  const license = config.get('esTestCluster.license');
+  const isTrialLicense = config.get('esTestCluster.license') === 'trial';
 
   const cluster = createEsTestCluster({
     port: config.get('servers.elasticsearch.port'),
-    password: securityEnabled
+    password: isTrialLicense
       ? DEFAULT_SUPERUSER_PASS
       : config.get('servers.elasticsearch.password'),
-    license: config.get('esTestCluster.license'),
+    license,
     log,
     basePath: resolve(KIBANA_ROOT, '.es'),
     esFrom: esFrom || config.get('esTestCluster.from'),
   });
 
-  const esArgs = [
-    ...config.get('esTestCluster.serverArgs'),
-    ...(securityEnabled ? ['xpack.security.enabled=true'] : []),
-  ];
+  const esArgs = config.get('esTestCluster.serverArgs');
 
   await cluster.start(esArgs);
 
-  if (securityEnabled) {
+  if (isTrialLicense) {
     await setupUsers(log, config);
   }
 

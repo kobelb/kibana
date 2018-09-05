@@ -117,7 +117,6 @@ export const schema = Joi.object().keys({
     license: Joi.string().default('oss'),
     from: Joi.string().default('snapshot'),
     serverArgs: Joi.array(),
-    securityEnabled: Joi.boolean().default(false),
   }).default(),
 
   kbnTestServer: Joi.object().keys({

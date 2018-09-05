@@ -6,4 +6,4 @@
 
 import { createTestConfig } from '../common/config';
 
-export default createTestConfig('security_and_spaces', { license: 'trial', securityEnabled: true });
+export default createTestConfig('security_and_spaces', { license: 'trial' });
