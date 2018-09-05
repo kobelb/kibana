@@ -37,12 +37,20 @@ export const AUTHENTICATION = {
     USERNAME: 'a_kibana_rbac_dashboard_only_user',
     PASSWORD: 'password'
   },
-  KIBANA_RBAC_DEFAULT_SPACE_USER: {
-    USERNAME: 'a_kibana_rbac_default_space_user',
+  KIBANA_RBAC_DEFAULT_SPACE_ALL_USER: {
+    USERNAME: 'a_kibana_rbac_default_space_all_user',
     PASSWORD: 'password'
   },
-  KIBANA_RBAC_SPACE_1_READONLY_USER: {
-    USERNAME: 'a_kibana_rbac_space_1_readonly_user',
+  KIBANA_RBAC_DEFAULT_SPACE_READ_USER: {
+    USERNAME: 'a_kibana_rbac_default_space_read_user',
+    PASSWORD: 'password'
+  },
+  KIBANA_RBAC_SPACE_1_ALL_USER: {
+    USERNAME: 'a_kibana_rbac_space_1_all_user',
+    PASSWORD: 'password'
+  },
+  KIBANA_RBAC_SPACE_1_READ_USER: {
+    USERNAME: 'a_kibana_rbac_space_1_read_user',
     PASSWORD: 'password'
   },
 };

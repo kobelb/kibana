@@ -66,11 +66,29 @@ export const createUsersAndRoles = async (es, supertest) => {
       }
     });
 
-  await supertest.put('/api/security/role/kibana_rbac_default_space_user')
+  await supertest.put('/api/security/role/kibana_rbac_default_space_all_user')
     .send({
       kibana: {
         space: {
           default: ['all']
+        }
+      }
+    });
+
+  await supertest.put('/api/security/role/kibana_rbac_default_space_read_user')
+    .send({
+      kibana: {
+        space: {
+          default: ['read']
+        }
+      }
+    });
+
+  await supertest.put('/api/security/role/kibana_rbac_space_1_all_user')
+    .send({
+      kibana: {
+        space: {
+          space_1: ['all']
         }
       }
     });
@@ -155,19 +173,39 @@ export const createUsersAndRoles = async (es, supertest) => {
   });
 
   await es.shield.putUser({
-    username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.USERNAME,
+    username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME,
     body: {
-      password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.PASSWORD,
-      roles: ['kibana_rbac_default_space_user'],
-      full_name: 'a kibana default space user',
-      email: 'a_kibana_rbac_default_space_user@elastic.co',
+      password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.PASSWORD,
+      roles: ['kibana_rbac_default_space_all_user'],
+      full_name: 'a kibana default space all user',
+      email: 'a_kibana_rbac_default_space_all_user@elastic.co',
     }
   });
 
   await es.shield.putUser({
-    username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.USERNAME,
+    username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME,
     body: {
-      password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.PASSWORD,
+      password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.PASSWORD,
+      roles: ['kibana_rbac_default_space_read_user'],
+      full_name: 'a kibana default space read-only user',
+      email: 'a_kibana_rbac_default_space_read_user@elastic.co',
+    }
+  });
+
+  await es.shield.putUser({
+    username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME,
+    body: {
+      password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.PASSWORD,
+      roles: ['kibana_rbac_space_1_all_user'],
+      full_name: 'a kibana rbac space 1 all user',
+      email: 'a_kibana_rbac_space_1_all_user@elastic.co',
+    }
+  });
+
+  await es.shield.putUser({
+    username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME,
+    body: {
+      password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.PASSWORD,
       roles: ['kibana_rbac_space_1_read_user'],
       full_name: 'a kibana rbac space 1 read-only user',
       email: 'a_kibana_rbac_space_1_readonly_user@elastic.co',

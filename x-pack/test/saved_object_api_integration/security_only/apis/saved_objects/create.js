@@ -176,40 +176,78 @@ export default function ({ getService }) {
       }
     });
 
-    createTest(`kibana rbac default space user`, {
+    createTest(`kibana rbac default space all user`, {
       auth: {
-        username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.USERNAME,
-        password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.PASSWORD,
+        username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME,
+        password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.PASSWORD,
       },
       tests: {
         spaceAware: {
           statusCode: 403,
           // this will change to RBAC once the ES PR for checking all app privileges merges
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.USERNAME),
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
         },
         notSpaceAware: {
           statusCode: 403,
           // this will change to RBAC once the ES PR for checking all app privileges merges
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.USERNAME),
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+        },
+      }
+    });
+
+    createTest(`kibana rbac default space read user`, {
+      auth: {
+        username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME,
+        password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.PASSWORD,
+      },
+      tests: {
+        spaceAware: {
+          statusCode: 403,
+          // this will change to RBAC once the ES PR for checking all app privileges merges
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+        },
+        notSpaceAware: {
+          statusCode: 403,
+          // this will change to RBAC once the ES PR for checking all app privileges merges
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+        },
+      }
+    });
+
+    createTest(`kibana rbac space 1 all user`, {
+      auth: {
+        username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME,
+        password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.PASSWORD,
+      },
+      tests: {
+        spaceAware: {
+          statusCode: 403,
+          // this will change to RBAC once the ES PR for checking all app privileges merges
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+        },
+        notSpaceAware: {
+          statusCode: 403,
+          // this will change to RBAC once the ES PR for checking all app privileges merges
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
         },
       }
     });
 
     createTest(`kibana rbac space 1 readonly user`, {
       auth: {
-        username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.USERNAME,
-        password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.PASSWORD,
+        username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME,
+        password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.PASSWORD,
       },
       tests: {
         spaceAware: {
           statusCode: 403,
           // this will change to RBAC once the ES PR for checking all app privileges merges
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.USERNAME),
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
         },
         notSpaceAware: {
           statusCode: 403,
           // this will change to RBAC once the ES PR for checking all app privileges merges
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.USERNAME),
+          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
         },
       }
     });

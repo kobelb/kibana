@@ -41,9 +41,23 @@ export default function ({ getService }) {
       });
     };
 
-    describe(`${SPACES.DEFAULT.spaceId} space`, () => {
-      const spaceId = SPACES.DEFAULT.spaceId;
-      createTest(`not a kibana user`, {
+    [{
+      spaceId: SPACES.DEFAULT.spaceId,
+      userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
+      userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
+      userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+    }, {
+      spaceId: SPACES.DEFAULT.spaceId,
+      userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
+      userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
+      userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+    }].forEach(({
+      spaceId,
+      userWithAllAtSpace,
+      userWithReadAtSpace,
+      userWithAllAtOtherSpace
+    }) => {
+      createTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
           password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
@@ -61,7 +75,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`superuser`, {
+      createTest(AUTHENTICATION.SUPERUSER.USERNAME, {
         auth: {
           username: AUTHENTICATION.SUPERUSER.USERNAME,
           password: AUTHENTICATION.SUPERUSER.PASSWORD,
@@ -79,7 +93,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana legacy user`, {
+      createTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
@@ -97,7 +111,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana legacy dashboard only user`, {
+      createTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
@@ -115,7 +129,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana dual-privileges user`, {
+      createTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
@@ -133,7 +147,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana dual-privileges dashboard only user`, {
+      createTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
@@ -151,7 +165,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana rbac user`, {
+      createTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
@@ -169,7 +183,7 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana rbac dashboard only user`, {
+      createTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
@@ -187,10 +201,10 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana rbac default space user`, {
+      createTest(userWithAllAtSpace.USERNAME, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.PASSWORD,
+          username: userWithAllAtSpace.USERNAME,
+          password: userWithAllAtSpace.PASSWORD,
         },
         tests: {
           spaceAware: {
@@ -204,10 +218,27 @@ export default function ({ getService }) {
         }
       });
 
-      createTest(`kibana rbac space 1 readonly user`, {
+      createTest(userWithReadAtSpace.USERNAME, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.PASSWORD,
+          username: userWithReadAtSpace.USERNAME,
+          password: userWithReadAtSpace.PASSWORD,
+        },
+        tests: {
+          spaceAware: {
+            statusCode: 403,
+            response: createExpectRbacForbidden(spaceAwareType),
+          },
+          notSpaceAware: {
+            statusCode: 403,
+            response: createExpectRbacForbidden(notSpaceAwareType),
+          },
+        }
+      });
+
+      createTest(userWithAllAtOtherSpace.USERNAME, {
+        auth: {
+          username: userWithAllAtOtherSpace.USERNAME,
+          password: userWithAllAtOtherSpace.PASSWORD,
         },
         tests: {
           spaceAware: {
@@ -222,187 +253,5 @@ export default function ({ getService }) {
       });
     });
 
-    describe(`${SPACES.SPACE_1.spaceId} space`, () => {
-      const spaceId = SPACES.SPACE_1.spaceId;
-      createTest(`not a kibana user`, {
-        auth: {
-          username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
-          password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-          },
-        }
-      });
-
-      createTest(`superuser`, {
-        auth: {
-          username: AUTHENTICATION.SUPERUSER.USERNAME,
-          password: AUTHENTICATION.SUPERUSER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 200,
-            response: createExpectSpaceAwareResults(spaceId),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults(),
-          },
-        }
-      });
-
-      createTest(`kibana legacy user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 200,
-            response: createExpectSpaceAwareResults(spaceId),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
-          },
-        }
-      });
-
-      createTest(`kibana legacy dashboard only user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME),
-          },
-        }
-      });
-
-      createTest(`kibana dual-privileges user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 200,
-            response: createExpectSpaceAwareResults(spaceId),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
-          },
-        }
-      });
-
-      createTest(`kibana dual-privileges dashboard only user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
-          },
-        }
-      });
-
-      createTest(`kibana rbac user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 200,
-            response: createExpectSpaceAwareResults(spaceId),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
-          },
-        }
-      });
-
-      createTest(`kibana rbac dashboard only user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
-          },
-        }
-      });
-
-      createTest(`kibana rbac default space user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
-          },
-        }
-      });
-
-      createTest(`kibana rbac space 1 readonly user`, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READONLY_USER.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
-          },
-        }
-      });
-    });
   });
 }
