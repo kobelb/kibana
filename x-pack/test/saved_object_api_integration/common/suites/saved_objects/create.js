@@ -11,7 +11,7 @@ export function createTestSuiteFactory(es, esArchiver, supertest) {
   const spaceAwareType = 'visualization';
   const notSpaceAwareType = 'chapo';
 
-  const makeCreateTest = describeFn => (description, {
+  const makeCreateTest = (describeFn) => (description, {
     auth = {
       username: undefined,
       password: undefined
