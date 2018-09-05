@@ -31,7 +31,8 @@ export function createTestConfig(name, { license = 'trial', disabledPlugins = []
         // Provide license and list of disabled plugins to tests so they can alter their configuration
         testEnv: () => ({
           license,
-          disabledPlugins,
+          spacesEnabled: !disabledPlugins.includes('spaces'),
+          securityEnabled: !disabledPlugins.includes('security') && license === 'trial',
         }),
         esSupertestWithoutAuth: config.xpack.api.get('services.esSupertestWithoutAuth'),
         supertest: config.kibana.api.get('services.supertest'),
@@ -56,7 +57,8 @@ export function createTestConfig(name, { license = 'trial', disabledPlugins = []
         ...config.xpack.api.get('esTestCluster'),
         license,
         serverArgs: [
-          ...config.xpack.api.get('esTestCluster.serverArgs'),
+          `xpack.license.self_generated.type=${license}`,
+          `xpack.security.enabled=${!disabledPlugins.includes('security') && license === 'trial'}`
         ],
       },
 
