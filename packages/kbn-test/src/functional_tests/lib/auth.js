@@ -65,12 +65,53 @@ async function updateCredentials(port, auth, username, password, retries = 10) {
   throw new Error(`${statusCode} response, expected 200 -- ${JSON.stringify(body)}`);
 }
 
+async function getLicense(port, auth, retries = 10) {
+  const result = await fcb(cb =>
+    request(
+      {
+        method: 'GET',
+        uri: formatUrl({
+          protocol: 'http:',
+          auth,
+          hostname: 'localhost',
+          port,
+          pathname: `/_xpack/license`,
+        }),
+        json: true,
+      },
+      (err, httpResponse, body) => {
+        cb(err, { httpResponse, body });
+      }
+    )
+  );
+
+  const { body, httpResponse } = result;
+  const { statusCode } = httpResponse;
+
+  if (statusCode === 200) {
+    return body.license.type;
+  }
+
+  if (retries > 0) {
+    await delay(2500);
+    return await getLicense(port, auth, retries - 1);
+  }
+
+  throw new Error(`${statusCode} response, expected 200 -- ${JSON.stringify(body)}`);
+}
+
 export async function setupUsers(log, config) {
   const esPort = config.get('servers.elasticsearch.port');
 
   // track the current credentials for the `elastic` user as
   // they will likely change as we apply updates
   let auth = `elastic:${DEFAULT_SUPERUSER_PASS}`;
+
+  const license = await getLicense(esPort, auth);
+  if (license !== 'trial') {
+    log.info('not performing user setup, because license is not set to "trial"');
+    return;
+  }
 
   // list of updates we need to apply
   const updates = [config.get('servers.elasticsearch'), config.get('servers.kibana')];
