@@ -87,14 +87,21 @@ export function SecurityPageProvider({ getService, getPageObjects }) {
       // long it takes the home screen to query Elastic to see if it's a
       // new Kibana instance.
       if (isWelcomeShowing) {
+        log.debug('welcome screen showing when attempting logout');
         await PageObjects.home.hideWelcomeScreen();
       }
 
       await find.clickByLinkText('Logout');
 
       await retry.try(async () => {
-        const logoutLinkExists = await find.existsByDisplayedByCssSelector('.login-form');
-        if (!logoutLinkExists) {
+        const loginFormExists = await find.existsByDisplayedByCssSelector('.login-form');
+
+        const logoutLinkExists = await find.existsByLinkText('Logout');
+        if (logoutLinkExists) {
+          await find.clickByLinkText('Logout');
+        }
+
+        if (!loginFormExists) {
           throw new Error('Logout is not completed yet');
         }
       });
