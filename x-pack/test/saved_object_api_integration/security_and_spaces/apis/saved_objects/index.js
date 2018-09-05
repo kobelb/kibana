@@ -10,5 +10,6 @@ export default function ({ loadTestFile }) {
   describe('saved_objects', () => {
     loadTestFile(require.resolve('./create'));
     loadTestFile(require.resolve('./find'));
+    loadTestFile(require.resolve('./get'));
   });
 }
