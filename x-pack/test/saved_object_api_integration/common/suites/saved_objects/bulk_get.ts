@@ -87,6 +87,14 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: any) {
     });
   };
 
+  const expectRbacForbidden = (resp: any) => {
+    expect(resp.body).to.eql({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: `Unable to bulk_get dashboard,visualization, missing action:saved_objects/dashboard/bulk_get,action:saved_objects/visualization/bulk_get`,
+    });
+  };
+
   const createExpectNotFoundResults = (spaceId: string) => (resp: any) => {
     expect(resp.body).to.eql({
       saved_objects: [
@@ -148,5 +156,6 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: any) {
     createExpectLegacyForbidden,
     createExpectNotFoundResults,
     createExpectResults,
+    expectRbacForbidden,
   };
 }
