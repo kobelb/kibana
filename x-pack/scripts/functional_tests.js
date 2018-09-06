@@ -14,5 +14,6 @@ require('@kbn/test').runTestsCli([
   require.resolve('../test/api_integration/config.js'),
   require.resolve('../test/saml_api_integration/config.js'),
   require.resolve('../test/rbac_api_integration/config.js'),
-  require.resolve('../test/spaces_api_integration/config.js'),
+  require.resolve('../test/spaces_api_integration/spaces_only/config.js'),
+  require.resolve('../test/spaces_api_integration/security_and_spaces/config.js'),
 ]);
