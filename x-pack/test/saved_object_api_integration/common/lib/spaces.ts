@@ -13,5 +13,5 @@ export const SPACES = {
   },
   DEFAULT: {
     spaceId: 'default',
-  }
+  },
 };

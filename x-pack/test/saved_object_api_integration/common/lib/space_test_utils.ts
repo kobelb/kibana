@@ -6,19 +6,19 @@
 
 import { DEFAULT_SPACE_ID } from '../../../../plugins/spaces/common/constants';
 
-export function getUrlPrefix(spaceId) {
+export function getUrlPrefix(spaceId: string) {
   return spaceId && spaceId !== DEFAULT_SPACE_ID ? `/s/${spaceId}` : ``;
 }
 
-export function getIdPrefix(spaceId) {
+export function getIdPrefix(spaceId: string) {
   return spaceId === DEFAULT_SPACE_ID ? '' : `${spaceId}-`;
 }
 
-export function getExpectedSpaceIdProperty(spaceId) {
+export function getExpectedSpaceIdProperty(spaceId: string) {
   if (spaceId === DEFAULT_SPACE_ID) {
     return {};
   }
   return {
-    spaceId
+    spaceId,
   };
 }
