@@ -18,7 +18,7 @@ export default function({ getService }: TestInvoker) {
     supertest
   );
 
-  describe.only('_bulk_get', () => {
+  describe('_bulk_get', () => {
     bulkGetTest(`objects within the current space (space_1)`, {
       ...SPACES.SPACE_1,
       tests: {

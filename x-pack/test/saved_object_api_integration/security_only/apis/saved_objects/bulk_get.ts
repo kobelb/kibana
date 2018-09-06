@@ -18,7 +18,7 @@ export default function({ getService }: TestInvoker) {
     supertest
   );
 
-  describe.only('_bulk_get', () => {
+  describe('_bulk_get', () => {
     bulkGetTest(`not a kibana user`, {
       auth: {
         username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,

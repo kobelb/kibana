@@ -7,6 +7,7 @@
 import expect from 'expect.js';
 import { DEFAULT_SPACE_ID } from '../../../../../plugins/spaces/common/constants';
 import { getIdPrefix, getUrlPrefix } from '../../../common/lib/space_test_utils';
+import { DescribeFn } from '../../../common/lib/types';
 
 interface Authentication {
   username: string;
@@ -29,9 +30,7 @@ interface BulkGetTestDefinition {
   tests: BulkGetTests;
 }
 
-type DescribeFn = (description: string, fn: () => void) => void;
-
-export function bulkGetTestSuiteFactory(esArchiver: any, supertest: any) {
+export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeBulkGetTest = (describeFn: DescribeFn) => (
     description: string,
     definition: BulkGetTestDefinition

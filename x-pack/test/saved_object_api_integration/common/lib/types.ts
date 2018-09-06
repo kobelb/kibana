@@ -16,11 +16,13 @@ export interface TestsObject {
   [key: string]: TestResultDescriptor;
 }
 
+export interface TestDefinitionAuthentication {
+  username?: string;
+  password?: string;
+}
+
 export interface TestOptions {
-  auth?: {
-    username?: string;
-    password?: string;
-  };
+  auth?: TestDefinitionAuthentication;
   currentSpaceId?: string;
   spaceId?: string;
   tests: TestsObject;

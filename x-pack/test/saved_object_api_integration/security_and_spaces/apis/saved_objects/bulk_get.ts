@@ -21,7 +21,7 @@ export default function({ getService }: TestInvoker) {
     expectRbacForbidden,
   } = bulkGetTestSuiteFactory(esArchiver, supertest);
 
-  describe.only('_bulk_get', () => {
+  describe('_bulk_get', () => {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
