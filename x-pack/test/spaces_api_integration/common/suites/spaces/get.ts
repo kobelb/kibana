@@ -4,10 +4,11 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import expect from 'expect.js';
+import { SuperAgent } from 'superagent';
 import { getUrlPrefix } from '../../lib/space_test_utils';
 import { DescribeFn, TestOptions } from '../../lib/types';
 
-export function getTestSuiteFactory(esArchiver: any, supertest: any) {
+export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>) {
   const nonExistantSpaceId = 'not-a-space';
 
   const makeGetTest = (describeFn: DescribeFn) => (
