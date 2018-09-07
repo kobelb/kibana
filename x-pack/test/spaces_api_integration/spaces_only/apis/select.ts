@@ -6,7 +6,7 @@
 
 import { SPACES } from '../../common/lib/spaces';
 import { TestInvoker } from '../../common/lib/types';
-import { selectTestSuiteFactory } from '../../common/suites/spaces/select';
+import { selectTestSuiteFactory } from '../../common/suites/select';
 
 // tslint:disable:no-default-export
 export default function selectSpaceTestSuite({ getService }: TestInvoker) {

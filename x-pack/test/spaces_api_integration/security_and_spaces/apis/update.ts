@@ -7,7 +7,7 @@
 import { AUTHENTICATION } from '../../common/lib/authentication';
 import { SPACES } from '../../common/lib/spaces';
 import { TestInvoker } from '../../common/lib/types';
-import { updateTestSuiteFactory } from '../../common/suites/spaces/update';
+import { updateTestSuiteFactory } from '../../common/suites/update';
 
 // tslint:disable:no-default-export
 export default function updateSpaceTestSuite({ getService }: TestInvoker) {

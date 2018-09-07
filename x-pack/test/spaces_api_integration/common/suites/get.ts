@@ -3,25 +3,23 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-
 import expect from 'expect.js';
-import { SuperTest } from 'supertest';
-import { DEFAULT_SPACE_ID } from '../../../../../plugins/spaces/common/constants';
-import { getUrlPrefix } from '../../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../../lib/types';
+import { SuperAgent } from 'superagent';
+import { getUrlPrefix } from '../lib/space_test_utils';
+import { DescribeFn, TestOptions } from '../lib/types';
 
-export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
+export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>) {
   const nonExistantSpaceId = 'not-a-space';
 
-  const makeSelectTest = (describeFn: DescribeFn) => (
+  const makeGetTest = (describeFn: DescribeFn) => (
     description: string,
     {
       auth = {
         username: undefined,
         password: undefined,
       },
-      currentSpaceId = '',
-      spaceId = '',
+      currentSpaceId,
+      spaceId,
       tests,
     }: TestOptions
   ) => {
@@ -31,7 +29,7 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
 
       it(`should return ${tests.default.statusCode}`, async () => {
         return supertest
-          .post(`${getUrlPrefix(currentSpaceId)}/api/spaces/v1/space/${spaceId}/select`)
+          .get(`${getUrlPrefix(currentSpaceId)}/api/spaces/v1/space/${spaceId}`)
           .auth(auth.username, auth.password)
           .expect(tests.default.statusCode)
           .then(tests.default.response);
@@ -39,9 +37,7 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const selectTest = makeSelectTest(describe);
-  // @ts-ignore
-  selectTest.only = makeSelectTest(describe.only);
+  const getTest = makeGetTest(describe);
 
   const createExpectResults = (spaceId: string) => (resp: any) => {
     const allSpaces = [
@@ -76,7 +72,16 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
       message: `Saved object [space/${spaceId}] not found`,
     });
   };
-  const createExpectForbiddenResult = (spaceId: any) => (resp: any) => {
+
+  const createExpectReservedSpaceResult = () => (resp: any) => {
+    expect(resp.body).to.eql({
+      error: 'Bad Request',
+      statusCode: 400,
+      message: `This Space cannot be deleted because it is reserved.`,
+    });
+  };
+
+  const createExpectForbiddenResult = (spaceId: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -84,30 +89,13 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectDefaultSpaceResponse = () => (resp: any) => {
-    expect(resp.body).to.eql({
-      location: `/app/kibana`,
-    });
-  };
-
-  const createExpectSpaceResponse = (spaceId: string) => (resp: any) => {
-    if (spaceId === DEFAULT_SPACE_ID) {
-      createExpectDefaultSpaceResponse()(resp);
-    } else {
-      expect(resp.body).to.eql({
-        location: `/s/${spaceId}/app/kibana`,
-      });
-    }
-  };
-
   return {
-    selectTest,
+    getTest,
     nonExistantSpaceId,
-    createExpectDefaultSpaceResponse,
-    createExpectSpaceResponse,
     createExpectResults,
     createExpectForbiddenResult,
     createExpectEmptyResult,
     createExpectNotFoundResult,
+    createExpectReservedSpaceResult,
   };
 }

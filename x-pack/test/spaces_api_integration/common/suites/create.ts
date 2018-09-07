@@ -6,8 +6,8 @@
 
 import expect from 'expect.js';
 import { SuperTest } from 'supertest';
-import { getUrlPrefix } from '../../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../../lib/types';
+import { getUrlPrefix } from '../lib/space_test_utils';
+import { DescribeFn, TestOptions } from '../lib/types';
 
 export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeCreateTest = (describeFn: DescribeFn) => (

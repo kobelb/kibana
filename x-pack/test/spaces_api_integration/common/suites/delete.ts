@@ -5,11 +5,11 @@
  */
 import expect from 'expect.js';
 import { SuperTest } from 'supertest';
-import { getUrlPrefix } from '../../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../../lib/types';
+import { getUrlPrefix } from '../lib/space_test_utils';
+import { DescribeFn, TestOptions } from '../lib/types';
 
-export function getAllTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
-  const makeGetAllTest = (describeFn: DescribeFn) => (
+export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
+  const makeDeleteTest = (describeFn: DescribeFn) => (
     description: string,
     {
       auth = {
@@ -26,36 +26,38 @@ export function getAllTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
 
       it(`should return ${tests.exists.statusCode}`, async () => {
         return supertest
-          .get(`${getUrlPrefix(spaceId)}/api/spaces/v1/spaces`)
+          .delete(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/space_2`)
           .auth(auth.username, auth.password)
           .expect(tests.exists.statusCode)
           .then(tests.exists.response);
       });
+
+      describe(`when the space is reserved`, async () => {
+        it(`should return ${tests.reservedSpace.statusCode}`, async () => {
+          return supertest
+            .delete(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/default`)
+            .auth(auth.username, auth.password)
+            .expect(tests.reservedSpace.statusCode)
+            .then(tests.reservedSpace.response);
+        });
+      });
+
+      describe(`when the space doesn't exist`, () => {
+        it(`should return ${tests.doesntExist.statusCode}`, async () => {
+          return supertest
+            .delete(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/space_3`)
+            .auth(auth.username, auth.password)
+            .expect(tests.doesntExist.statusCode)
+            .then(tests.doesntExist.response);
+        });
+      });
     });
   };
 
-  const getAllTest = makeGetAllTest(describe);
+  const deleteTest = makeDeleteTest(describe);
 
-  const createExpectResults = (...spaceIds: string[]) => (resp: any) => {
-    const expectedBody = [
-      {
-        id: 'default',
-        name: 'Default Space',
-        description: 'This is the default space',
-        _reserved: true,
-      },
-      {
-        id: 'space_1',
-        name: 'Space 1',
-        description: 'This is the first test space',
-      },
-      {
-        id: 'space_2',
-        name: 'Space 2',
-        description: 'This is the second test space',
-      },
-    ].filter(entry => spaceIds.includes(entry.id));
-    expect(resp.body).to.eql(expectedBody);
+  const createExpectResult = (expectedResult: any) => (resp: any) => {
+    expect(resp.body).to.eql(expectedResult);
   };
 
   const createExpectEmptyResult = () => (resp: any) => {
@@ -86,12 +88,21 @@ export function getAllTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
+  const createExpectLegacyForbiddenResult = () => (resp: any) => {
+    expect(resp.body).to.eql({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: `action [indices:data/write/delete] is unauthorized for user [a_kibana_legacy_dashboard_only_user]: [security_exception] action [indices:data/write/delete] is unauthorized for user [a_kibana_legacy_dashboard_only_user]`,
+    });
+  };
+
   return {
-    getAllTest,
-    createExpectResults,
+    deleteTest,
+    createExpectResult,
     createExpectForbiddenResult,
     createExpectEmptyResult,
     createExpectNotFoundResult,
     createExpectReservedSpaceResult,
+    createExpectLegacyForbiddenResult,
   };
 }

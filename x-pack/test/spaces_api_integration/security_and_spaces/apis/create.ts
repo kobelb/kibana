@@ -7,7 +7,7 @@
 import { AUTHENTICATION } from '../../common/lib/authentication';
 import { SPACES } from '../../common/lib/spaces';
 import { TestInvoker } from '../../common/lib/types';
-import { createTestSuiteFactory } from '../../common/suites/spaces/create';
+import { createTestSuiteFactory } from '../../common/suites/create';
 
 // tslint:disable:no-default-export
 export default function createSpacesOnlySuite({ getService }: TestInvoker) {
