@@ -139,11 +139,11 @@ export function findTestSuiteFactory(esArchiver, supertest) {
         },
         {
           id: `8121a00-8efd-21e7-1cb3-34ab966434445`,
-          type: 'chapo',
+          type: 'globaltype',
           updated_at: '2017-09-21T18:59:16.270Z',
           version: 1,
           attributes: {
-            'name': 'El Chapo'
+            'name': 'My favorite global object'
           }
         }
       ]

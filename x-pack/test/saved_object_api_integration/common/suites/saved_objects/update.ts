@@ -56,7 +56,9 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
       it(`should return ${tests.notSpaceAware.statusCode} for a non space-aware doc`, async () => {
         await supertest
           .put(
-            `${getUrlPrefix(spaceId)}/api/saved_objects/chapo/8121a00-8efd-21e7-1cb3-34ab966434445`
+            `${getUrlPrefix(
+              spaceId
+            )}/api/saved_objects/globaltype/8121a00-8efd-21e7-1cb3-34ab966434445`
           )
           .auth(auth.username, auth.password)
           .send({
@@ -132,7 +134,7 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
 
     expect(resp.body).to.eql({
       id: resp.body.id,
-      type: 'chapo',
+      type: 'globaltype',
       updated_at: resp.body.updated_at,
       version: 2,
       attributes: {
@@ -161,7 +163,7 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     createExpectLegacyForbidden,
     expectDoesntExistRbacForbidden: createExpectRbacForbidden('visualization'),
     expectNotSpaceAwareResults,
-    expectNotSpaceAwareRbacForbidden: createExpectRbacForbidden('chapo'),
+    expectNotSpaceAwareRbacForbidden: createExpectRbacForbidden('globaltype'),
     expectNotFound,
     expectSpaceAwareResults,
     expectSpaceAwareRbacForbidden: createExpectRbacForbidden('visualization'),

@@ -9,7 +9,7 @@ import { DEFAULT_SPACE_ID } from '../../../../../plugins/spaces/common/constants
 
 export function createTestSuiteFactory(es, esArchiver, supertest) {
   const spaceAwareType = 'visualization';
-  const notSpaceAwareType = 'chapo';
+  const notSpaceAwareType = 'globaltype';
 
   const makeCreateTest = (describeFn) => (description, {
     auth = {

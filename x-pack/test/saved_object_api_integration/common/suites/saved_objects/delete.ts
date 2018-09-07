@@ -53,7 +53,9 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
       } when deleting a non-space-aware doc`, async () =>
         await supertest
           .delete(
-            `${getUrlPrefix(spaceId)}/api/saved_objects/chapo/8121a00-8efd-21e7-1cb3-34ab966434445`
+            `${getUrlPrefix(
+              spaceId
+            )}/api/saved_objects/globaltype/8121a00-8efd-21e7-1cb3-34ab966434445`
           )
           .auth(auth.username, auth.password)
           .expect(tests.notSpaceAware.statusCode)
@@ -114,7 +116,7 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     deleteTest,
     expectEmpty,
     expectRbacSpaceAwareForbidden: createExpectRbacForbidden('dashboard'),
-    expectRbacNotSpaceAwareForbidden: createExpectRbacForbidden('chapo'),
+    expectRbacNotSpaceAwareForbidden: createExpectRbacForbidden('globaltype'),
     expectRbacInvalidIdForbidden: createExpectRbacForbidden('dashboard'),
   };
 }

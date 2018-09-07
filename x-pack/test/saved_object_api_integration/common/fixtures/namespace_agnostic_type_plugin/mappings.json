@@ -1,5 +1,5 @@
 {
-  "chapo": {
+  "globaltype": {
     "properties": {
       "name": {
         "type": "text",

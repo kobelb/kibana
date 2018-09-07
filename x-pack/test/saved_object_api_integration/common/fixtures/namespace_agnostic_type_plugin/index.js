@@ -12,7 +12,7 @@ export default function (kibana) {
     name: 'namespace_agnostic_type_plugin',
     uiExports: {
       savedObjectsSchema: {
-        chapo: {
+        globaltype: {
           isNamespaceAgnostic: true
         }
       },
