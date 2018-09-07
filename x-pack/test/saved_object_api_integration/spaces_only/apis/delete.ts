@@ -4,55 +4,53 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { SPACES } from '../../../common/lib/spaces';
-import { TestInvoker } from '../../../common/lib/types';
-import { updateTestSuiteFactory } from '../../../common/suites/saved_objects/update';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { deleteTestSuiteFactory } from '../../common/suites/delete';
 
 // tslint:disable:no-default-export
 export default function({ getService }: TestInvoker) {
   const supertest = getService('supertest');
   const esArchiver = getService('esArchiver');
 
-  describe('update', () => {
-    const {
-      expectSpaceAwareResults,
-      expectNotFound,
-      expectNotSpaceAwareResults,
-      updateTest,
-    } = updateTestSuiteFactory(esArchiver, supertest);
+  describe('delete', () => {
+    const { createExpectUnknownDocNotFound, deleteTest, expectEmpty } = deleteTestSuiteFactory(
+      esArchiver,
+      supertest
+    );
 
-    updateTest(`in the default space`, {
+    deleteTest(`in the default space`, {
       ...SPACES.DEFAULT,
       tests: {
         spaceAware: {
           statusCode: 200,
-          response: expectSpaceAwareResults,
+          response: expectEmpty,
         },
         notSpaceAware: {
           statusCode: 200,
-          response: expectNotSpaceAwareResults,
+          response: expectEmpty,
         },
-        doesntExist: {
+        invalidId: {
           statusCode: 404,
-          response: expectNotFound,
+          response: createExpectUnknownDocNotFound(SPACES.DEFAULT.spaceId),
         },
       },
     });
 
-    updateTest('in the current space (space_1)', {
+    deleteTest(`in the current space (space_1)`, {
       ...SPACES.SPACE_1,
       tests: {
         spaceAware: {
           statusCode: 200,
-          response: expectSpaceAwareResults,
+          response: expectEmpty,
         },
         notSpaceAware: {
           statusCode: 200,
-          response: expectNotSpaceAwareResults,
+          response: expectEmpty,
         },
-        doesntExist: {
+        invalidId: {
           statusCode: 404,
-          response: expectNotFound,
+          response: createExpectUnknownDocNotFound(SPACES.SPACE_1.spaceId),
         },
       },
     });

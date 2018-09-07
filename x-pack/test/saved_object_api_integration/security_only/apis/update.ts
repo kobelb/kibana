@@ -4,9 +4,9 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { TestInvoker } from '../../../common/lib/types';
-import { updateTestSuiteFactory } from '../../../common/suites/saved_objects/update';
+import { AUTHENTICATION } from '../../common/lib/authentication';
+import { TestInvoker } from '../../common/lib/types';
+import { updateTestSuiteFactory } from '../../common/suites/update';
 
 // tslint:disable:no-default-export
 export default function({ getService }: TestInvoker) {

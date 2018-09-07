@@ -4,9 +4,9 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { SPACES } from '../../../common/lib/spaces';
-import { TestInvoker } from '../../../common/lib/types';
-import { createTestSuiteFactory } from '../../../common/suites/saved_objects/create';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { createTestSuiteFactory } from '../../common/suites/create';
 
 // tslint:disable:no-default-export
 export default function({ getService }: TestInvoker) {

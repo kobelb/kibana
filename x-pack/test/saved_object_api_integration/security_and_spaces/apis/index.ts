@@ -3,19 +3,25 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
+
 import { createUsersAndRoles } from '../../common/lib/create_users_and_roles';
 import { TestInvoker } from '../../common/lib/types';
 
 // tslint:disable:no-default-export
-export default function({ loadTestFile, getService }: TestInvoker) {
+export default function({ getService, loadTestFile }: TestInvoker) {
   const es = getService('es');
   const supertest = getService('supertest');
 
-  describe('security and spaces enabled', () => {
+  describe('saved objects security and spaces enabled', () => {
     before(async () => {
       await createUsersAndRoles(es, supertest);
     });
 
-    loadTestFile(require.resolve('./saved_objects'));
+    loadTestFile(require.resolve('./bulk_get'));
+    loadTestFile(require.resolve('./create'));
+    loadTestFile(require.resolve('./delete'));
+    loadTestFile(require.resolve('./find'));
+    loadTestFile(require.resolve('./get'));
+    loadTestFile(require.resolve('./update'));
   });
 }

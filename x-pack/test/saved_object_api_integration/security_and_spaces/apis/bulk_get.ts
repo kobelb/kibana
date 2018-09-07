@@ -4,27 +4,24 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { SPACES } from '../../../common/lib/spaces';
-import { TestInvoker } from '../../../common/lib/types';
-import { createTestSuiteFactory } from '../../../common/suites/saved_objects/create';
+import { AUTHENTICATION } from '../../common/lib/authentication';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { bulkGetTestSuiteFactory } from '../../common/suites/bulk_get';
 
 // tslint:disable:no-default-export
 export default function({ getService }: TestInvoker) {
-  const supertestWithoutAuth = getService('supertestWithoutAuth');
-  const es = getService('es');
+  const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
   const {
-    createTest,
+    bulkGetTest,
     createExpectLegacyForbidden,
-    createExpectSpaceAwareResults,
-    expectNotSpaceAwareResults,
-    expectNotSpaceAwareRbacForbidden,
-    expectSpaceAwareRbacForbidden,
-  } = createTestSuiteFactory(es, esArchiver, supertestWithoutAuth);
+    createExpectResults,
+    expectRbacForbidden,
+  } = bulkGetTestSuiteFactory(esArchiver, supertest);
 
-  describe('create', () => {
+  describe('_bulk_get', () => {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
@@ -39,201 +36,156 @@ export default function({ getService }: TestInvoker) {
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
       },
     ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
-      createTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
+      bulkGetTest(`not a kibana user`, {
         auth: {
           username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
           password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-          },
-          notSpaceAware: {
+          default: {
             statusCode: 403,
             response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
           },
         },
       });
 
-      createTest(AUTHENTICATION.SUPERUSER.USERNAME, {
+      bulkGetTest(`superuser`, {
         auth: {
           username: AUTHENTICATION.SUPERUSER.USERNAME,
           password: AUTHENTICATION.SUPERUSER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
+          default: {
             statusCode: 200,
-            response: createExpectSpaceAwareResults(),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
+      bulkGetTest(`kibana legacy user`, {
         auth: {
           username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
+          default: {
             statusCode: 200,
-            response: createExpectSpaceAwareResults(),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
+      bulkGetTest(`kibana legacy dashboard only user`, {
         auth: {
           username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(
-              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
-            ),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(
-              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
-            ),
+          default: {
+            statusCode: 200,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
+      bulkGetTest(`kibana dual-privileges user`, {
         auth: {
           username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
+          default: {
             statusCode: 200,
-            response: createExpectSpaceAwareResults(),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
+      bulkGetTest(`kibana dual-privileges dashboard only user`, {
         auth: {
           username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: expectSpaceAwareRbacForbidden,
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: expectNotSpaceAwareRbacForbidden,
+          default: {
+            statusCode: 200,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
+      bulkGetTest(`kibana rbac user`, {
         auth: {
           username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
+          default: {
             statusCode: 200,
-            response: createExpectSpaceAwareResults(),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
+      bulkGetTest(`kibana rbac dashboard only user`, {
         auth: {
           username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
           password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
         },
         spaceId,
         tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: expectSpaceAwareRbacForbidden,
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: expectNotSpaceAwareRbacForbidden,
+          default: {
+            statusCode: 200,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(userWithAllAtSpace.USERNAME, {
+      bulkGetTest(userWithAllAtSpace.USERNAME, {
         auth: {
           username: userWithAllAtSpace.USERNAME,
           password: userWithAllAtSpace.PASSWORD,
         },
+        spaceId,
         tests: {
-          spaceAware: {
+          default: {
             statusCode: 200,
-            response: createExpectSpaceAwareResults(spaceId),
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectNotSpaceAwareResults,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(userWithReadAtSpace.USERNAME, {
+      bulkGetTest(userWithReadAtSpace.USERNAME, {
         auth: {
           username: userWithReadAtSpace.USERNAME,
           password: userWithReadAtSpace.PASSWORD,
         },
+        spaceId,
         tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: expectSpaceAwareRbacForbidden,
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: expectNotSpaceAwareRbacForbidden,
+          default: {
+            statusCode: 200,
+            response: createExpectResults(spaceId),
           },
         },
       });
 
-      createTest(userWithAllAtOtherSpace.USERNAME, {
+      bulkGetTest(userWithAllAtOtherSpace.USERNAME, {
         auth: {
           username: userWithAllAtOtherSpace.USERNAME,
           password: userWithAllAtOtherSpace.PASSWORD,
         },
+        spaceId,
         tests: {
-          spaceAware: {
+          default: {
             statusCode: 403,
-            response: expectSpaceAwareRbacForbidden,
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: expectNotSpaceAwareRbacForbidden,
+            response: expectRbacForbidden,
           },
         },
       });
