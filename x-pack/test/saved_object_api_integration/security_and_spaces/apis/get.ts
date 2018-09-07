@@ -26,203 +26,220 @@ export default function({ getService }: TestInvoker) {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithNoKibanaAccess: AUTHENTICATION.NOT_A_KIBANA_USER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
       },
-    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
-      getTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
+    ].forEach(scenario => {
+      getTest(`${scenario.notAKibanaUser.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
-          password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
+          username: scenario.notAKibanaUser.USERNAME,
+          password: scenario.notAKibanaUser.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
           doesntExist: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
         },
       });
 
-      getTest(AUTHENTICATION.SUPERUSER.USERNAME, {
+      getTest(`${scenario.superuser.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.SUPERUSER.USERNAME,
-          password: AUTHENTICATION.SUPERUSER.PASSWORD,
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
+      getTest(`${scenario.userWithLegacyAll.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
+          username: scenario.userWithLegacyAll.USERNAME,
+          password: scenario.userWithLegacyAll.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
+      getTest(`${scenario.userWithLegacyRead.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithLegacyRead.USERNAME,
+          password: scenario.userWithLegacyRead.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
+      getTest(`${scenario.userWithDualAll.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
+          username: scenario.userWithDualAll.USERNAME,
+          password: scenario.userWithDualAll.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
+      getTest(`${scenario.userWithDualRead.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithDualRead.USERNAME,
+          password: scenario.userWithDualRead.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
+      getTest(`${scenario.userWithAllGlobally.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
+          username: scenario.userWithAllGlobally.USERNAME,
+          password: scenario.userWithAllGlobally.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
+      getTest(`${scenario.userWithReadGlobally.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithReadGlobally.USERNAME,
+          password: scenario.userWithReadGlobally.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(`${userWithAllAtSpace.USERNAME} user`, {
+      getTest(`${scenario.userWithAllAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: userWithAllAtSpace.USERNAME,
-          password: userWithAllAtSpace.PASSWORD,
+          username: scenario.userWithAllAtSpace.USERNAME,
+          password: scenario.userWithAllAtSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(`${userWithReadAtSpace.USERNAME} user`, {
+      getTest(`${scenario.userWithReadAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: userWithReadAtSpace.USERNAME,
-          password: userWithReadAtSpace.PASSWORD,
+          username: scenario.userWithReadAtSpace.USERNAME,
+          password: scenario.userWithReadAtSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectDoesntExistNotFound(spaceId),
+            response: createExpectDoesntExistNotFound(scenario.spaceId),
           },
         },
       });
 
-      getTest(`${userWithAllAtOtherSpace.USERNAME} user`, {
+      getTest(`${scenario.userWithAllAtOtherSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: userWithAllAtOtherSpace.USERNAME,
-          password: userWithAllAtOtherSpace.PASSWORD,
+          username: scenario.userWithAllAtOtherSpace.USERNAME,
+          password: scenario.userWithAllAtOtherSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           exists: {
             statusCode: 403,

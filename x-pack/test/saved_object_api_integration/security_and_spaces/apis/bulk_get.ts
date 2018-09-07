@@ -25,170 +25,193 @@ export default function({ getService }: TestInvoker) {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
       },
       {
-        spaceId: SPACES.DEFAULT.spaceId,
-        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
-        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+        spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithNoKibanaAccess: AUTHENTICATION.NOT_A_KIBANA_USER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
+        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
+        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
       },
-    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
-      bulkGetTest(`not a kibana user`, {
+    ].forEach(scenario => {
+      bulkGetTest(`${scenario.notAKibanaUser.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
-          password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
+          username: scenario.notAKibanaUser.USERNAME,
+          password: scenario.notAKibanaUser.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
         },
       });
 
-      bulkGetTest(`superuser`, {
+      bulkGetTest(`${scenario.superuser.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.SUPERUSER.USERNAME,
-          password: AUTHENTICATION.SUPERUSER.PASSWORD,
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(`kibana legacy user`, {
+      bulkGetTest(`${scenario.userWithLegacyAll.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
+          username: scenario.userWithLegacyAll.USERNAME,
+          password: scenario.userWithLegacyAll.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(`kibana legacy dashboard only user`, {
+      bulkGetTest(`${scenario.userWithLegacyRead.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithLegacyRead.USERNAME,
+          password: scenario.userWithLegacyRead.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(`kibana dual-privileges user`, {
+      bulkGetTest(`${scenario.userWithDualAll.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
+          username: scenario.userWithDualAll.USERNAME,
+          password: scenario.userWithDualAll.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(`kibana dual-privileges dashboard only user`, {
+      bulkGetTest(`${scenario.userWithDualRead.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithDualRead.USERNAME,
+          password: scenario.userWithDualRead.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(`kibana rbac user`, {
+      bulkGetTest(`${scenario.userWithAllGlobally.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
+          username: scenario.userWithAllGlobally.USERNAME,
+          password: scenario.userWithAllGlobally.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(`kibana rbac dashboard only user`, {
+      bulkGetTest(
+        `${scenario.userWithReadGlobally.USERNAME} within the ${scenario.spaceId} space`,
+        {
+          auth: {
+            username: scenario.userWithReadGlobally.USERNAME,
+            password: scenario.userWithReadGlobally.PASSWORD,
+          },
+          spaceId: scenario.spaceId,
+          tests: {
+            default: {
+              statusCode: 200,
+              response: createExpectResults(scenario.spaceId),
+            },
+          },
+        }
+      );
+
+      bulkGetTest(`${scenario.userWithAllAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithAllAtSpace.USERNAME,
+          password: scenario.userWithAllAtSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(userWithAllAtSpace.USERNAME, {
+      bulkGetTest(`${scenario.userWithReadAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: userWithAllAtSpace.USERNAME,
-          password: userWithAllAtSpace.PASSWORD,
+          username: scenario.userWithReadAtSpace.USERNAME,
+          password: scenario.userWithReadAtSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           default: {
             statusCode: 200,
-            response: createExpectResults(spaceId),
+            response: createExpectResults(scenario.spaceId),
           },
         },
       });
 
-      bulkGetTest(userWithReadAtSpace.USERNAME, {
-        auth: {
-          username: userWithReadAtSpace.USERNAME,
-          password: userWithReadAtSpace.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          default: {
-            statusCode: 200,
-            response: createExpectResults(spaceId),
+      bulkGetTest(
+        `${scenario.userWithAllAtOtherSpace.USERNAME} within the ${scenario.spaceId} space`,
+        {
+          auth: {
+            username: scenario.userWithAllAtOtherSpace.USERNAME,
+            password: scenario.userWithAllAtOtherSpace.PASSWORD,
           },
-        },
-      });
-
-      bulkGetTest(userWithAllAtOtherSpace.USERNAME, {
-        auth: {
-          username: userWithAllAtOtherSpace.USERNAME,
-          password: userWithAllAtOtherSpace.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          default: {
-            statusCode: 403,
-            response: expectRbacForbidden,
+          spaceId: scenario.spaceId,
+          tests: {
+            default: {
+              statusCode: 403,
+              response: expectRbacForbidden,
+            },
           },
-        },
-      });
+        }
+      );
     });
   });
 }

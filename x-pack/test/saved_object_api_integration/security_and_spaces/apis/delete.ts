@@ -28,67 +28,62 @@ export default function({ getService }: TestInvoker) {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
       },
       {
-        spaceId: SPACES.DEFAULT.spaceId,
-        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
-        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+        spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithNoKibanaAccess: AUTHENTICATION.NOT_A_KIBANA_USER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
+        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
+        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
       },
-    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
-      deleteTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
+    ].forEach(scenario => {
+      deleteTest(`${scenario.notAKibanaUser.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
-          password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
+          username: scenario.notAKibanaUser.USERNAME,
+          password: scenario.notAKibanaUser.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
           notSpaceAware: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
           invalidId: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
         },
       });
 
-      deleteTest(AUTHENTICATION.SUPERUSER.USERNAME, {
+      deleteTest(`${scenario.superuser.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.SUPERUSER.USERNAME,
-          password: AUTHENTICATION.SUPERUSER.PASSWORD,
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
         },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 200,
-            response: expectEmpty,
-          },
-          notSpaceAware: {
-            statusCode: 200,
-            response: expectEmpty,
-          },
-          invalidId: {
-            statusCode: 404,
-            response: createExpectUnknownDocNotFound(),
-          },
-        },
-      });
-
-      deleteTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
-        },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 200,
@@ -100,45 +95,17 @@ export default function({ getService }: TestInvoker) {
           },
           invalidId: {
             statusCode: 404,
-            response: createExpectUnknownDocNotFound(),
+            response: createExpectUnknownDocNotFound(scenario.spaceId),
           },
         },
       });
 
-      deleteTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
+      deleteTest(`${scenario.userWithLegacyAll.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithLegacyAll.USERNAME,
+          password: scenario.userWithLegacyAll.PASSWORD,
         },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(
-              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
-            ),
-          },
-          notSpaceAware: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(
-              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
-            ),
-          },
-          invalidId: {
-            statusCode: 403,
-            response: createExpectLegacyForbidden(
-              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
-            ),
-          },
-        },
-      });
-
-      deleteTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
-        auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
-        },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 200,
@@ -150,17 +117,61 @@ export default function({ getService }: TestInvoker) {
           },
           invalidId: {
             statusCode: 404,
-            response: createExpectUnknownDocNotFound(),
+            response: createExpectUnknownDocNotFound(scenario.spaceId),
           },
         },
       });
 
-      deleteTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
+      deleteTest(`${scenario.userWithLegacyRead.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithLegacyRead.USERNAME,
+          password: scenario.userWithLegacyRead.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
+        tests: {
+          spaceAware: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.userWithLegacyRead.USERNAME),
+          },
+          notSpaceAware: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.userWithLegacyRead.USERNAME),
+          },
+          invalidId: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.userWithLegacyRead.USERNAME),
+          },
+        },
+      });
+
+      deleteTest(`${scenario.userWithDualAll.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: scenario.userWithDualAll.USERNAME,
+          password: scenario.userWithDualAll.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          spaceAware: {
+            statusCode: 200,
+            response: expectEmpty,
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: expectEmpty,
+          },
+          invalidId: {
+            statusCode: 404,
+            response: createExpectUnknownDocNotFound(scenario.spaceId),
+          },
+        },
+      });
+
+      deleteTest(`${scenario.userWithDualRead.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: scenario.userWithDualRead.USERNAME,
+          password: scenario.userWithDualRead.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 403,
@@ -177,12 +188,12 @@ export default function({ getService }: TestInvoker) {
         },
       });
 
-      deleteTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
+      deleteTest(`${scenario.userWithAllGlobally.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
+          username: scenario.userWithAllGlobally.USERNAME,
+          password: scenario.userWithAllGlobally.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 200,
@@ -194,17 +205,17 @@ export default function({ getService }: TestInvoker) {
           },
           invalidId: {
             statusCode: 404,
-            response: createExpectUnknownDocNotFound(),
+            response: createExpectUnknownDocNotFound(scenario.spaceId),
           },
         },
       });
 
-      deleteTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
+      deleteTest(`${scenario.userWithReadGlobally.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
-          password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
+          username: scenario.userWithReadGlobally.USERNAME,
+          password: scenario.userWithReadGlobally.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 403,
@@ -221,12 +232,12 @@ export default function({ getService }: TestInvoker) {
         },
       });
 
-      deleteTest(userWithAllAtSpace.USERNAME, {
+      deleteTest(`${scenario.userWithAllAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: userWithAllAtSpace.USERNAME,
-          password: userWithAllAtSpace.PASSWORD,
+          username: scenario.userWithAllAtSpace.USERNAME,
+          password: scenario.userWithAllAtSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 200,
@@ -238,17 +249,17 @@ export default function({ getService }: TestInvoker) {
           },
           invalidId: {
             statusCode: 404,
-            response: createExpectUnknownDocNotFound(),
+            response: createExpectUnknownDocNotFound(scenario.spaceId),
           },
         },
       });
 
-      deleteTest(userWithReadAtSpace.USERNAME, {
+      deleteTest(`${scenario.userWithReadAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
         auth: {
-          username: userWithReadAtSpace.USERNAME,
-          password: userWithReadAtSpace.PASSWORD,
+          username: scenario.userWithReadAtSpace.USERNAME,
+          password: scenario.userWithReadAtSpace.PASSWORD,
         },
-        spaceId,
+        spaceId: scenario.spaceId,
         tests: {
           spaceAware: {
             statusCode: 403,
@@ -265,27 +276,30 @@ export default function({ getService }: TestInvoker) {
         },
       });
 
-      deleteTest(userWithAllAtOtherSpace.USERNAME, {
-        auth: {
-          username: userWithAllAtOtherSpace.USERNAME,
-          password: userWithAllAtOtherSpace.PASSWORD,
-        },
-        spaceId,
-        tests: {
-          spaceAware: {
-            statusCode: 403,
-            response: expectRbacSpaceAwareForbidden,
+      deleteTest(
+        `${scenario.userWithAllAtOtherSpace.USERNAME} within the ${scenario.spaceId} space`,
+        {
+          auth: {
+            username: scenario.userWithAllAtOtherSpace.USERNAME,
+            password: scenario.userWithAllAtOtherSpace.PASSWORD,
           },
-          notSpaceAware: {
-            statusCode: 403,
-            response: expectRbacNotSpaceAwareForbidden,
+          spaceId: scenario.spaceId,
+          tests: {
+            spaceAware: {
+              statusCode: 403,
+              response: expectRbacSpaceAwareForbidden,
+            },
+            notSpaceAware: {
+              statusCode: 403,
+              response: expectRbacNotSpaceAwareForbidden,
+            },
+            invalidId: {
+              statusCode: 403,
+              response: expectRbacInvalidIdForbidden,
+            },
           },
-          invalidId: {
-            statusCode: 403,
-            response: expectRbacInvalidIdForbidden,
-          },
-        },
-      });
+        }
+      );
     });
   });
 }

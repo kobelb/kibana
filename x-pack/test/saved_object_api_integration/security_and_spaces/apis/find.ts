@@ -14,7 +14,7 @@ export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
-  describe('find', () => {
+  describe.only('find', () => {
     const {
       createExpectEmpty,
       createExpectRbacForbidden,
@@ -27,374 +27,392 @@ export default function({ getService }: TestInvoker) {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
+        userWithNoKibanaAccess: AUTHENTICATION.NOT_A_KIBANA_USER,
+        userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
+        userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
+        userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
+        userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
+        userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
       },
-    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
-      describe(`${spaceId} space`, () => {
-        findTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
-            password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
+    ].forEach(scenario => {
+      findTest(`${scenario.notAKibanaUser.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
+          password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'forbidden login and find visualization message',
+            statusCode: 403,
+            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'forbidden login and find visualization message',
-              statusCode: 403,
-              response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-            },
-            unknownType: {
-              description: 'forbidden login and find wigwags message',
-              statusCode: 403,
-              response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-            },
-            pageBeyondTotal: {
-              description: 'forbidden login and find visualization message',
-              statusCode: 403,
-              response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-            },
-            unknownSearchField: {
-              description: 'forbidden login and find wigwags message',
-              statusCode: 403,
-              response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-            },
-            noType: {
-              description: `forbidded can't find any types`,
-              statusCode: 403,
-              response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-            },
+          unknownType: {
+            description: 'forbidden login and find wigwags message',
+            statusCode: 403,
+            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
           },
-        });
+          pageBeyondTotal: {
+            description: 'forbidden login and find visualization message',
+            statusCode: 403,
+            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+          },
+          unknownSearchField: {
+            description: 'forbidden login and find wigwags message',
+            statusCode: 403,
+            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+          },
+          noType: {
+            description: `forbidded can't find any types`,
+            statusCode: 403,
+            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.SUPERUSER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.SUPERUSER.USERNAME,
-            password: AUTHENTICATION.SUPERUSER.PASSWORD,
+      findTest(`${scenario.superuser.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.SUPERUSER.USERNAME,
+          password: AUTHENTICATION.SUPERUSER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
-            password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
+      findTest(`${scenario.userWithLegacyAll.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
+          password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
-            password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
+      findTest(`${scenario.userWithLegacyRead.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
+          password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
-            password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
+      findTest(`${scenario.userWithDualAll.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
+          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
-            password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
+      findTest(`${scenario.userWithDualRead.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
+          password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'forbidden find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'forbidden find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'forbidden find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'forbidden find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
-            password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
+      findTest(`${scenario.userWithAllGlobally.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
+          password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(1, 20, 0),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(1, 20, 0),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
-          auth: {
-            username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
-            password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
+      findTest(`${scenario.userWithReadGlobally.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
+          password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'forbidden find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'forbidden find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'forbidden find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'forbidden find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(userWithAllAtSpace.USERNAME, {
-          auth: {
-            username: userWithAllAtSpace.USERNAME,
-            password: userWithAllAtSpace.PASSWORD,
+      findTest(`${scenario.userWithAllAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: scenario.userWithAllAtSpace.USERNAME,
+          password: scenario.userWithAllAtSpace.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'forbidden and find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'forbidden and find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'forbidden and find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'forbidden and find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(userWithReadAtSpace.USERNAME, {
-          auth: {
-            username: userWithReadAtSpace.USERNAME,
-            password: userWithReadAtSpace.PASSWORD,
+      findTest(`${scenario.userWithReadAtSpace.USERNAME} within the ${scenario.spaceId} space`, {
+        auth: {
+          username: scenario.userWithReadAtSpace.USERNAME,
+          password: scenario.userWithReadAtSpace.PASSWORD,
+        },
+        spaceId: scenario.spaceId,
+        tests: {
+          normal: {
+            description: 'only the visualization',
+            statusCode: 200,
+            response: createExpectVisualizationResults(scenario.spaceId),
           },
-          spaceId,
-          tests: {
-            normal: {
-              description: 'only the visualization',
-              statusCode: 200,
-              response: createExpectVisualizationResults(spaceId),
-            },
-            unknownType: {
-              description: 'forbidden and find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            pageBeyondTotal: {
-              description: 'empty result',
-              statusCode: 200,
-              response: createExpectEmpty(100, 100, 1),
-            },
-            unknownSearchField: {
-              description: 'forbidden and find wigwags message',
-              statusCode: 403,
-              response: createExpectRbacForbidden('wigwags'),
-            },
-            noType: {
-              description: 'all objects',
-              statusCode: 200,
-              response: createExpectResults(spaceId),
-            },
+          unknownType: {
+            description: 'forbidden and find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
           },
-        });
+          pageBeyondTotal: {
+            description: 'empty result',
+            statusCode: 200,
+            response: createExpectEmpty(100, 100, 1),
+          },
+          unknownSearchField: {
+            description: 'forbidden and find wigwags message',
+            statusCode: 403,
+            response: createExpectRbacForbidden('wigwags'),
+          },
+          noType: {
+            description: 'all objects',
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
 
-        findTest(userWithAllAtOtherSpace.USERNAME, {
+      findTest(
+        `${scenario.userWithAllAtOtherSpace.USERNAME} within the ${scenario.spaceId} space`,
+        {
           auth: {
-            username: userWithAllAtOtherSpace.USERNAME,
-            password: userWithAllAtOtherSpace.PASSWORD,
+            username: scenario.userWithAllAtOtherSpace.USERNAME,
+            password: scenario.userWithAllAtOtherSpace.PASSWORD,
           },
-          spaceId,
+          spaceId: scenario.spaceId,
           tests: {
             normal: {
               description: 'forbidden login and find visualization message',
@@ -422,8 +440,8 @@ export default function({ getService }: TestInvoker) {
               response: createExpectRbacForbidden(),
             },
           },
-        });
-      });
+        }
+      );
     });
   });
 }

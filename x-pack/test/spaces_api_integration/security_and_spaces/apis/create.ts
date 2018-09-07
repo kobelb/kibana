@@ -32,7 +32,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
         userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
         userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
-        userwithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
@@ -42,7 +42,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         userWithLegacyAll: AUTHENTICATION.KIBANA_LEGACY_USER,
         userWithLegacyRead: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER,
         userWithDualAll: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER,
-        userwithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
+        userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
       },
     ].forEach(scenario => {
       createTest(`${scenario.userWithAllGlobally.USERNAME} within the ${scenario.spaceId} space`, {
@@ -215,11 +215,11 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
       });
 
-      createTest(`${scenario.userwithDualRead.USERNAME} within the ${scenario.spaceId} space`, {
+      createTest(`${scenario.userWithDualRead.USERNAME} within the ${scenario.spaceId} space`, {
         spaceId: scenario.spaceId,
         auth: {
-          username: scenario.userwithDualRead.USERNAME,
-          password: scenario.userwithDualRead.PASSWORD,
+          username: scenario.userWithDualRead.USERNAME,
+          password: scenario.userWithDualRead.PASSWORD,
         },
         tests: {
           newSpace: {
