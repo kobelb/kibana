@@ -6,9 +6,11 @@
 
 import { AUTHENTICATION } from '../../../common/lib/authentication';
 import { SPACES } from '../../../common/lib/spaces';
+import { TestInvoker } from '../../../common/lib/types';
 import { findTestSuiteFactory } from '../../../common/suites/saved_objects/find';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
@@ -22,22 +24,20 @@ export default function ({ getService }) {
       findTest,
     } = findTestSuiteFactory(esArchiver, supertest);
 
-    [{
-      spaceId: SPACES.DEFAULT.spaceId,
-      userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-      userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
-      userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
-    }, {
-      spaceId: SPACES.SPACE_1.spaceId,
-      userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
-      userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
-      userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-    }].forEach(({
-      spaceId,
-      userWithAllAtSpace,
-      userWithReadAtSpace,
-      userWithAllAtOtherSpace
-    }) => {
+    [
+      {
+        spaceId: SPACES.DEFAULT.spaceId,
+        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
+        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
+        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+      },
+      {
+        spaceId: SPACES.SPACE_1.spaceId,
+        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
+        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
+      },
+    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
       describe(`${spaceId} space`, () => {
         findTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
           auth: {
@@ -70,8 +70,8 @@ export default function ({ getService }) {
               description: `forbidded can't find any types`,
               statusCode: 403,
               response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-            }
-          }
+            },
+          },
         });
 
         findTest(AUTHENTICATION.SUPERUSER.USERNAME, {
@@ -176,7 +176,7 @@ export default function ({ getService }) {
               statusCode: 200,
               response: createExpectResults(spaceId),
             },
-          }
+          },
         });
 
         findTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
@@ -246,7 +246,7 @@ export default function ({ getService }) {
               statusCode: 200,
               response: createExpectResults(spaceId),
             },
-          }
+          },
         });
 
         findTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
@@ -316,7 +316,7 @@ export default function ({ getService }) {
               statusCode: 200,
               response: createExpectResults(spaceId),
             },
-          }
+          },
         });
 
         findTest(userWithAllAtSpace.USERNAME, {
@@ -351,7 +351,7 @@ export default function ({ getService }) {
               statusCode: 200,
               response: createExpectResults(spaceId),
             },
-          }
+          },
         });
 
         findTest(userWithReadAtSpace.USERNAME, {
@@ -386,7 +386,7 @@ export default function ({ getService }) {
               statusCode: 200,
               response: createExpectResults(spaceId),
             },
-          }
+          },
         });
 
         findTest(userWithAllAtOtherSpace.USERNAME, {
@@ -420,8 +420,8 @@ export default function ({ getService }) {
               description: `forbidded can't find any types`,
               statusCode: 403,
               response: createExpectRbacForbidden(),
-            }
-          }
+            },
+          },
         });
       });
     });

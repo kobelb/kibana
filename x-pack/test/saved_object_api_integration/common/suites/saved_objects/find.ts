@@ -4,68 +4,92 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import expect from 'expect.js';
-import { getIdPrefix, getUrlPrefix } from '../../../common/lib/space_test_utils';
 import { DEFAULT_SPACE_ID } from '../../../../../plugins/spaces/common/constants';
+import { getIdPrefix, getUrlPrefix } from '../../../common/lib/space_test_utils';
+import { DescribeFn, TestDefinitionAuthentication } from '../../../common/lib/types';
 
-export function findTestSuiteFactory(esArchiver, supertest) {
-  const makeFindTest = (describeFn) => (description, {
-    auth = {
-      username: undefined,
-      password: undefined,
-    },
-    spaceId,
-    tests
-  }) => {
+interface FindTest {
+  statusCode: number;
+  description: string;
+  response: (resp: any) => void;
+}
+
+interface FindTests {
+  normal: FindTest;
+  unknownType: FindTest;
+  pageBeyondTotal: FindTest;
+  unknownSearchField: FindTest;
+  noType: FindTest;
+}
+
+interface FindTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  spaceId?: string;
+  tests: FindTests;
+}
+
+export function findTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
+  const makeFindTest = (describeFn: DescribeFn) => (
+    description: string,
+    definition: FindTestDefinition
+  ) => {
+    const { auth = {}, spaceId = DEFAULT_SPACE_ID, tests } = definition;
+
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
       after(() => esArchiver.unload('saved_objects/spaces'));
 
-      it(`should return ${tests.normal.statusCode} with ${tests.normal.description}`, async () => (
+      it(`should return ${tests.normal.statusCode} with ${tests.normal.description}`, async () =>
         await supertest
           .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find?type=visualization&fields=title`)
           .auth(auth.username, auth.password)
           .expect(tests.normal.statusCode)
-          .then(tests.normal.response)
-      ));
+          .then(tests.normal.response));
 
       describe('unknown type', () => {
-        it(`should return ${tests.unknownType.statusCode} with ${tests.unknownType.description}`, async () => (
+        it(`should return ${tests.unknownType.statusCode} with ${
+          tests.unknownType.description
+        }`, async () =>
           await supertest
             .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find?type=wigwags`)
             .auth(auth.username, auth.password)
             .expect(tests.unknownType.statusCode)
-            .then(tests.unknownType.response)
-        ));
+            .then(tests.unknownType.response));
       });
 
       describe('page beyond total', () => {
-        it(`should return ${tests.pageBeyondTotal.statusCode} with ${tests.pageBeyondTotal.description}`, async () => (
+        it(`should return ${tests.pageBeyondTotal.statusCode} with ${
+          tests.pageBeyondTotal.description
+        }`, async () =>
           await supertest
-            .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find?type=visualization&page=100&per_page=100`)
+            .get(
+              `${getUrlPrefix(
+                spaceId
+              )}/api/saved_objects/_find?type=visualization&page=100&per_page=100`
+            )
             .auth(auth.username, auth.password)
             .expect(tests.pageBeyondTotal.statusCode)
-            .then(tests.pageBeyondTotal.response)
-        ));
+            .then(tests.pageBeyondTotal.response));
       });
 
       describe('unknown search field', () => {
-        it(`should return ${tests.unknownSearchField.statusCode} with ${tests.unknownSearchField.description}`, async () => (
+        it(`should return ${tests.unknownSearchField.statusCode} with ${
+          tests.unknownSearchField.description
+        }`, async () =>
           await supertest
             .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find?type=wigwags&search_fields=a`)
             .auth(auth.username, auth.password)
             .expect(tests.unknownSearchField.statusCode)
-            .then(tests.unknownSearchField.response)
-        ));
+            .then(tests.unknownSearchField.response));
       });
 
       describe('no type', () => {
-        it(`should return ${tests.noType.statusCode} with ${tests.noType.description}`, async () => (
+        it(`should return ${tests.noType.statusCode} with ${tests.noType.description}`, async () =>
           await supertest
             .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find`)
             .auth(auth.username, auth.password)
             .expect(tests.noType.statusCode)
-            .then(tests.noType.response)
-        ));
+            .then(tests.noType.response));
       });
     });
   };
@@ -73,37 +97,37 @@ export function findTestSuiteFactory(esArchiver, supertest) {
   const findTest = makeFindTest(describe);
   findTest.only = makeFindTest(describe.only);
 
-  const createExpectEmpty = (page, perPage, total) => (resp) => {
+  const createExpectEmpty = (page: number, perPage: number, total: number) => (resp: any) => {
     expect(resp.body).to.eql({
-      page: page,
+      page,
       per_page: perPage,
-      total: total,
-      saved_objects: []
+      total,
+      saved_objects: [],
     });
   };
 
-  const createExpectRbacForbidden = (type) => resp => {
-    const message = type ?
-      `Unable to find ${type}, missing action:saved_objects/${type}/find` :
-      `Not authorized to find saved_object`;
+  const createExpectRbacForbidden = (type: string) => (resp: any) => {
+    const message = type
+      ? `Unable to find ${type}, missing action:saved_objects/${type}/find`
+      : `Not authorized to find saved_object`;
 
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
-      message
+      message,
     });
   };
 
-  const createExpectLegacyForbidden = (username) => resp => {
+  const createExpectLegacyForbidden = (username: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
       // eslint-disable-next-line max-len
-      message: `action [indices:data/read/search] is unauthorized for user [${username}]: [security_exception] action [indices:data/read/search] is unauthorized for user [${username}]`
+      message: `action [indices:data/read/search] is unauthorized for user [${username}]: [security_exception] action [indices:data/read/search] is unauthorized for user [${username}]`,
     });
   };
 
-  const createExpectResults = (spaceId = DEFAULT_SPACE_ID) => (resp) => {
+  const createExpectResults = (spaceId = DEFAULT_SPACE_ID) => (resp: any) => {
     expect(resp.body).to.eql({
       page: 1,
       per_page: 20,
@@ -114,28 +138,28 @@ export function findTestSuiteFactory(esArchiver, supertest) {
           type: 'index-pattern',
           updated_at: '2017-09-21T18:49:16.270Z',
           version: 1,
-          attributes: resp.body.saved_objects[0].attributes
+          attributes: resp.body.saved_objects[0].attributes,
         },
         {
           id: '7.0.0-alpha1',
           type: 'config',
           updated_at: '2017-09-21T18:49:16.302Z',
           version: 1,
-          attributes: resp.body.saved_objects[1].attributes
+          attributes: resp.body.saved_objects[1].attributes,
         },
         {
           id: `${getIdPrefix(spaceId)}dd7caf20-9efd-11e7-acb3-3dab96693fab`,
           type: 'visualization',
           updated_at: '2017-09-21T18:51:23.794Z',
           version: 1,
-          attributes: resp.body.saved_objects[2].attributes
+          attributes: resp.body.saved_objects[2].attributes,
         },
         {
           id: `${getIdPrefix(spaceId)}be3733a0-9efe-11e7-acb3-3dab96693fab`,
           type: 'dashboard',
           updated_at: '2017-09-21T18:57:40.826Z',
           version: 1,
-          attributes: resp.body.saved_objects[3].attributes
+          attributes: resp.body.saved_objects[3].attributes,
         },
         {
           id: `8121a00-8efd-21e7-1cb3-34ab966434445`,
@@ -143,14 +167,14 @@ export function findTestSuiteFactory(esArchiver, supertest) {
           updated_at: '2017-09-21T18:59:16.270Z',
           version: 1,
           attributes: {
-            'name': 'My favorite global object'
-          }
-        }
-      ]
+            name: 'My favorite global object',
+          },
+        },
+      ],
     });
   };
 
-  const createExpectVisualizationResults = (spaceId = DEFAULT_SPACE_ID) => (resp) => {
+  const createExpectVisualizationResults = (spaceId = DEFAULT_SPACE_ID) => (resp: any) => {
     expect(resp.body).to.eql({
       page: 1,
       per_page: 20,
@@ -161,10 +185,10 @@ export function findTestSuiteFactory(esArchiver, supertest) {
           id: `${getIdPrefix(spaceId)}dd7caf20-9efd-11e7-acb3-3dab96693fab`,
           version: 1,
           attributes: {
-            'title': 'Count of requests'
-          }
+            title: 'Count of requests',
+          },
         },
-      ]
+      ],
     });
   };
 

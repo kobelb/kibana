@@ -5,9 +5,11 @@
  */
 
 import { SPACES } from '../../../common/lib/spaces';
+import { TestInvoker } from '../../../common/lib/types';
 import { findTestSuiteFactory } from '../../../common/suites/saved_objects/find';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertest = getService('supertest');
   const esArchiver = getService('esArchiver');
 
@@ -19,7 +21,6 @@ export default function ({ getService }) {
   } = findTestSuiteFactory(esArchiver, supertest);
 
   describe('find', () => {
-
     findTest(`objects only within the current space (space_1)`, {
       ...SPACES.SPACE_1,
       tests: {
@@ -48,7 +49,7 @@ export default function ({ getService }) {
           statusCode: 200,
           response: createExpectResults(SPACES.SPACE_1.spaceId),
         },
-      }
+      },
     });
 
     findTest(`objects only within the current space (default)`, {
@@ -79,7 +80,7 @@ export default function ({ getService }) {
           statusCode: 200,
           response: createExpectResults(SPACES.DEFAULT.spaceId),
         },
-      }
+      },
     });
   });
 }

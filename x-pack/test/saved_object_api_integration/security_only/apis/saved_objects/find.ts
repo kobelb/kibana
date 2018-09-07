@@ -5,14 +5,15 @@
  */
 
 import { AUTHENTICATION } from '../../../common/lib/authentication';
+import { TestInvoker } from '../../../common/lib/types';
 import { findTestSuiteFactory } from '../../../common/suites/saved_objects/find';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
   describe('find', () => {
-
     const {
       createExpectEmpty,
       createExpectRbacForbidden,
@@ -52,8 +53,8 @@ export default function ({ getService }) {
           description: `forbidded can't find any types`,
           statusCode: 403,
           response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
-        }
-      }
+        },
+      },
     });
 
     findTest(`superuser`, {
@@ -155,7 +156,7 @@ export default function ({ getService }) {
           statusCode: 200,
           response: createExpectResults(),
         },
-      }
+      },
     });
 
     findTest(`kibana dual-privileges user`, {
@@ -223,7 +224,7 @@ export default function ({ getService }) {
           statusCode: 200,
           response: createExpectResults(),
         },
-      }
+      },
     });
 
     findTest(`kibana rbac user`, {
@@ -291,7 +292,7 @@ export default function ({ getService }) {
           statusCode: 200,
           response: createExpectResults(),
         },
-      }
+      },
     });
 
     findTest(`kibana rbac default space all user`, {
@@ -303,29 +304,39 @@ export default function ({ getService }) {
         normal: {
           description: 'only the visualization',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
         unknownType: {
           description: 'empty result',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
         pageBeyondTotal: {
           description: 'empty result',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
         unknownSearchField: {
           description: 'empty result',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
         noType: {
           description: 'all objects',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
-      }
+      },
     });
 
     findTest(`kibana rbac default space read user`, {
@@ -337,29 +348,39 @@ export default function ({ getService }) {
         normal: {
           description: 'only the visualization',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
         unknownType: {
           description: 'empty result',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
         pageBeyondTotal: {
           description: 'empty result',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
         unknownSearchField: {
           description: 'empty result',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
         noType: {
           description: 'all objects',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
-      }
+      },
     });
 
     findTest(`kibana rbac space 1 all user`, {
@@ -371,29 +392,39 @@ export default function ({ getService }) {
         normal: {
           description: 'forbidden login and find visualization message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
         },
         unknownType: {
           description: 'forbidden login and find wigwags message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
         },
         pageBeyondTotal: {
           description: 'forbidden login and find visualization message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
         },
         unknownSearchField: {
           description: 'forbidden login and find wigwags message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
         },
         noType: {
           description: `forbidded can't find any types`,
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
-        }
-      }
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
+        },
+      },
     });
 
     findTest(`kibana rbac space 1 readonly user`, {
@@ -405,29 +436,39 @@ export default function ({ getService }) {
         normal: {
           description: 'forbidden login and find visualization message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
         },
         unknownType: {
           description: 'forbidden login and find wigwags message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
         },
         pageBeyondTotal: {
           description: 'forbidden login and find visualization message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
         },
         unknownSearchField: {
           description: 'forbidden login and find wigwags message',
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
         },
         noType: {
           description: `forbidded can't find any types`,
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
-        }
-      }
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
+        },
+      },
     });
   });
 }
