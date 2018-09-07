@@ -138,7 +138,7 @@ export function findTestSuiteFactory(esArchiver, supertest) {
           attributes: resp.body.saved_objects[3].attributes
         },
         {
-          id: `8121a00-8efd-21e7-1cb3-34ab96643444`,
+          id: `8121a00-8efd-21e7-1cb3-34ab966434445`,
           type: 'chapo',
           updated_at: '2017-09-21T18:59:16.270Z',
           version: 1,
