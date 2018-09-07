@@ -4,10 +4,10 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { SPACES } from '../../../common/lib/spaces';
-import { TestInvoker } from '../../../common/lib/types';
-import { getAllTestSuiteFactory } from '../../../common/suites/spaces/get_all';
+import { AUTHENTICATION } from '../../common/lib/authentication';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { getAllTestSuiteFactory } from '../../common/suites/spaces/get_all';
 
 // tslint:disable:no-default-export
 export default function getAllSpacesTestSuite({ getService }: TestInvoker) {

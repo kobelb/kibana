@@ -4,11 +4,12 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { SPACES } from '../../../common/lib/spaces';
-import { selectTestSuiteFactory } from '../../../common/suites/spaces/select';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { selectTestSuiteFactory } from '../../common/suites/spaces/select';
 
 // tslint:disable:no-default-export
-export default function selectSpaceTestSuite({ getService }) {
+export default function selectSpaceTestSuite({ getService }: TestInvoker) {
   const supertestWithoutAuth = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 

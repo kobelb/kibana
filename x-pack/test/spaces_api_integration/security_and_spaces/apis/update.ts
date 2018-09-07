@@ -4,10 +4,10 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { SPACES } from '../../../common/lib/spaces';
-import { TestInvoker } from '../../../common/lib/types';
-import { updateTestSuiteFactory } from '../../../common/suites/spaces/update';
+import { AUTHENTICATION } from '../../common/lib/authentication';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { updateTestSuiteFactory } from '../../common/suites/spaces/update';
 
 // tslint:disable:no-default-export
 export default function updateSpaceTestSuite({ getService }: TestInvoker) {
@@ -48,7 +48,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       },
     ].forEach(scenario => {
       updateTest(
-        `${scenario.userWithAllGlobally.USERNAME} can update space_1 from 
+        `${scenario.userWithAllGlobally.USERNAME} can update space_1 from
         the ${scenario.spaceId} space`,
         {
           spaceId: scenario.spaceId,
@@ -88,7 +88,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       updateTest(
-        `${scenario.userWithDualAll.USERNAME} can update space_1 from 
+        `${scenario.userWithDualAll.USERNAME} can update space_1 from
         the ${scenario.spaceId} space`,
         {
           spaceId: scenario.spaceId,
@@ -128,7 +128,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       updateTest(
-        `${scenario.userWithLegacyAll.USERNAME} can update space_1 from 
+        `${scenario.userWithLegacyAll.USERNAME} can update space_1 from
         the ${scenario.spaceId} space`,
         {
           spaceId: scenario.spaceId,
@@ -168,7 +168,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       updateTest(
-        `${scenario.userWithReadGlobally.USERNAME} cannot update space_1 
+        `${scenario.userWithReadGlobally.USERNAME} cannot update space_1
         from the ${scenario.spaceId} space`,
         {
           spaceId: scenario.spaceId,
@@ -203,7 +203,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       updateTest(
-        `${scenario.userWithDualRead.USERNAME} cannot update space_1 
+        `${scenario.userWithDualRead.USERNAME} cannot update space_1
         from the ${scenario.spaceId} space`,
         {
           spaceId: scenario.spaceId,
@@ -238,7 +238,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       updateTest(
-        `${scenario.userWithLegacyRead.USERNAME} cannot update space_1 
+        `${scenario.userWithLegacyRead.USERNAME} cannot update space_1
         from the ${scenario.spaceId} space`,
         {
           spaceId: scenario.spaceId,

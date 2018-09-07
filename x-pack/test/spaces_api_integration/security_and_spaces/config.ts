@@ -3,6 +3,8 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
+
 import { createTestConfig } from '../common/config';
 
-export default createTestConfig('spaces_only', { license: 'basic', securityEnabled: false });
+// tslint:disable:no-default-export
+export default createTestConfig('security_and_spaces', { license: 'trial' });

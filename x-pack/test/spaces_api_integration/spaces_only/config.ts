@@ -3,9 +3,7 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
+import { createTestConfig } from '../common/config';
 
-export default function ({ loadTestFile }) {
-  describe('apis spaces without security', () => {
-    loadTestFile(require.resolve('./spaces'));
-  });
-}
+// tslint:disable:no-default-export
+export default createTestConfig('spaces_only', { license: 'basic' });

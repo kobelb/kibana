@@ -4,10 +4,10 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { SPACES } from '../../../common/lib/spaces';
-import { TestInvoker } from '../../../common/lib/types';
-import { selectTestSuiteFactory } from '../../../common/suites/spaces/select';
+import { AUTHENTICATION } from '../../common/lib/authentication';
+import { SPACES } from '../../common/lib/spaces';
+import { TestInvoker } from '../../common/lib/types';
+import { selectTestSuiteFactory } from '../../common/suites/spaces/select';
 
 // tslint:disable:no-default-export
 export default function selectSpaceTestSuite({ getService }: TestInvoker) {
@@ -92,7 +92,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       });
 
       selectTest(
-        `${scenario.userWithReadGlobally.USERNAME} selects ${scenario.otherSpaceId} from 
+        `${scenario.userWithReadGlobally.USERNAME} selects ${scenario.otherSpaceId} from
         ${scenario.spaceId}`,
         {
           currentSpaceId: scenario.spaceId,
@@ -111,7 +111,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       selectTest(
-        `${scenario.userWithDualRead.USERNAME} selects ${scenario.otherSpaceId} from 
+        `${scenario.userWithDualRead.USERNAME} selects ${scenario.otherSpaceId} from
         ${scenario.spaceId}`,
         {
           currentSpaceId: scenario.spaceId,
@@ -130,7 +130,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       selectTest(
-        `${scenario.userWithLegacyRead.USERNAME} can select ${scenario.otherSpaceId} 
+        `${scenario.userWithLegacyRead.USERNAME} can select ${scenario.otherSpaceId}
         from ${scenario.spaceId}`,
         {
           currentSpaceId: scenario.spaceId,
@@ -165,7 +165,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       },
     ].forEach(scenario => {
       selectTest(
-        `${scenario.userWithAllAtSpace.USERNAME} can select ${scenario.spaceId} 
+        `${scenario.userWithAllAtSpace.USERNAME} can select ${scenario.spaceId}
         from ${scenario.spaceId}`,
         {
           currentSpaceId: scenario.spaceId,
@@ -184,7 +184,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       selectTest(
-        `${scenario.userWithReadAtSpace.USERNAME} can select ${scenario.spaceId} 
+        `${scenario.userWithReadAtSpace.USERNAME} can select ${scenario.spaceId}
         from ${scenario.spaceId}`,
         {
           currentSpaceId: scenario.spaceId,
@@ -203,7 +203,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       selectTest(
-        `${scenario.userWithAllAtOtherSpace.USERNAME} cannot select ${scenario.spaceId} 
+        `${scenario.userWithAllAtOtherSpace.USERNAME} cannot select ${scenario.spaceId}
         from ${scenario.spaceId}`,
         {
           currentSpaceId: scenario.spaceId,
@@ -233,7 +233,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       },
     ].forEach(scenario => {
       selectTest(
-        `${scenario.userWithAllAtBothSpaces.USERNAME} can select ${scenario.spaceId} 
+        `${scenario.userWithAllAtBothSpaces.USERNAME} can select ${scenario.spaceId}
         from ${scenario.otherSpaceId}`,
         {
           currentSpaceId: scenario.otherSpaceId,
@@ -252,7 +252,7 @@ export default function selectSpaceTestSuite({ getService }: TestInvoker) {
       );
 
       selectTest(
-        `${scenario.userWithAllAtOtherSpace.USERNAME} cannot select ${scenario.spaceId} 
+        `${scenario.userWithAllAtOtherSpace.USERNAME} cannot select ${scenario.spaceId}
         from ${scenario.otherSpaceId}`,
         {
           currentSpaceId: scenario.otherSpaceId,

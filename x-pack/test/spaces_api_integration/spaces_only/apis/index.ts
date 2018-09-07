@@ -4,9 +4,11 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
+import { TestInvoker } from '../../common/lib/types';
+
 // tslint:disable:no-default-export
-export default function spacesOnlyTestSuite({ loadTestFile }) {
-  describe('spaces', () => {
+export default function spacesOnlyTestSuite({ loadTestFile }: TestInvoker) {
+  describe('spaces api without security', () => {
     loadTestFile(require.resolve('./create'));
     loadTestFile(require.resolve('./delete'));
     loadTestFile(require.resolve('./get_all'));

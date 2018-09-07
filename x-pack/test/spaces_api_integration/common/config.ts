@@ -4,26 +4,30 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import path from 'path';
 import { resolveKibanaPath } from '@kbn/plugin-helpers';
+import path from 'path';
+import { TestInvoker } from './lib/types';
 import { EsProvider } from './services/es';
 
+interface CreateTestConfigOptions {
+  license: string;
+  disabledPlugins?: [string];
+}
 
-export function createTestConfig(name, { license = 'trial', disabledPlugins = [] } = {}) {
+export function createTestConfig(name: string, options: CreateTestConfigOptions) {
+  const { license, disabledPlugins = [] } = options;
 
-  return async function ({ readConfigFile }) {
-
+  return async ({ readConfigFile }: TestInvoker) => {
     const config = {
       kibana: {
         api: await readConfigFile(resolveKibanaPath('test/api_integration/config.js')),
-        functional: await readConfigFile(require.resolve('../../../../test/functional/config.js'))
+        functional: await readConfigFile(require.resolve('../../../../test/functional/config.js')),
       },
       xpack: {
-        api: await readConfigFile(require.resolve('../../api_integration/config.js'))
-      }
+        api: await readConfigFile(require.resolve('../../api_integration/config.js')),
+      },
     };
 
-    console.log('resolving', require.resolve(`../${name}/apis/`));
     return {
       testFiles: [require.resolve(`../${name}/apis/`)],
       servers: config.xpack.api.get('servers'),
@@ -40,7 +44,7 @@ export function createTestConfig(name, { license = 'trial', disabledPlugins = []
       },
 
       esArchiver: {
-        directory: path.join(__dirname, 'fixtures', 'es_archiver')
+        directory: path.join(__dirname, 'fixtures', 'es_archiver'),
       },
 
       esTestCluster: {
