@@ -4,6 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-export type KibanaPrivilege = 'none' | 'read' | 'all';
+import { createTestConfig } from '../common/config';
 
-export const KibanaAppPrivileges: KibanaPrivilege[] = ['read', 'all'];
+// tslint:disable:no-default-export
+export default createTestConfig('security_and_spaces', { license: 'trial' });
