@@ -1,0 +1,50 @@
+/*
+ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+ * or more contributor license agreements. Licensed under the Elastic License;
+ * you may not use this file except in compliance with the Elastic License.
+ */
+
+import { SPACES } from '../../../common/lib/spaces';
+import { deleteTestSuiteFactory } from '../../../common/suites/spaces/delete';
+
+// tslint:disable:no-default-export
+export default function deleteSpaceTestSuite({ getService }) {
+  const supertestWithoutAuth = getService('supertestWithoutAuth');
+  const esArchiver = getService('esArchiver');
+
+  const {
+    deleteTest,
+    createExpectEmptyResult,
+    createExpectReservedSpaceResult,
+    createExpectNotFoundResult,
+  } = deleteTestSuiteFactory(esArchiver, supertestWithoutAuth);
+
+  describe('delete', () => {
+    [
+      {
+        spaceId: SPACES.DEFAULT.spaceId,
+      },
+      {
+        spaceId: SPACES.SPACE_1.spaceId,
+      },
+    ].forEach(scenario => {
+      deleteTest(`from the ${scenario.spaceId} space`, {
+        spaceId: scenario.spaceId,
+        tests: {
+          exists: {
+            statusCode: 204,
+            response: createExpectEmptyResult(),
+          },
+          reservedSpace: {
+            statusCode: 400,
+            response: createExpectReservedSpaceResult(),
+          },
+          doesntExist: {
+            statusCode: 404,
+            response: createExpectNotFoundResult(),
+          },
+        },
+      });
+    });
+  });
+}
