@@ -4,9 +4,11 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
+// @ts-ignore
 import { resolveKibanaPath } from '@kbn/plugin-helpers';
 import path from 'path';
 import { TestInvoker } from './lib/types';
+// @ts-ignore
 import { EsProvider } from './services/es';
 
 interface CreateTestConfigOptions {
