@@ -16,10 +16,10 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
 
   const {
     deleteTest,
-    createExpectEmptyResult,
-    createExpectReservedSpaceResult,
-    createExpectNotFoundResult,
-    createExpectForbiddenResult,
+    expectEmptyResult,
+    expectReservedSpaceResult,
+    expectNotFoundResult,
+    expectRbacForbiddenResult,
     createExpectLegacyForbiddenResult,
   } = deleteTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
@@ -55,15 +55,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 204,
-            response: createExpectEmptyResult(),
+            response: expectEmptyResult,
           },
           reservedSpace: {
             statusCode: 400,
-            response: createExpectReservedSpaceResult(),
+            response: expectReservedSpaceResult,
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectNotFoundResult(),
+            response: expectNotFoundResult,
           },
         },
       });
@@ -77,15 +77,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 204,
-            response: createExpectEmptyResult(),
+            response: expectEmptyResult,
           },
           reservedSpace: {
             statusCode: 400,
-            response: createExpectReservedSpaceResult(),
+            response: expectReservedSpaceResult,
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectNotFoundResult(),
+            response: expectNotFoundResult,
           },
         },
       });
@@ -99,15 +99,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 204,
-            response: createExpectEmptyResult(),
+            response: expectEmptyResult,
           },
           reservedSpace: {
             statusCode: 400,
-            response: createExpectReservedSpaceResult(),
+            response: expectReservedSpaceResult,
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectNotFoundResult(),
+            response: expectNotFoundResult,
           },
         },
       });
@@ -121,15 +121,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           reservedSpace: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           doesntExist: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
         },
       });
@@ -143,15 +143,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           reservedSpace: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           doesntExist: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
         },
       });
@@ -165,15 +165,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: createExpectLegacyForbiddenResult(),
+            response: createExpectLegacyForbiddenResult(scenario.userWithLegacyRead.USERNAME),
           },
           reservedSpace: {
             statusCode: 400,
-            response: createExpectReservedSpaceResult(),
+            response: expectReservedSpaceResult,
           },
           doesntExist: {
             statusCode: 404,
-            response: createExpectNotFoundResult(),
+            response: expectNotFoundResult,
           },
         },
       });
@@ -187,15 +187,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           reservedSpace: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           doesntExist: {
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
         },
       });

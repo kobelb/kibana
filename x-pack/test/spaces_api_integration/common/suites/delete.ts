@@ -6,19 +6,29 @@
 import expect from 'expect.js';
 import { SuperTest } from 'supertest';
 import { getUrlPrefix } from '../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../lib/types';
+import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
+
+interface DeleteTest {
+  statusCode: number;
+  response: (resp: any) => void;
+}
+
+interface DeleteTests {
+  exists: DeleteTest;
+  reservedSpace: DeleteTest;
+  doesntExist: DeleteTest;
+}
+
+interface DeleteTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  spaceId: string;
+  tests: DeleteTests;
+}
 
 export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeDeleteTest = (describeFn: DescribeFn) => (
     description: string,
-    {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      spaceId,
-      tests,
-    }: TestOptions
+    { auth = {}, spaceId, tests }: DeleteTestDefinition
   ) => {
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -60,11 +70,11 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     expect(resp.body).to.eql(expectedResult);
   };
 
-  const createExpectEmptyResult = () => (resp: any) => {
+  const expectEmptyResult = (resp: any) => {
     expect(resp.body).to.eql('');
   };
 
-  const createExpectNotFoundResult = () => (resp: any) => {
+  const expectNotFoundResult = (resp: any) => {
     expect(resp.body).to.eql({
       error: 'Not Found',
       statusCode: 404,
@@ -72,7 +82,7 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectReservedSpaceResult = () => (resp: any) => {
+  const expectReservedSpaceResult = (resp: any) => {
     expect(resp.body).to.eql({
       error: 'Bad Request',
       statusCode: 400,
@@ -80,7 +90,7 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectForbiddenResult = () => (resp: any) => {
+  const expectRbacForbiddenResult = (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -88,21 +98,21 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectLegacyForbiddenResult = () => (resp: any) => {
+  const createExpectLegacyForbiddenResult = (username: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
-      message: `action [indices:data/write/delete] is unauthorized for user [a_kibana_legacy_dashboard_only_user]: [security_exception] action [indices:data/write/delete] is unauthorized for user [a_kibana_legacy_dashboard_only_user]`,
+      message: `action [indices:data/write/delete] is unauthorized for user [${username}]: [security_exception] action [indices:data/write/delete] is unauthorized for user [${username}]`,
     });
   };
 
   return {
     deleteTest,
-    createExpectResult,
-    createExpectForbiddenResult,
-    createExpectEmptyResult,
-    createExpectNotFoundResult,
-    createExpectReservedSpaceResult,
     createExpectLegacyForbiddenResult,
+    createExpectResult,
+    expectRbacForbiddenResult,
+    expectEmptyResult,
+    expectNotFoundResult,
+    expectReservedSpaceResult,
   };
 }

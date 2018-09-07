@@ -17,8 +17,8 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
   const {
     createTest,
     createExpectResult,
-    createExpectConflictResponse,
-    createExpectForbiddenResponse,
+    expectConflictResponse,
+    expectRbacForbiddenResponse,
     createExpectLegacyForbiddenResponse,
   } = createTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
@@ -69,7 +69,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
           },
           alreadyExists: {
             statusCode: 409,
-            response: createExpectConflictResponse(),
+            response: expectConflictResponse,
           },
           reservedSpecified: {
             space: {
@@ -114,7 +114,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
           },
           alreadyExists: {
             statusCode: 409,
-            response: createExpectConflictResponse(),
+            response: expectConflictResponse,
           },
           reservedSpecified: {
             space: {
@@ -159,7 +159,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
           },
           alreadyExists: {
             statusCode: 409,
-            response: createExpectConflictResponse(),
+            response: expectConflictResponse,
           },
           reservedSpecified: {
             space: {
@@ -195,11 +195,11 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               color: '#5c5959',
             },
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
           alreadyExists: {
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
           reservedSpecified: {
             space: {
@@ -210,7 +210,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               _reserved: true,
             },
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
         },
       });
@@ -230,11 +230,11 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               color: '#5c5959',
             },
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
           alreadyExists: {
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
           reservedSpecified: {
             space: {
@@ -245,7 +245,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               _reserved: true,
             },
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
         },
       });
@@ -265,11 +265,11 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               color: '#5c5959',
             },
             statusCode: 403,
-            response: createExpectLegacyForbiddenResponse(),
+            response: createExpectLegacyForbiddenResponse(scenario.userWithLegacyRead.USERNAME),
           },
           alreadyExists: {
             statusCode: 403,
-            response: createExpectLegacyForbiddenResponse(),
+            response: createExpectLegacyForbiddenResponse(scenario.userWithLegacyRead.USERNAME),
           },
           reservedSpecified: {
             space: {
@@ -280,7 +280,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               _reserved: true,
             },
             statusCode: 403,
-            response: createExpectLegacyForbiddenResponse(),
+            response: createExpectLegacyForbiddenResponse(scenario.userWithLegacyRead.USERNAME),
           },
         },
       });
@@ -300,11 +300,11 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               color: '#5c5959',
             },
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
           alreadyExists: {
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
           reservedSpecified: {
             space: {
@@ -315,7 +315,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
               _reserved: true,
             },
             statusCode: 403,
-            response: createExpectForbiddenResponse(),
+            response: expectRbacForbiddenResponse,
           },
         },
       });

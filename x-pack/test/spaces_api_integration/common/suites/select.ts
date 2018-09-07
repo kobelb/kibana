@@ -8,22 +8,30 @@ import expect from 'expect.js';
 import { SuperTest } from 'supertest';
 import { DEFAULT_SPACE_ID } from '../../../../plugins/spaces/common/constants';
 import { getUrlPrefix } from '../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../lib/types';
+import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
+
+interface SelectTest {
+  statusCode: number;
+  response: (resp: any) => void;
+}
+
+interface SelectTests {
+  default: SelectTest;
+}
+
+interface SelectTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  currentSpaceId: string;
+  spaceId: string;
+  tests: SelectTests;
+}
 
 export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const nonExistantSpaceId = 'not-a-space';
 
   const makeSelectTest = (describeFn: DescribeFn) => (
     description: string,
-    {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      currentSpaceId = '',
-      spaceId = '',
-      tests,
-    }: TestOptions
+    { auth = {}, currentSpaceId, spaceId, tests }: SelectTestDefinition
   ) => {
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -84,7 +92,7 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectDefaultSpaceResponse = () => (resp: any) => {
+  const expectDefaultSpaceResponse = (resp: any) => {
     expect(resp.body).to.eql({
       location: `/app/kibana`,
     });
@@ -92,7 +100,7 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
 
   const createExpectSpaceResponse = (spaceId: string) => (resp: any) => {
     if (spaceId === DEFAULT_SPACE_ID) {
-      createExpectDefaultSpaceResponse()(resp);
+      expectDefaultSpaceResponse(resp);
     } else {
       expect(resp.body).to.eql({
         location: `/s/${spaceId}/app/kibana`,
@@ -103,7 +111,7 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
   return {
     selectTest,
     nonExistantSpaceId,
-    createExpectDefaultSpaceResponse,
+    expectDefaultSpaceResponse,
     createExpectSpaceResponse,
     createExpectResults,
     createExpectForbiddenResult,

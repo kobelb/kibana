@@ -13,7 +13,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
   const supertestWithoutAuth = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
-  const { createTest, createExpectResult, createExpectConflictResponse } = createTestSuiteFactory(
+  const { createTest, createExpectResult, expectConflictResponse } = createTestSuiteFactory(
     esArchiver,
     supertestWithoutAuth
   );
@@ -47,7 +47,7 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
           },
           alreadyExists: {
             statusCode: 409,
-            response: createExpectConflictResponse(),
+            response: expectConflictResponse,
           },
           reservedSpecified: {
             space: {

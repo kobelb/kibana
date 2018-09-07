@@ -18,7 +18,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
     updateTest,
     createExpectResult,
     createExpectNotFoundResult,
-    createExpectForbiddenResult,
+    expectRbacForbiddenResult,
     createExpectLegacyForbiddenResult,
   } = updateTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
@@ -186,7 +186,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
                 _reserved: true,
               },
               statusCode: 403,
-              response: createExpectForbiddenResult(),
+              response: expectRbacForbiddenResult,
             },
             newSpace: {
               space: {
@@ -196,7 +196,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
                 color: '#5c5959',
               },
               statusCode: 403,
-              response: createExpectForbiddenResult(),
+              response: expectRbacForbiddenResult,
             },
           },
         }
@@ -221,7 +221,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
                 _reserved: true,
               },
               statusCode: 403,
-              response: createExpectForbiddenResult(),
+              response: expectRbacForbiddenResult,
             },
             newSpace: {
               space: {
@@ -231,7 +231,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
                 color: '#5c5959',
               },
               statusCode: 403,
-              response: createExpectForbiddenResult(),
+              response: expectRbacForbiddenResult,
             },
           },
         }
@@ -256,7 +256,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
                 _reserved: true,
               },
               statusCode: 403,
-              response: createExpectLegacyForbiddenResult(),
+              response: createExpectLegacyForbiddenResult(scenario.userWithLegacyRead.USERNAME),
             },
             newSpace: {
               space: {
@@ -266,7 +266,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
                 color: '#5c5959',
               },
               statusCode: 403,
-              response: createExpectLegacyForbiddenResult(),
+              response: createExpectLegacyForbiddenResult(scenario.userWithLegacyRead.USERNAME),
             },
           },
         }
@@ -288,7 +288,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
               _reserved: true,
             },
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           newSpace: {
             space: {
@@ -298,7 +298,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
               color: '#5c5959',
             },
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
         },
       });
@@ -319,7 +319,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
               _reserved: true,
             },
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
           newSpace: {
             space: {
@@ -329,7 +329,7 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
               color: '#5c5959',
             },
             statusCode: 403,
-            response: createExpectForbiddenResult(),
+            response: expectRbacForbiddenResult,
           },
         },
       });

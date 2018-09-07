@@ -16,7 +16,7 @@ export default function({ loadTestFile, getService }: TestInvoker) {
   const es = getService('es');
   const supertest = getService('supertest');
 
-  describe('apis spaces', () => {
+  describe('spaces api with security', () => {
     before(async () => {
       await createUsersAndRoles(es, supertest);
     });

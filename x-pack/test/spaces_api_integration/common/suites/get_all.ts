@@ -6,19 +6,27 @@
 import expect from 'expect.js';
 import { SuperTest } from 'supertest';
 import { getUrlPrefix } from '../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../lib/types';
+import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
+
+interface GetAllTest {
+  statusCode: number;
+  response: (resp: any) => void;
+}
+
+interface GetAllTests {
+  exists: GetAllTest;
+}
+
+interface GetAllTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  spaceId: string;
+  tests: GetAllTests;
+}
 
 export function getAllTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeGetAllTest = (describeFn: DescribeFn) => (
     description: string,
-    {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      spaceId,
-      tests,
-    }: TestOptions
+    { auth = {}, spaceId, tests }: GetAllTestDefinition
   ) => {
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -58,40 +66,13 @@ export function getAllTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     expect(resp.body).to.eql(expectedBody);
   };
 
-  const createExpectEmptyResult = () => (resp: any) => {
+  const expectEmptyResult = (resp: any) => {
     expect(resp.body).to.eql('');
-  };
-
-  const createExpectNotFoundResult = () => (resp: any) => {
-    expect(resp.body).to.eql({
-      error: 'Not Found',
-      statusCode: 404,
-      message: `Saved object [space/space_3] not found`,
-    });
-  };
-
-  const createExpectReservedSpaceResult = () => (resp: any) => {
-    expect(resp.body).to.eql({
-      error: 'Bad Request',
-      statusCode: 400,
-      message: `This Space cannot be deleted because it is reserved.`,
-    });
-  };
-
-  const createExpectForbiddenResult = () => (resp: any) => {
-    expect(resp.body).to.eql({
-      statusCode: 403,
-      error: 'Forbidden',
-      message: 'Unauthorized to delete spaces',
-    });
   };
 
   return {
     getAllTest,
     createExpectResults,
-    createExpectForbiddenResult,
-    createExpectEmptyResult,
-    createExpectNotFoundResult,
-    createExpectReservedSpaceResult,
+    expectEmptyResult,
   };
 }

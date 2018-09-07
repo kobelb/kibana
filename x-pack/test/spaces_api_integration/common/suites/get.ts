@@ -6,22 +6,30 @@
 import expect from 'expect.js';
 import { SuperAgent } from 'superagent';
 import { getUrlPrefix } from '../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../lib/types';
+import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
+
+interface GetTest {
+  statusCode: number;
+  response: (resp: any) => void;
+}
+
+interface GetTests {
+  default: GetTest;
+}
+
+interface GetTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  currentSpaceId: string;
+  spaceId: string;
+  tests: GetTests;
+}
 
 export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>) {
   const nonExistantSpaceId = 'not-a-space';
 
   const makeGetTest = (describeFn: DescribeFn) => (
     description: string,
-    {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      currentSpaceId,
-      spaceId,
-      tests,
-    }: TestOptions
+    { auth = {}, currentSpaceId, spaceId, tests }: GetTestDefinition
   ) => {
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -73,14 +81,6 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>)
     });
   };
 
-  const createExpectReservedSpaceResult = () => (resp: any) => {
-    expect(resp.body).to.eql({
-      error: 'Bad Request',
-      statusCode: 400,
-      message: `This Space cannot be deleted because it is reserved.`,
-    });
-  };
-
   const createExpectForbiddenResult = (spaceId: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
@@ -96,6 +96,5 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>)
     createExpectForbiddenResult,
     createExpectEmptyResult,
     createExpectNotFoundResult,
-    createExpectReservedSpaceResult,
   };
 }

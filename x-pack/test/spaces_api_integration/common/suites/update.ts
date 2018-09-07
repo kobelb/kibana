@@ -6,19 +6,29 @@
 import expect from 'expect.js';
 import { SuperTest } from 'supertest';
 import { getUrlPrefix } from '../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../lib/types';
+import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
+
+interface UpdateTest {
+  statusCode: number;
+  space: any;
+  response: (resp: any) => void;
+}
+
+interface UpdateTests {
+  alreadyExists: UpdateTest;
+  newSpace: UpdateTest;
+}
+
+interface UpdateTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  spaceId: string;
+  tests: UpdateTests;
+}
 
 export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeUpdateTest = (describeFn: DescribeFn) => (
     description: string,
-    {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      spaceId,
-      tests,
-    }: TestOptions
+    { auth = {}, spaceId, tests }: UpdateTestDefinition
   ) => {
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -60,7 +70,7 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectForbiddenResult = () => (resp: any) => {
+  const expectRbacForbiddenResult = (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -68,11 +78,11 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectLegacyForbiddenResult = () => (resp: any) => {
+  const createExpectLegacyForbiddenResult = (username: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
-      message: `action [indices:data/write/update] is unauthorized for user [a_kibana_legacy_dashboard_only_user]: [security_exception] action [indices:data/write/update] is unauthorized for user [a_kibana_legacy_dashboard_only_user]`,
+      message: `action [indices:data/write/update] is unauthorized for user [${username}]: [security_exception] action [indices:data/write/update] is unauthorized for user [${username}]`,
     });
   };
 
@@ -80,7 +90,7 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     updateTest,
     createExpectResult,
     createExpectNotFoundResult,
-    createExpectForbiddenResult,
+    expectRbacForbiddenResult,
     createExpectLegacyForbiddenResult,
   };
 }

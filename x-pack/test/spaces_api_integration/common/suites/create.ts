@@ -7,19 +7,35 @@
 import expect from 'expect.js';
 import { SuperTest } from 'supertest';
 import { getUrlPrefix } from '../lib/space_test_utils';
-import { DescribeFn, TestOptions } from '../lib/types';
+import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
+
+interface CreateTestWithoutSpace {
+  statusCode: number;
+  response: (resp: any) => void;
+}
+
+interface CreateTestWithSpace {
+  statusCode: number;
+  space: any;
+  response: (resp: any) => void;
+}
+
+interface CreateTests {
+  newSpace: CreateTestWithSpace;
+  alreadyExists: CreateTestWithoutSpace;
+  reservedSpecified: CreateTestWithSpace;
+}
+
+interface CreateTestDefinition {
+  auth?: TestDefinitionAuthentication;
+  spaceId: string;
+  tests: CreateTests;
+}
 
 export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeCreateTest = (describeFn: DescribeFn) => (
     description: string,
-    {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      spaceId,
-      tests,
-    }: TestOptions
+    { auth = {}, spaceId, tests }: CreateTestDefinition
   ) => {
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -69,7 +85,7 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     expect(resp.body).to.eql(expectedResult);
   };
 
-  const createExpectConflictResponse = () => (resp: any) => {
+  const expectConflictResponse = (resp: any) => {
     const spaceId = 'space_1';
     expect(resp.body).to.only.have.keys(['error', 'message', 'statusCode']);
     expect(resp.body.error).to.equal('Conflict');
@@ -79,7 +95,7 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     );
   };
 
-  const createExpectForbiddenResponse = () => (resp: any) => {
+  const expectRbacForbiddenResponse = (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -87,19 +103,19 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectLegacyForbiddenResponse = () => (resp: any) => {
+  const createExpectLegacyForbiddenResponse = (username: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
-      message: `action [indices:data/write/index] is unauthorized for user [a_kibana_legacy_dashboard_only_user]: [security_exception] action [indices:data/write/index] is unauthorized for user [a_kibana_legacy_dashboard_only_user]`,
+      message: `action [indices:data/write/index] is unauthorized for user [${username}]: [security_exception] action [indices:data/write/index] is unauthorized for user [${username}]`,
     });
   };
 
   return {
     createTest,
     createExpectResult,
-    createExpectConflictResponse,
-    createExpectForbiddenResponse,
+    expectConflictResponse,
+    expectRbacForbiddenResponse,
     createExpectLegacyForbiddenResponse,
   };
 }
