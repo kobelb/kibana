@@ -4,59 +4,41 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import expect from 'expect.js';
 import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { createTestSuiteFactory } from '../../../common/suites/saved_objects/create';
 import { SPACES } from '../../../common/lib/spaces';
+import { TestInvoker } from '../../../common/lib/types';
+import { createTestSuiteFactory } from '../../../common/suites/saved_objects/create';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertestWithoutAuth = getService('supertestWithoutAuth');
   const es = getService('es');
   const esArchiver = getService('esArchiver');
 
   const {
     createTest,
+    createExpectLegacyForbidden,
     createExpectSpaceAwareResults,
     expectNotSpaceAwareResults,
-    notSpaceAwareType,
-    spaceAwareType,
+    expectNotSpaceAwareRbacForbidden,
+    expectSpaceAwareRbacForbidden,
   } = createTestSuiteFactory(es, esArchiver, supertestWithoutAuth);
 
   describe('create', () => {
-
-    const createExpectRbacForbidden = type => resp => {
-      expect(resp.body).to.eql({
-        statusCode: 403,
-        error: 'Forbidden',
-        message: `Unable to create ${type}, missing action:saved_objects/${type}/create`
-      });
-    };
-
-    const createExpectLegacyForbidden = username => resp => {
-      expect(resp.body).to.eql({
-        statusCode: 403,
-        error: 'Forbidden',
-        //eslint-disable-next-line max-len
-        message: `action [indices:data/write/index] is unauthorized for user [${username}]: [security_exception] action [indices:data/write/index] is unauthorized for user [${username}]`
-      });
-    };
-
-    [{
-      spaceId: SPACES.DEFAULT.spaceId,
-      userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-      userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
-      userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
-    }, {
-      spaceId: SPACES.DEFAULT.spaceId,
-      userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-      userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
-      userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
-    }].forEach(({
-      spaceId,
-      userWithAllAtSpace,
-      userWithReadAtSpace,
-      userWithAllAtOtherSpace
-    }) => {
+    [
+      {
+        spaceId: SPACES.DEFAULT.spaceId,
+        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
+        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
+        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+      },
+      {
+        spaceId: SPACES.DEFAULT.spaceId,
+        userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
+        userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER,
+        userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
+      },
+    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
       createTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
@@ -72,7 +54,7 @@ export default function ({ getService }) {
             statusCode: 403,
             response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.SUPERUSER.USERNAME, {
@@ -88,9 +70,9 @@ export default function ({ getService }) {
           },
           notSpaceAware: {
             statusCode: 200,
-            response: expectNotSpaceAwareResults(),
+            response: expectNotSpaceAwareResults,
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
@@ -108,7 +90,7 @@ export default function ({ getService }) {
             statusCode: 200,
             response: expectNotSpaceAwareResults,
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
@@ -120,13 +102,17 @@ export default function ({ getService }) {
         tests: {
           spaceAware: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME),
+            response: createExpectLegacyForbidden(
+              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
+            ),
           },
           notSpaceAware: {
             statusCode: 403,
-            response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME),
+            response: createExpectLegacyForbidden(
+              AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
+            ),
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
@@ -144,7 +130,7 @@ export default function ({ getService }) {
             statusCode: 200,
             response: expectNotSpaceAwareResults,
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
@@ -156,13 +142,13 @@ export default function ({ getService }) {
         tests: {
           spaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
+            response: expectSpaceAwareRbacForbidden,
           },
           notSpaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
+            response: expectNotSpaceAwareRbacForbidden,
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
@@ -180,7 +166,7 @@ export default function ({ getService }) {
             statusCode: 200,
             response: expectNotSpaceAwareResults,
           },
-        }
+        },
       });
 
       createTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
@@ -192,13 +178,13 @@ export default function ({ getService }) {
         tests: {
           spaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
+            response: expectSpaceAwareRbacForbidden,
           },
           notSpaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
+            response: expectNotSpaceAwareRbacForbidden,
           },
-        }
+        },
       });
 
       createTest(userWithAllAtSpace.USERNAME, {
@@ -213,9 +199,9 @@ export default function ({ getService }) {
           },
           notSpaceAware: {
             statusCode: 200,
-            response: expectNotSpaceAwareResults(),
+            response: expectNotSpaceAwareResults,
           },
-        }
+        },
       });
 
       createTest(userWithReadAtSpace.USERNAME, {
@@ -226,13 +212,13 @@ export default function ({ getService }) {
         tests: {
           spaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
+            response: expectSpaceAwareRbacForbidden,
           },
           notSpaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
+            response: expectNotSpaceAwareRbacForbidden,
           },
-        }
+        },
       });
 
       createTest(userWithAllAtOtherSpace.USERNAME, {
@@ -243,15 +229,14 @@ export default function ({ getService }) {
         tests: {
           spaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(spaceAwareType),
+            response: expectSpaceAwareRbacForbidden,
           },
           notSpaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(notSpaceAwareType),
+            response: expectNotSpaceAwareRbacForbidden,
           },
-        }
+        },
       });
     });
-
   });
 }

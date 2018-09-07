@@ -7,12 +7,7 @@
 import expect from 'expect.js';
 import { DEFAULT_SPACE_ID } from '../../../../../plugins/spaces/common/constants';
 import { getIdPrefix, getUrlPrefix } from '../../../common/lib/space_test_utils';
-import { DescribeFn } from '../../../common/lib/types';
-
-interface Authentication {
-  username: string;
-  password: string;
-}
+import { DescribeFn, TestDefinitionAuthentication } from '../../../common/lib/types';
 
 interface BulkGetTest {
   statusCode: number;
@@ -24,7 +19,7 @@ interface BulkGetTests {
 }
 
 interface BulkGetTestDefinition {
-  auth?: Authentication;
+  auth?: TestDefinitionAuthentication;
   spaceId?: string;
   otherSpaceId?: string;
   tests: BulkGetTests;
@@ -35,15 +30,7 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<an
     description: string,
     definition: BulkGetTestDefinition
   ) => {
-    const {
-      auth = {
-        username: undefined,
-        password: undefined,
-      },
-      spaceId,
-      otherSpaceId,
-      tests,
-    } = definition;
+    const { auth = {}, spaceId, otherSpaceId, tests } = definition;
 
     const BULK_REQUESTS = [
       {

@@ -5,9 +5,11 @@
  */
 
 import { SPACES } from '../../../common/lib/spaces';
+import { TestInvoker } from '../../../common/lib/types';
 import { createTestSuiteFactory } from '../../../common/suites/saved_objects/create';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertestWithoutAuth = getService('supertestWithoutAuth');
   const es = getService('es');
   const esArchiver = getService('esArchiver');
@@ -15,11 +17,10 @@ export default function ({ getService }) {
   const {
     createTest,
     createExpectSpaceAwareResults,
-    expectNotSpaceAwareResults
+    expectNotSpaceAwareResults,
   } = createTestSuiteFactory(es, esArchiver, supertestWithoutAuth);
 
   describe('create', () => {
-
     createTest('in the current space (space_1)', {
       ...SPACES.SPACE_1,
       tests: {
@@ -29,9 +30,9 @@ export default function ({ getService }) {
         },
         notSpaceAware: {
           statusCode: 200,
-          response: expectNotSpaceAwareResults(SPACES.SPACE_1.spaceId),
-        }
-      }
+          response: expectNotSpaceAwareResults,
+        },
+      },
     });
 
     createTest('in the default space', {
@@ -43,9 +44,9 @@ export default function ({ getService }) {
         },
         notSpaceAware: {
           statusCode: 200,
-          response: expectNotSpaceAwareResults(SPACES.SPACE_1.spaceId),
-        }
-      }
+          response: expectNotSpaceAwareResults,
+        },
+      },
     });
   });
 }
