@@ -4,9 +4,10 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
+import { TestInvoker } from '../../../common/lib/types';
 
-export default function ({ loadTestFile }) {
-
+// tslint:disable:no-default-export
+export default function({ loadTestFile }: TestInvoker) {
   describe('saved_objects', () => {
     loadTestFile(require.resolve('./bulk_get'));
     loadTestFile(require.resolve('./create'));

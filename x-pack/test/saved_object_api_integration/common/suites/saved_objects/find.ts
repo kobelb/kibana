@@ -106,7 +106,7 @@ export function findTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>)
     });
   };
 
-  const createExpectRbacForbidden = (type: string) => (resp: any) => {
+  const createExpectRbacForbidden = (type?: string) => (resp: any) => {
     const message = type
       ? `Unable to find ${type}, missing action:saved_objects/${type}/find`
       : `Not authorized to find saved_object`;

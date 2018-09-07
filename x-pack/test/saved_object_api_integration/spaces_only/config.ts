@@ -4,8 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-export default function ({ loadTestFile }) {
-  describe('apis spaces', () => {
-    loadTestFile(require.resolve('./saved_objects'));
-  });
-}
+import { createTestConfig } from '../common/config';
+
+// tslint:disable:no-default-export
+export default createTestConfig('spaces_only', { license: 'basic' });

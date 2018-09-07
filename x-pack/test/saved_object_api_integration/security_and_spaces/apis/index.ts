@@ -4,12 +4,14 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import { createUsersAndRoles } from '../../common/lib/create_users_and_roles';
+import { TestInvoker } from '../../common/lib/types';
 
-export default function ({ loadTestFile, getService }) {
+// tslint:disable:no-default-export
+export default function({ loadTestFile, getService }: TestInvoker) {
   const es = getService('es');
   const supertest = getService('supertest');
 
-  describe('security only enabled', () => {
+  describe('security and spaces enabled', () => {
     before(async () => {
       await createUsersAndRoles(es, supertest);
     });

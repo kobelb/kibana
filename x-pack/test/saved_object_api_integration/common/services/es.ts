@@ -8,13 +8,14 @@ import { format as formatUrl } from 'url';
 
 import elasticsearch from 'elasticsearch';
 import shieldPlugin from '../../../../server/lib/esjs_shield_plugin';
+import { TestInvoker } from '../lib/types';
 
-export function EsProvider({ getService }) {
+export function EsProvider({ getService }: TestInvoker) {
   const config = getService('config');
 
   return new elasticsearch.Client({
     host: formatUrl(config.get('servers.elasticsearch')),
     requestTimeout: config.get('timeouts.esRequestTimeout'),
-    plugins: [shieldPlugin]
+    plugins: [shieldPlugin],
   });
 }

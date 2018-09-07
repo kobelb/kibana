@@ -6,4 +6,5 @@
 
 import { createTestConfig } from '../common/config';
 
-export default createTestConfig('spaces_only', { license: 'basic' });
+// tslint:disable:no-default-export
+export default createTestConfig('security_only', { disabledPlugins: ['spaces'], license: 'trial' });
