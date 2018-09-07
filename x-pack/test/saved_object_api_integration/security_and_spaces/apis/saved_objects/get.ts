@@ -5,10 +5,12 @@
  */
 
 import { AUTHENTICATION } from '../../../common/lib/authentication';
-import { getTestSuiteFactory } from '../../../common/suites/saved_objects/get';
 import { SPACES } from '../../../common/lib/spaces';
+import { TestInvoker } from '../../../common/lib/types';
+import { getTestSuiteFactory } from '../../../common/suites/saved_objects/get';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
@@ -17,7 +19,7 @@ export default function ({ getService }) {
     createExpectLegacyForbidden,
     createExpectRbacForbidden,
     createExpectResults,
-    getTest
+    getTest,
   } = getTestSuiteFactory(esArchiver, supertest);
 
   describe('get', () => {
@@ -33,13 +35,8 @@ export default function ({ getService }) {
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
         userWithReadAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER,
         userWithAllAtOtherSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
-      }
-    ].forEach(({
-      spaceId,
-      userWithAllAtSpace,
-      userWithReadAtSpace,
-      userWithAllAtOtherSpace,
-    }) => {
+      },
+    ].forEach(({ spaceId, userWithAllAtSpace, userWithReadAtSpace, userWithAllAtOtherSpace }) => {
       getTest(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME, {
         auth: {
           username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
@@ -55,9 +52,8 @@ export default function ({ getService }) {
             statusCode: 403,
             response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
           },
-        }
+        },
       });
-
 
       getTest(AUTHENTICATION.SUPERUSER.USERNAME, {
         auth: {
@@ -74,7 +70,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME, {
@@ -92,7 +88,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME, {
@@ -110,7 +106,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME, {
@@ -128,7 +124,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME, {
@@ -146,7 +142,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(AUTHENTICATION.KIBANA_RBAC_USER.USERNAME, {
@@ -164,7 +160,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME, {
@@ -182,7 +178,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(`${userWithAllAtSpace.USERNAME} user`, {
@@ -200,7 +196,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(`${userWithReadAtSpace.USERNAME} user`, {
@@ -218,7 +214,7 @@ export default function ({ getService }) {
             statusCode: 404,
             response: createExpectDoesntExistNotFound(spaceId),
           },
-        }
+        },
       });
 
       getTest(`${userWithAllAtOtherSpace.USERNAME} user`, {
@@ -236,7 +232,7 @@ export default function ({ getService }) {
             statusCode: 403,
             response: createExpectRbacForbidden(),
           },
-        }
+        },
       });
     });
   });

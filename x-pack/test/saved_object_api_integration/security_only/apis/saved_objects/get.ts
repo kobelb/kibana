@@ -5,9 +5,11 @@
  */
 
 import { AUTHENTICATION } from '../../../common/lib/authentication';
+import { TestInvoker } from '../../../common/lib/types';
 import { getTestSuiteFactory } from '../../../common/suites/saved_objects/get';
 
-export default function ({ getService }) {
+// tslint:disable:no-default-export
+export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
@@ -15,11 +17,10 @@ export default function ({ getService }) {
     createExpectDoesntExistNotFound,
     createExpectLegacyForbidden,
     createExpectResults,
-    getTest
+    getTest,
   } = getTestSuiteFactory(esArchiver, supertest);
 
   describe('get', () => {
-
     getTest(`not a kibana user`, {
       auth: {
         username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
@@ -34,7 +35,7 @@ export default function ({ getService }) {
           statusCode: 403,
           response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
         },
-      }
+      },
     });
 
     getTest(`superuser`, {
@@ -51,7 +52,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana legacy user`, {
@@ -68,7 +69,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana legacy dashboard only user`, {
@@ -85,7 +86,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana dual-privileges user`, {
@@ -102,7 +103,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana dual-privileges dashboard only user`, {
@@ -119,7 +120,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana rbac user`, {
@@ -136,7 +137,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana rbac dashboard only user`, {
@@ -153,7 +154,7 @@ export default function ({ getService }) {
           statusCode: 404,
           response: createExpectDoesntExistNotFound(),
         },
-      }
+      },
     });
 
     getTest(`kibana rbac default space all user`, {
@@ -164,13 +165,17 @@ export default function ({ getService }) {
       tests: {
         exists: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
         doesntExist: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
         },
-      }
+      },
     });
 
     getTest(`kibana rbac default space read user`, {
@@ -181,13 +186,17 @@ export default function ({ getService }) {
       tests: {
         exists: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
         doesntExist: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
         },
-      }
+      },
     });
 
     getTest(`kibana rbac space 1 all user`, {
@@ -198,13 +207,17 @@ export default function ({ getService }) {
       tests: {
         exists: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
         },
         doesntExist: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
         },
-      }
+      },
     });
 
     getTest(`kibana rbac space 1 readonly user`, {
@@ -215,13 +228,17 @@ export default function ({ getService }) {
       tests: {
         exists: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
         },
         doesntExist: {
           statusCode: 403,
-          response: createExpectLegacyForbidden(AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME),
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
         },
-      }
+      },
     });
   });
 }
