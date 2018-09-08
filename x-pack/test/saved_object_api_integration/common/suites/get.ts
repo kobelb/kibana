@@ -25,6 +25,7 @@ interface GetTestDefinition {
   tests: GetTests;
 }
 
+// TODO: add space unaware type
 export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const existsId = 'dd7caf20-9efd-11e7-acb3-3dab96693fab';
   const doesntExistId = 'foobar';

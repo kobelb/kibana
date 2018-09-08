@@ -27,28 +27,26 @@ interface BulkGetTestDefinition {
 }
 
 export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
+  const createBulkRequests = (spaceId: string) => [
+    {
+      type: 'visualization',
+      id: `${getIdPrefix(spaceId)}dd7caf20-9efd-11e7-acb3-3dab96693fab`,
+    },
+    {
+      type: 'dashboard',
+      id: `${getIdPrefix(spaceId)}does not exist`,
+    },
+    {
+      type: 'globaltype',
+      id: '8121a00-8efd-21e7-1cb3-34ab966434445',
+    },
+  ];
+
   const makeBulkGetTest = (describeFn: DescribeFn) => (
     description: string,
     definition: BulkGetTestDefinition
   ) => {
-    const { auth = {}, spaceId, otherSpaceId, tests } = definition;
-
-    const BULK_REQUESTS = [
-      {
-        type: 'visualization',
-        id: 'dd7caf20-9efd-11e7-acb3-3dab96693fab',
-      },
-      {
-        type: 'dashboard',
-        id: 'does not exist',
-      },
-    ];
-
-    const createBulkRequests = (requestSpaceId: string) =>
-      BULK_REQUESTS.map(r => ({
-        ...r,
-        id: `${getIdPrefix(requestSpaceId)}${r.id}`,
-      }));
+    const { auth = {}, spaceId = DEFAULT_SPACE_ID, otherSpaceId, tests } = definition;
 
     describeFn(description, () => {
       before(() => esArchiver.load('saved_objects/spaces'));
@@ -56,9 +54,9 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<an
 
       it(`should return ${tests.default.statusCode}`, async () => {
         await supertest
-          .post(`${getUrlPrefix(spaceId || DEFAULT_SPACE_ID)}/api/saved_objects/_bulk_get`)
+          .post(`${getUrlPrefix(spaceId)}/api/saved_objects/_bulk_get`)
           .auth(auth.username, auth.password)
-          .send(createBulkRequests(otherSpaceId || spaceId || DEFAULT_SPACE_ID))
+          .send(createBulkRequests(otherSpaceId || spaceId))
           .expect(tests.default.statusCode)
           .then(tests.default.response);
       });
@@ -129,6 +127,15 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<an
           error: {
             statusCode: 404,
             message: 'Not found',
+          },
+        },
+        {
+          id: `8121a00-8efd-21e7-1cb3-34ab966434445`,
+          type: 'globaltype',
+          updated_at: '2017-09-21T18:59:16.270Z',
+          version: resp.body.saved_objects[2].version,
+          attributes: {
+            name: 'My favorite global object',
           },
         },
       ],

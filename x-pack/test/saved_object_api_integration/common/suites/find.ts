@@ -29,6 +29,7 @@ interface FindTestDefinition {
   tests: FindTests;
 }
 
+// TODO: add space unaware type
 export function findTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
   const makeFindTest = (describeFn: DescribeFn) => (
     description: string,

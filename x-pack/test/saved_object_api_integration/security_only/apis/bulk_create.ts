@@ -6,20 +6,23 @@
 
 import { AUTHENTICATION } from '../../common/lib/authentication';
 import { TestInvoker } from '../../common/lib/types';
-import { bulkGetTestSuiteFactory } from '../../common/suites/bulk_get';
+import { bulkCreateTestSuiteFactory } from '../../common/suites/bulk_create';
 
 // tslint:disable:no-default-export
 export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
+  const es = getService('es');
 
-  const { bulkGetTest, createExpectLegacyForbidden, createExpectResults } = bulkGetTestSuiteFactory(
-    esArchiver,
-    supertest
-  );
+  const {
+    bulkCreateTest,
+    createExpectLegacyForbidden,
+    createExpectResults,
+    expectRbacForbidden,
+  } = bulkCreateTestSuiteFactory(es, esArchiver, supertest);
 
-  describe.only('_bulk_get', () => {
-    bulkGetTest(`not a kibana user`, {
+  describe('_bulk_create', () => {
+    bulkCreateTest(`not a kibana user`, {
       auth: {
         username: AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME,
         password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
@@ -32,7 +35,7 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`superuser`, {
+    bulkCreateTest(`superuser`, {
       auth: {
         username: AUTHENTICATION.SUPERUSER.USERNAME,
         password: AUTHENTICATION.SUPERUSER.PASSWORD,
@@ -45,7 +48,7 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana legacy user`, {
+    bulkCreateTest(`kibana legacy user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_LEGACY_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
@@ -58,20 +61,22 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana legacy dashboard only user`, {
+    bulkCreateTest(`kibana legacy dashboard only user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
         default: {
-          statusCode: 200,
-          response: createExpectResults(),
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.USERNAME
+          ),
         },
       },
     });
 
-    bulkGetTest(`kibana dual-privileges user`, {
+    bulkCreateTest(`kibana dual-privileges user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
@@ -84,20 +89,20 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana dual-privileges dashboard only user`, {
+    bulkCreateTest(`kibana dual-privileges dashboard only user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
         default: {
-          statusCode: 200,
-          response: createExpectResults(),
+          statusCode: 403,
+          response: expectRbacForbidden,
         },
       },
     });
 
-    bulkGetTest(`kibana rbac user`, {
+    bulkCreateTest(`kibana rbac user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_RBAC_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
@@ -110,20 +115,20 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana rbac dashboard only user`, {
+    bulkCreateTest(`kibana rbac dashboard only user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
         default: {
-          statusCode: 200,
-          response: createExpectResults(),
+          statusCode: 403,
+          response: expectRbacForbidden,
         },
       },
     });
 
-    bulkGetTest(`kibana rbac default space all user`, {
+    bulkCreateTest(`kibana rbac default space all user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.PASSWORD,
@@ -138,7 +143,7 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana rbac default space read user`, {
+    bulkCreateTest(`kibana rbac default space read user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.PASSWORD,
@@ -153,7 +158,7 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana rbac space 1 all user`, {
+    bulkCreateTest(`kibana rbac space 1 all user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.PASSWORD,
@@ -168,7 +173,7 @@ export default function({ getService }: TestInvoker) {
       },
     });
 
-    bulkGetTest(`kibana rbac space 1 readonly user`, {
+    bulkCreateTest(`kibana rbac space 1 readonly user`, {
       auth: {
         username: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME,
         password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.PASSWORD,

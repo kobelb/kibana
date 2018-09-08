@@ -17,6 +17,7 @@ export default function({ getService, loadTestFile }: TestInvoker) {
       await createUsersAndRoles(es, supertest);
     });
 
+    loadTestFile(require.resolve('./bulk_create'));
     loadTestFile(require.resolve('./bulk_get'));
     loadTestFile(require.resolve('./create'));
     loadTestFile(require.resolve('./delete'));
