@@ -16,7 +16,8 @@ interface FindTest {
 }
 
 interface FindTests {
-  normal: FindTest;
+  spaceAwareType: FindTest;
+  notSpaceAwareType: FindTest;
   unknownType: FindTest;
   pageBeyondTotal: FindTest;
   unknownSearchField: FindTest;
@@ -41,12 +42,23 @@ export function findTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>)
       before(() => esArchiver.load('saved_objects/spaces'));
       after(() => esArchiver.unload('saved_objects/spaces'));
 
-      it(`should return ${tests.normal.statusCode} with ${tests.normal.description}`, async () =>
+      it(`space aware type should return ${tests.spaceAwareType.statusCode} with ${
+        tests.spaceAwareType.description
+      }`, async () =>
         await supertest
           .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find?type=visualization&fields=title`)
           .auth(auth.username, auth.password)
-          .expect(tests.normal.statusCode)
-          .then(tests.normal.response));
+          .expect(tests.spaceAwareType.statusCode)
+          .then(tests.spaceAwareType.response));
+
+      it(`not space aware type should return ${tests.spaceAwareType.statusCode} with ${
+        tests.notSpaceAwareType.description
+      }`, async () =>
+        await supertest
+          .get(`${getUrlPrefix(spaceId)}/api/saved_objects/_find?type=globaltype&fields=name`)
+          .auth(auth.username, auth.password)
+          .expect(tests.notSpaceAwareType.statusCode)
+          .then(tests.notSpaceAwareType.response));
 
       describe('unknown type', () => {
         it(`should return ${tests.unknownType.statusCode} with ${
@@ -176,6 +188,24 @@ export function findTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>)
     });
   };
 
+  const expectNotSpaceAwareResults = (resp: any) => {
+    expect(resp.body).to.eql({
+      page: 1,
+      per_page: 20,
+      total: 1,
+      saved_objects: [
+        {
+          type: 'globaltype',
+          id: `8121a00-8efd-21e7-1cb3-34ab966434445`,
+          version: 1,
+          attributes: {
+            name: 'My favorite global object',
+          },
+        },
+      ],
+    });
+  };
+
   const createExpectVisualizationResults = (spaceId = DEFAULT_SPACE_ID) => (resp: any) => {
     expect(resp.body).to.eql({
       page: 1,
@@ -200,6 +230,7 @@ export function findTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>)
     createExpectResults,
     createExpectLegacyForbidden,
     createExpectVisualizationResults,
+    expectNotSpaceAwareResults,
     findTest,
   };
 }

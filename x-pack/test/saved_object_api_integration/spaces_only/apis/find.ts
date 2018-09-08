@@ -17,6 +17,7 @@ export default function({ getService }: TestInvoker) {
     createExpectEmpty,
     createExpectResults,
     createExpectVisualizationResults,
+    expectNotSpaceAwareResults,
     findTest,
   } = findTestSuiteFactory(esArchiver, supertest);
 
@@ -24,10 +25,15 @@ export default function({ getService }: TestInvoker) {
     findTest(`objects only within the current space (space_1)`, {
       ...SPACES.SPACE_1,
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(SPACES.SPACE_1.spaceId),
+        },
+        notSpaceAwareType: {
+          description: 'only the visualization',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',
@@ -55,10 +61,15 @@ export default function({ getService }: TestInvoker) {
     findTest(`objects only within the current space (default)`, {
       ...SPACES.DEFAULT,
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(SPACES.DEFAULT.spaceId),
+        },
+        notSpaceAwareType: {
+          description: 'only the visualization',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',

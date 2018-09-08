@@ -20,7 +20,7 @@ export default function({ getService }: TestInvoker) {
     supertest
   );
 
-  describe.only('_bulk_create', () => {
+  describe('_bulk_create', () => {
     bulkCreateTest('in the current space (space_1)', {
       ...SPACES.SPACE_1,
       tests: {

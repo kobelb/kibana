@@ -20,6 +20,7 @@ export default function({ getService }: TestInvoker) {
       createExpectResults,
       createExpectLegacyForbidden,
       createExpectVisualizationResults,
+      expectNotSpaceAwareResults,
       findTest,
     } = findTestSuiteFactory(esArchiver, supertest);
 
@@ -29,8 +30,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'forbidden login and find visualization message',
+          statusCode: 403,
+          response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+        },
+        notSpaceAwareType: {
+          description: 'forbidden legacy message',
           statusCode: 403,
           response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
         },
@@ -63,10 +69,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.SUPERUSER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',
@@ -97,10 +108,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',
@@ -131,10 +147,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',
@@ -165,10 +186,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',
@@ -199,10 +225,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'forbidden find wigwags message',
@@ -233,10 +264,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'empty result',
@@ -267,10 +303,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
           statusCode: 200,
           response: createExpectVisualizationResults(),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
+          statusCode: 200,
+          response: expectNotSpaceAwareResults,
         },
         unknownType: {
           description: 'forbidden find wigwags message',
@@ -301,8 +342,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
@@ -345,8 +393,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'only the visualization',
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
@@ -389,8 +444,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'forbidden login and find visualization message',
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
@@ -433,8 +495,15 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.PASSWORD,
       },
       tests: {
-        normal: {
+        spaceAwareType: {
           description: 'forbidden login and find visualization message',
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
+        },
+        notSpaceAwareType: {
+          description: 'only the globaltype',
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME

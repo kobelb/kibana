@@ -14,13 +14,14 @@ export default function({ getService }: TestInvoker) {
   const supertest = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
-  describe.only('find', () => {
+  describe('find', () => {
     const {
       createExpectEmpty,
       createExpectRbacForbidden,
       createExpectResults,
       createExpectLegacyForbidden,
       createExpectVisualizationResults,
+      expectNotSpaceAwareResults,
       findTest,
     } = findTestSuiteFactory(esArchiver, supertest);
 
@@ -62,8 +63,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'forbidden login and find visualization message',
+            statusCode: 403,
+            response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+          },
+          notSpaceAwareType: {
+            description: 'forbidden login and find globaltype message',
             statusCode: 403,
             response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
           },
@@ -97,10 +103,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'empty result',
@@ -132,10 +143,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'empty result',
@@ -167,10 +183,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'empty result',
@@ -202,10 +223,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'empty result',
@@ -237,10 +263,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'forbidden find wigwags message',
@@ -272,10 +303,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'empty result',
@@ -307,10 +343,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'forbidden find wigwags message',
@@ -342,10 +383,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'forbidden and find wigwags message',
@@ -377,10 +423,15 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          normal: {
+          spaceAwareType: {
             description: 'only the visualization',
             statusCode: 200,
             response: createExpectVisualizationResults(scenario.spaceId),
+          },
+          notSpaceAwareType: {
+            description: 'only the globaltype',
+            statusCode: 200,
+            response: expectNotSpaceAwareResults,
           },
           unknownType: {
             description: 'forbidden and find wigwags message',
@@ -414,10 +465,15 @@ export default function({ getService }: TestInvoker) {
           },
           spaceId: scenario.spaceId,
           tests: {
-            normal: {
+            spaceAwareType: {
               description: 'forbidden login and find visualization message',
               statusCode: 403,
               response: createExpectRbacForbidden('visualization'),
+            },
+            notSpaceAwareType: {
+              description: 'forbidden login and find globaltype message',
+              statusCode: 403,
+              response: createExpectRbacForbidden('globaltype'),
             },
             unknownType: {
               description: 'forbidden login and find wigwags message',
