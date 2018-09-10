@@ -10,7 +10,6 @@ import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
 
 interface UpdateTest {
   statusCode: number;
-  space: any;
   response: (resp: any) => void;
 }
 
@@ -36,9 +35,15 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
 
       it(`should return ${tests.alreadyExists.statusCode}`, async () => {
         return supertest
-          .put(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/${tests.alreadyExists.space.id}`)
+          .put(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/space_1`)
           .auth(auth.username, auth.password)
-          .send(tests.alreadyExists.space)
+          .send({
+            name: 'space 1',
+            id: 'space_1',
+            description: 'a description',
+            color: '#5c5959',
+            _reserved: true,
+          })
           .expect(tests.alreadyExists.statusCode)
           .then(tests.alreadyExists.response);
       });
@@ -46,9 +51,14 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
       describe(`when space doesn't exist`, () => {
         it(`should return ${tests.newSpace.statusCode}`, async () => {
           return supertest
-            .put(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/${tests.newSpace.space.id}`)
+            .put(`${getUrlPrefix(spaceId)}/api/spaces/v1/space/marketing`)
             .auth(auth.username, auth.password)
-            .send(tests.newSpace.space)
+            .send({
+              name: 'marketing',
+              id: 'marketing',
+              description: 'a description',
+              color: '#5c5959',
+            })
             .expect(tests.newSpace.statusCode)
             .then(tests.newSpace.response);
         });
@@ -58,10 +68,6 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
 
   const updateTest = makeUpdateTest(describe);
 
-  const createExpectResult = (expectedResult: any) => (resp: any) => {
-    expect(resp.body).to.eql(expectedResult);
-  };
-
   const createExpectNotFoundResult = (spaceId: string) => (resp: any) => {
     expect(resp.body).to.eql({
       error: 'Not Found',
@@ -70,7 +76,7 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const expectRbacForbiddenResult = (resp: any) => {
+  const expectRbacForbidden = (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -78,7 +84,7 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectLegacyForbiddenResult = (username: string) => (resp: any) => {
+  const createExpectLegacyForbidden = (username: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -86,11 +92,22 @@ export function updateTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
+  const expectNewSpaceNotFound = createExpectNotFoundResult('marketing');
+
+  const expectAlreadyExistsResult = (resp: any) => {
+    expect(resp.body).to.eql({
+      name: 'space 1',
+      id: 'space_1',
+      description: 'a description',
+      color: '#5c5959',
+    });
+  };
+
   return {
     updateTest,
-    createExpectResult,
-    createExpectNotFoundResult,
-    expectRbacForbiddenResult,
-    createExpectLegacyForbiddenResult,
+    expectNewSpaceNotFound,
+    expectRbacForbidden,
+    createExpectLegacyForbidden,
+    expectAlreadyExistsResult,
   };
 }

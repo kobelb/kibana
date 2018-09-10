@@ -16,7 +16,8 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
 
   const {
     createTest,
-    createExpectResult,
+    expectReservedSpecifiedResult,
+    expectNewSpaceResult,
     expectConflictResponse,
     expectRbacForbiddenResponse,
     createExpectLegacyForbiddenResponse,
@@ -26,6 +27,8 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
@@ -36,6 +39,8 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -45,6 +50,50 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         userWithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
       },
     ].forEach(scenario => {
+      createTest(`${scenario.notAKibanaUser.USERNAME} within the ${scenario.spaceId} space`, {
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.notAKibanaUser.USERNAME,
+          password: scenario.notAKibanaUser.PASSWORD,
+        },
+        tests: {
+          newSpace: {
+            statusCode: 403,
+            response: createExpectLegacyForbiddenResponse(scenario.notAKibanaUser.USERNAME),
+          },
+          alreadyExists: {
+            statusCode: 403,
+            response: createExpectLegacyForbiddenResponse(scenario.notAKibanaUser.USERNAME),
+          },
+          reservedSpecified: {
+            statusCode: 403,
+            response: createExpectLegacyForbiddenResponse(scenario.notAKibanaUser.USERNAME),
+          },
+        },
+      });
+
+      createTest(`${scenario.superuser.USERNAME} within the ${scenario.spaceId} space`, {
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
+        },
+        tests: {
+          newSpace: {
+            statusCode: 200,
+            response: expectNewSpaceResult,
+          },
+          alreadyExists: {
+            statusCode: 409,
+            response: expectConflictResponse,
+          },
+          reservedSpecified: {
+            statusCode: 200,
+            response: expectReservedSpecifiedResult,
+          },
+        },
+      });
+
       createTest(`${scenario.userWithAllGlobally.USERNAME} within the ${scenario.spaceId} space`, {
         spaceId: scenario.spaceId,
         auth: {
@@ -53,39 +102,16 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectNewSpaceResult,
           },
           alreadyExists: {
             statusCode: 409,
             response: expectConflictResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectReservedSpecifiedResult,
           },
         },
       });
@@ -98,39 +124,16 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectNewSpaceResult,
           },
           alreadyExists: {
             statusCode: 409,
             response: expectConflictResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectReservedSpecifiedResult,
           },
         },
       });
@@ -143,39 +146,16 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectNewSpaceResult,
           },
           alreadyExists: {
             statusCode: 409,
             response: expectConflictResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectReservedSpecifiedResult,
           },
         },
       });
@@ -188,12 +168,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 403,
             response: expectRbacForbiddenResponse,
           },
@@ -202,13 +176,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
             response: expectRbacForbiddenResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 403,
             response: expectRbacForbiddenResponse,
           },
@@ -223,12 +190,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 403,
             response: expectRbacForbiddenResponse,
           },
@@ -237,13 +198,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
             response: expectRbacForbiddenResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 403,
             response: expectRbacForbiddenResponse,
           },
@@ -258,12 +212,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 403,
             response: createExpectLegacyForbiddenResponse(scenario.userWithLegacyRead.USERNAME),
           },
@@ -272,13 +220,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
             response: createExpectLegacyForbiddenResponse(scenario.userWithLegacyRead.USERNAME),
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 403,
             response: createExpectLegacyForbiddenResponse(scenario.userWithLegacyRead.USERNAME),
           },
@@ -293,12 +234,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         },
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 403,
             response: expectRbacForbiddenResponse,
           },
@@ -307,13 +242,6 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
             response: expectRbacForbiddenResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 403,
             response: expectRbacForbiddenResponse,
           },

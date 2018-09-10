@@ -16,16 +16,18 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
 
   const {
     updateTest,
-    createExpectResult,
-    createExpectNotFoundResult,
-    expectRbacForbiddenResult,
-    createExpectLegacyForbiddenResult,
+    expectNewSpaceNotFound,
+    expectAlreadyExistsResult,
+    expectRbacForbidden,
+    createExpectLegacyForbidden,
   } = updateTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
   describe('update', () => {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -37,6 +39,8 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -48,6 +52,50 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
       },
     ].forEach(scenario => {
       updateTest(
+        `${scenario.notAKibanaUser.USERNAME} can't update space_1 from
+        the ${scenario.spaceId} space`,
+        {
+          spaceId: scenario.spaceId,
+          auth: {
+            username: scenario.notAKibanaUser.USERNAME,
+            password: scenario.notAKibanaUser.PASSWORD,
+          },
+          tests: {
+            alreadyExists: {
+              statusCode: 403,
+              response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
+            },
+            newSpace: {
+              statusCode: 403,
+              response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
+            },
+          },
+        }
+      );
+
+      updateTest(
+        `${scenario.superuser.USERNAME} can update space_1 from
+        the ${scenario.spaceId} space`,
+        {
+          spaceId: scenario.spaceId,
+          auth: {
+            username: scenario.superuser.USERNAME,
+            password: scenario.superuser.PASSWORD,
+          },
+          tests: {
+            alreadyExists: {
+              statusCode: 200,
+              response: expectAlreadyExistsResult,
+            },
+            newSpace: {
+              statusCode: 404,
+              response: expectNewSpaceNotFound,
+            },
+          },
+        }
+      );
+
+      updateTest(
         `${scenario.userWithAllGlobally.USERNAME} can update space_1 from
         the ${scenario.spaceId} space`,
         {
@@ -58,30 +106,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
           },
           tests: {
             alreadyExists: {
-              space: {
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-                _reserved: true,
-              },
               statusCode: 200,
-              response: createExpectResult({
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-              }),
+              response: expectAlreadyExistsResult,
             },
             newSpace: {
-              space: {
-                name: 'marketing',
-                id: 'marketing',
-                description: 'a description',
-                color: '#5c5959',
-              },
               statusCode: 404,
-              response: createExpectNotFoundResult('marketing'),
+              response: expectNewSpaceNotFound,
             },
           },
         }
@@ -98,30 +128,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
           },
           tests: {
             alreadyExists: {
-              space: {
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-                _reserved: true,
-              },
               statusCode: 200,
-              response: createExpectResult({
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-              }),
+              response: expectAlreadyExistsResult,
             },
             newSpace: {
-              space: {
-                name: 'marketing',
-                id: 'marketing',
-                description: 'a description',
-                color: '#5c5959',
-              },
               statusCode: 404,
-              response: createExpectNotFoundResult('marketing'),
+              response: expectNewSpaceNotFound,
             },
           },
         }
@@ -138,30 +150,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
           },
           tests: {
             alreadyExists: {
-              space: {
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-                _reserved: true,
-              },
               statusCode: 200,
-              response: createExpectResult({
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-              }),
+              response: expectAlreadyExistsResult,
             },
             newSpace: {
-              space: {
-                name: 'marketing',
-                id: 'marketing',
-                description: 'a description',
-                color: '#5c5959',
-              },
               statusCode: 404,
-              response: createExpectNotFoundResult('marketing'),
+              response: expectNewSpaceNotFound,
             },
           },
         }
@@ -178,25 +172,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
           },
           tests: {
             alreadyExists: {
-              space: {
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-                _reserved: true,
-              },
               statusCode: 403,
-              response: expectRbacForbiddenResult,
+              response: expectRbacForbidden,
             },
             newSpace: {
-              space: {
-                name: 'marketing',
-                id: 'marketing',
-                description: 'a description',
-                color: '#5c5959',
-              },
               statusCode: 403,
-              response: expectRbacForbiddenResult,
+              response: expectRbacForbidden,
             },
           },
         }
@@ -213,25 +194,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
           },
           tests: {
             alreadyExists: {
-              space: {
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-                _reserved: true,
-              },
               statusCode: 403,
-              response: expectRbacForbiddenResult,
+              response: expectRbacForbidden,
             },
             newSpace: {
-              space: {
-                name: 'marketing',
-                id: 'marketing',
-                description: 'a description',
-                color: '#5c5959',
-              },
               statusCode: 403,
-              response: expectRbacForbiddenResult,
+              response: expectRbacForbidden,
             },
           },
         }
@@ -248,25 +216,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
           },
           tests: {
             alreadyExists: {
-              space: {
-                name: 'space 1',
-                id: 'space_1',
-                description: 'a description',
-                color: '#5c5959',
-                _reserved: true,
-              },
               statusCode: 403,
-              response: createExpectLegacyForbiddenResult(scenario.userWithLegacyRead.USERNAME),
+              response: createExpectLegacyForbidden(scenario.userWithLegacyRead.USERNAME),
             },
             newSpace: {
-              space: {
-                name: 'marketing',
-                id: 'marketing',
-                description: 'a description',
-                color: '#5c5959',
-              },
               statusCode: 403,
-              response: createExpectLegacyForbiddenResult(scenario.userWithLegacyRead.USERNAME),
+              response: createExpectLegacyForbidden(scenario.userWithLegacyRead.USERNAME),
             },
           },
         }
@@ -280,25 +235,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
         },
         tests: {
           alreadyExists: {
-            space: {
-              name: 'space 1',
-              id: 'space_1',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
         },
       });
@@ -311,25 +253,12 @@ export default function updateSpaceTestSuite({ getService }: TestInvoker) {
         },
         tests: {
           alreadyExists: {
-            space: {
-              name: 'space 1',
-              id: 'space_1',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
         },
       });

@@ -19,14 +19,16 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
     expectEmptyResult,
     expectReservedSpaceResult,
     expectNotFoundResult,
-    expectRbacForbiddenResult,
-    createExpectLegacyForbiddenResult,
+    expectRbacForbidden,
+    createExpectLegacyForbidden,
   } = deleteTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
   describe('delete', () => {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
@@ -37,6 +39,8 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -46,6 +50,50 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         userwithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
       },
     ].forEach(scenario => {
+      deleteTest(`${scenario.notAKibanaUser.USERNAME} from the ${scenario.spaceId} space`, {
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.notAKibanaUser.USERNAME,
+          password: scenario.notAKibanaUser.PASSWORD,
+        },
+        tests: {
+          exists: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME, 'read/get'),
+          },
+          reservedSpace: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME, 'read/get'),
+          },
+          doesntExist: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME, 'read/get'),
+          },
+        },
+      });
+
+      deleteTest(`${scenario.superuser.USERNAME} from the ${scenario.spaceId} space`, {
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
+        },
+        tests: {
+          exists: {
+            statusCode: 204,
+            response: expectEmptyResult,
+          },
+          reservedSpace: {
+            statusCode: 400,
+            response: expectReservedSpaceResult,
+          },
+          doesntExist: {
+            statusCode: 404,
+            response: expectNotFoundResult,
+          },
+        },
+      });
+
       deleteTest(`${scenario.userWithAllGlobally.USERNAME} from the ${scenario.spaceId} space`, {
         spaceId: scenario.spaceId,
         auth: {
@@ -121,15 +169,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           reservedSpace: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           doesntExist: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
         },
       });
@@ -143,15 +191,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           reservedSpace: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           doesntExist: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
         },
       });
@@ -165,7 +213,10 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: createExpectLegacyForbiddenResult(scenario.userWithLegacyRead.USERNAME),
+            response: createExpectLegacyForbidden(
+              scenario.userWithLegacyRead.USERNAME,
+              'write/delete'
+            ),
           },
           reservedSpace: {
             statusCode: 400,
@@ -187,15 +238,15 @@ export default function deleteSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           exists: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           reservedSpace: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
           doesntExist: {
             statusCode: 403,
-            response: expectRbacForbiddenResult,
+            response: expectRbacForbidden,
           },
         },
       });

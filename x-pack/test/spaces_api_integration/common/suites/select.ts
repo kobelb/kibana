@@ -84,7 +84,7 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
       message: `Saved object [space/${spaceId}] not found`,
     });
   };
-  const createExpectForbiddenResult = (spaceId: any) => (resp: any) => {
+  const createExpectRbacForbidden = (spaceId: any) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -108,14 +108,23 @@ export function selectTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     }
   };
 
+  const createExpectLegacyForbidden = (username: string) => (resp: any) => {
+    expect(resp.body).to.eql({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: `action [indices:data/read/get] is unauthorized for user [${username}]: [security_exception] action [indices:data/read/get] is unauthorized for user [${username}]`,
+    });
+  };
+
   return {
     selectTest,
     nonExistantSpaceId,
     expectDefaultSpaceResponse,
     createExpectSpaceResponse,
     createExpectResults,
-    createExpectForbiddenResult,
+    createExpectRbacForbidden,
     createExpectEmptyResult,
     createExpectNotFoundResult,
+    createExpectLegacyForbidden,
   };
 }

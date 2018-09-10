@@ -18,7 +18,8 @@ export default function getSpaceTestSuite({ getService }: TestInvoker) {
     getTest,
     createExpectResults,
     createExpectNotFoundResult,
-    createExpectForbiddenResult,
+    createExpectLegacyForbidden,
+    createExpectRbacForbidden,
     nonExistantSpaceId,
   } = getTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
@@ -28,6 +29,8 @@ export default function getSpaceTestSuite({ getService }: TestInvoker) {
       {
         spaceId: SPACES.DEFAULT.spaceId,
         otherSpaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER,
@@ -41,6 +44,8 @@ export default function getSpaceTestSuite({ getService }: TestInvoker) {
       {
         spaceId: SPACES.SPACE_1.spaceId,
         otherSpaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -52,6 +57,36 @@ export default function getSpaceTestSuite({ getService }: TestInvoker) {
         userwithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
       },
     ].forEach(scenario => {
+      getTest(`${scenario.notAKibanaUser.USERNAME}`, {
+        currentSpaceId: scenario.spaceId,
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.notAKibanaUser.USERNAME,
+          password: scenario.notAKibanaUser.PASSWORD,
+        },
+        tests: {
+          default: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
+          },
+        },
+      });
+
+      getTest(`${scenario.superuser.USERNAME}`, {
+        currentSpaceId: scenario.spaceId,
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
+        },
+        tests: {
+          default: {
+            statusCode: 200,
+            response: createExpectResults(scenario.spaceId),
+          },
+        },
+      });
+
       getTest(`${scenario.userWithAllGlobally.USERNAME}`, {
         currentSpaceId: scenario.spaceId,
         spaceId: scenario.spaceId,
@@ -167,7 +202,7 @@ export default function getSpaceTestSuite({ getService }: TestInvoker) {
         tests: {
           default: {
             statusCode: 403,
-            response: createExpectForbiddenResult(scenario.spaceId),
+            response: createExpectRbacForbidden(scenario.spaceId),
           },
         },
       });
@@ -287,7 +322,7 @@ export default function getSpaceTestSuite({ getService }: TestInvoker) {
           tests: {
             default: {
               statusCode: 403,
-              response: createExpectForbiddenResult(scenario.otherSpaceId),
+              response: createExpectRbacForbidden(scenario.otherSpaceId),
             },
           },
         });

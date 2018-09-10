@@ -13,10 +13,12 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
   const supertestWithoutAuth = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
-  const { createTest, createExpectResult, expectConflictResponse } = createTestSuiteFactory(
-    esArchiver,
-    supertestWithoutAuth
-  );
+  const {
+    createTest,
+    expectNewSpaceResult,
+    expectConflictResponse,
+    expectReservedSpecifiedResult,
+  } = createTestSuiteFactory(esArchiver, supertestWithoutAuth);
 
   describe('create', () => {
     [
@@ -31,39 +33,16 @@ export default function createSpacesOnlySuite({ getService }: TestInvoker) {
         spaceId: scenario.spaceId,
         tests: {
           newSpace: {
-            space: {
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'marketing',
-              id: 'marketing',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectNewSpaceResult,
           },
           alreadyExists: {
             statusCode: 409,
             response: expectConflictResponse,
           },
           reservedSpecified: {
-            space: {
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-              _reserved: true,
-            },
             statusCode: 200,
-            response: createExpectResult({
-              name: 'reserved space',
-              id: 'reserved',
-              description: 'a description',
-              color: '#5c5959',
-            }),
+            response: expectReservedSpecifiedResult,
           },
         },
       });

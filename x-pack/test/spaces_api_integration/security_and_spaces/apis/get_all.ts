@@ -14,7 +14,7 @@ export default function getAllSpacesTestSuite({ getService }: TestInvoker) {
   const supertestWithoutAuth = getService('supertestWithoutAuth');
   const esArchiver = getService('esArchiver');
 
-  const { getAllTest, createExpectResults } = getAllTestSuiteFactory(
+  const { getAllTest, createExpectResults, createExpectLegacyForbidden } = getAllTestSuiteFactory(
     esArchiver,
     supertestWithoutAuth
   );
@@ -23,6 +23,8 @@ export default function getAllSpacesTestSuite({ getService }: TestInvoker) {
     [
       {
         spaceId: SPACES.DEFAULT.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace_1: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -36,6 +38,8 @@ export default function getAllSpacesTestSuite({ getService }: TestInvoker) {
       },
       {
         spaceId: SPACES.SPACE_1.spaceId,
+        notAKibanaUser: AUTHENTICATION.NOT_A_KIBANA_USER,
+        superuser: AUTHENTICATION.SUPERUSER,
         userWithAllGlobally: AUTHENTICATION.KIBANA_RBAC_USER,
         userWithReadGlobally: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER,
         userWithAllAtSpace_1: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER,
@@ -48,6 +52,37 @@ export default function getAllSpacesTestSuite({ getService }: TestInvoker) {
         userwithDualRead: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER,
       },
     ].forEach(scenario => {
+      getAllTest(
+        `${scenario.notAKibanaUser.USERNAME} can't access any spaces from ${scenario.spaceId}`,
+        {
+          spaceId: scenario.spaceId,
+          auth: {
+            username: scenario.notAKibanaUser.USERNAME,
+            password: scenario.notAKibanaUser.PASSWORD,
+          },
+          tests: {
+            exists: {
+              statusCode: 403,
+              response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
+            },
+          },
+        }
+      );
+
+      getAllTest(`${scenario.superuser.USERNAME} can access all spaces from ${scenario.spaceId}`, {
+        spaceId: scenario.spaceId,
+        auth: {
+          username: scenario.superuser.USERNAME,
+          password: scenario.superuser.PASSWORD,
+        },
+        tests: {
+          exists: {
+            statusCode: 200,
+            response: createExpectResults('default', 'space_1', 'space_2'),
+          },
+        },
+      });
+
       getAllTest(
         `${scenario.userWithAllGlobally.USERNAME} can access all spaces from ${scenario.spaceId}`,
         {

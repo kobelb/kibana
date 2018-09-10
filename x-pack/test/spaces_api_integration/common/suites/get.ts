@@ -81,7 +81,7 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>)
     });
   };
 
-  const createExpectForbiddenResult = (spaceId: string) => (resp: any) => {
+  const createExpectRbacForbidden = (spaceId: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -89,12 +89,21 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperAgent<any>)
     });
   };
 
+  const createExpectLegacyForbidden = (username: string) => (resp: any) => {
+    expect(resp.body).to.eql({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: `action [indices:data/read/get] is unauthorized for user [${username}]: [security_exception] action [indices:data/read/get] is unauthorized for user [${username}]`,
+    });
+  };
+
   return {
     getTest,
     nonExistantSpaceId,
     createExpectResults,
-    createExpectForbiddenResult,
+    createExpectRbacForbidden,
     createExpectEmptyResult,
     createExpectNotFoundResult,
+    createExpectLegacyForbidden,
   };
 }

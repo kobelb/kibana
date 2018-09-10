@@ -90,7 +90,7 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const expectRbacForbiddenResult = (resp: any) => {
+  const expectRbacForbidden = (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
@@ -98,19 +98,19 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
-  const createExpectLegacyForbiddenResult = (username: string) => (resp: any) => {
+  const createExpectLegacyForbidden = (username: string, action: string) => (resp: any) => {
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
-      message: `action [indices:data/write/delete] is unauthorized for user [${username}]: [security_exception] action [indices:data/write/delete] is unauthorized for user [${username}]`,
+      message: `action [indices:data/${action}] is unauthorized for user [${username}]: [security_exception] action [indices:data/${action}] is unauthorized for user [${username}]`,
     });
   };
 
   return {
     deleteTest,
-    createExpectLegacyForbiddenResult,
+    createExpectLegacyForbidden,
     createExpectResult,
-    expectRbacForbiddenResult,
+    expectRbacForbidden,
     expectEmptyResult,
     expectNotFoundResult,
     expectReservedSpaceResult,

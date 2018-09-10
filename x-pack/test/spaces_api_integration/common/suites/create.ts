@@ -9,21 +9,15 @@ import { SuperTest } from 'supertest';
 import { getUrlPrefix } from '../lib/space_test_utils';
 import { DescribeFn, TestDefinitionAuthentication } from '../lib/types';
 
-interface CreateTestWithoutSpace {
+interface CreateTest {
   statusCode: number;
-  response: (resp: any) => void;
-}
-
-interface CreateTestWithSpace {
-  statusCode: number;
-  space: any;
   response: (resp: any) => void;
 }
 
 interface CreateTests {
-  newSpace: CreateTestWithSpace;
-  alreadyExists: CreateTestWithoutSpace;
-  reservedSpecified: CreateTestWithSpace;
+  newSpace: CreateTest;
+  alreadyExists: CreateTest;
+  reservedSpecified: CreateTest;
 }
 
 interface CreateTestDefinition {
@@ -45,7 +39,12 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
         return supertest
           .post(`${getUrlPrefix(spaceId)}/api/spaces/v1/space`)
           .auth(auth.username, auth.password)
-          .send(tests.newSpace.space)
+          .send({
+            name: 'marketing',
+            id: 'marketing',
+            description: 'a description',
+            color: '#5c5959',
+          })
           .expect(tests.newSpace.statusCode)
           .then(tests.newSpace.response);
       });
@@ -71,7 +70,13 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
           return supertest
             .post(`${getUrlPrefix(spaceId)}/api/spaces/v1/space`)
             .auth(auth.username, auth.password)
-            .send(tests.reservedSpecified.space)
+            .send({
+              name: 'reserved space',
+              id: 'reserved',
+              description: 'a description',
+              color: '#5c5959',
+              _reserved: true,
+            })
             .expect(tests.reservedSpecified.statusCode)
             .then(tests.reservedSpecified.response);
         });
@@ -80,10 +85,6 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
   };
 
   const createTest = makeCreateTest(describe);
-
-  const createExpectResult = (expectedResult: any) => (resp: any) => {
-    expect(resp.body).to.eql(expectedResult);
-  };
 
   const expectConflictResponse = (resp: any) => {
     const spaceId = 'space_1';
@@ -111,9 +112,28 @@ export function createTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     });
   };
 
+  const expectNewSpaceResult = (resp: any) => {
+    expect(resp.body).to.eql({
+      name: 'marketing',
+      id: 'marketing',
+      description: 'a description',
+      color: '#5c5959',
+    });
+  };
+
+  const expectReservedSpecifiedResult = (resp: any) => {
+    expect(resp.body).to.eql({
+      name: 'reserved space',
+      id: 'reserved',
+      description: 'a description',
+      color: '#5c5959',
+    });
+  };
+
   return {
     createTest,
-    createExpectResult,
+    expectNewSpaceResult,
+    expectReservedSpecifiedResult,
     expectConflictResponse,
     expectRbacForbiddenResponse,
     createExpectLegacyForbiddenResponse,

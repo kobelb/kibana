@@ -70,9 +70,18 @@ export function getAllTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     expect(resp.body).to.eql('');
   };
 
+  const createExpectLegacyForbidden = (username: string) => (resp: any) => {
+    expect(resp.body).to.eql({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: `action [indices:data/read/search] is unauthorized for user [${username}]: [security_exception] action [indices:data/read/search] is unauthorized for user [${username}]`,
+    });
+  };
+
   return {
     getAllTest,
     createExpectResults,
+    createExpectLegacyForbidden,
     expectEmptyResult,
   };
 }
