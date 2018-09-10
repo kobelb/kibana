@@ -76,7 +76,7 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<an
     expect(resp.body).to.eql({
       statusCode: 403,
       error: 'Forbidden',
-      message: `Unable to bulk_get dashboard,visualization, missing action:saved_objects/dashboard/bulk_get,action:saved_objects/visualization/bulk_get`,
+      message: `Unable to bulk_get dashboard,globaltype,visualization, missing action:saved_objects/dashboard/bulk_get,action:saved_objects/globaltype/bulk_get,action:saved_objects/visualization/bulk_get`,
     });
   };
 
@@ -97,6 +97,15 @@ export function bulkGetTestSuiteFactory(esArchiver: any, supertest: SuperTest<an
           error: {
             statusCode: 404,
             message: 'Not found',
+          },
+        },
+        {
+          id: `8121a00-8efd-21e7-1cb3-34ab966434445`,
+          type: 'globaltype',
+          updated_at: '2017-09-21T18:59:16.270Z',
+          version: resp.body.saved_objects[2].version,
+          attributes: {
+            name: 'My favorite global object',
           },
         },
       ],

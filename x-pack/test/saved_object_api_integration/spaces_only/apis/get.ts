@@ -13,18 +13,24 @@ export default function({ getService }: TestInvoker) {
   const supertest = getService('supertest');
   const esArchiver = getService('esArchiver');
 
-  const { createExpectDoesntExistNotFound, createExpectResults, getTest } = getTestSuiteFactory(
-    esArchiver,
-    supertest
-  );
+  const {
+    createExpectDoesntExistNotFound,
+    createExpectSpaceAwareResults,
+    createExpectNotSpaceAwareResults,
+    getTest,
+  } = getTestSuiteFactory(esArchiver, supertest);
 
   describe('get', () => {
     getTest(`can access objects belonging to the current space (default)`, {
       ...SPACES.DEFAULT,
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(SPACES.DEFAULT.spaceId),
+          response: createExpectSpaceAwareResults(SPACES.DEFAULT.spaceId),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(SPACES.DEFAULT.spaceId),
         },
         doesntExist: {
           statusCode: 404,
@@ -36,9 +42,13 @@ export default function({ getService }: TestInvoker) {
     getTest(`can access objects belonging to the current space (space_1)`, {
       ...SPACES.SPACE_1,
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(SPACES.SPACE_1.spaceId),
+          response: createExpectSpaceAwareResults(SPACES.SPACE_1.spaceId),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(SPACES.SPACE_1.spaceId),
         },
         doesntExist: {
           statusCode: 404,

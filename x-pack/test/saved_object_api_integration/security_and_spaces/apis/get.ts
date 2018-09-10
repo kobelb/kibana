@@ -17,8 +17,10 @@ export default function({ getService }: TestInvoker) {
   const {
     createExpectDoesntExistNotFound,
     createExpectLegacyForbidden,
-    createExpectRbacForbidden,
-    createExpectResults,
+    createExpectSpaceAwareRbacForbidden,
+    createExpectSpaceAwareResults,
+    createExpectNotSpaceAwareResults,
+    createExpectNotSpaceAwareRbacForbidden,
     getTest,
   } = getTestSuiteFactory(esArchiver, supertest);
 
@@ -61,7 +63,11 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
+            statusCode: 403,
+            response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
+          },
+          notSpaceAware: {
             statusCode: 403,
             response: createExpectLegacyForbidden(scenario.notAKibanaUser.USERNAME),
           },
@@ -79,9 +85,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -97,9 +107,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -115,9 +129,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -133,9 +151,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -151,9 +173,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -169,9 +195,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -187,9 +217,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -205,9 +239,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -223,9 +261,13 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 200,
-            response: createExpectResults(scenario.spaceId),
+            response: createExpectSpaceAwareResults(scenario.spaceId),
+          },
+          notSpaceAware: {
+            statusCode: 200,
+            response: createExpectNotSpaceAwareResults(scenario.spaceId),
           },
           doesntExist: {
             statusCode: 404,
@@ -241,13 +283,17 @@ export default function({ getService }: TestInvoker) {
         },
         spaceId: scenario.spaceId,
         tests: {
-          exists: {
+          spaceAware: {
             statusCode: 403,
-            response: createExpectRbacForbidden(),
+            response: createExpectSpaceAwareRbacForbidden(),
+          },
+          notSpaceAware: {
+            statusCode: 403,
+            response: createExpectNotSpaceAwareRbacForbidden(),
           },
           doesntExist: {
             statusCode: 403,
-            response: createExpectRbacForbidden(),
+            response: createExpectSpaceAwareRbacForbidden(),
           },
         },
       });

@@ -15,7 +15,8 @@ interface GetTest {
 }
 
 interface GetTests {
-  exists: GetTest;
+  spaceAware: GetTest;
+  notSpaceAware: GetTest;
   doesntExist: GetTest;
 }
 
@@ -27,7 +28,8 @@ interface GetTestDefinition {
 
 // TODO: add space unaware type
 export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) {
-  const existsId = 'dd7caf20-9efd-11e7-acb3-3dab96693fab';
+  const spaceAwareId = 'dd7caf20-9efd-11e7-acb3-3dab96693fab';
+  const notSpaceAwareId = '8121a00-8efd-21e7-1cb3-34ab966434445';
   const doesntExistId = 'foobar';
   const makeGetTest = (describeFn: DescribeFn) => (
     description: string,
@@ -39,16 +41,28 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) 
       before(() => esArchiver.load('saved_objects/spaces'));
       after(() => esArchiver.unload('saved_objects/spaces'));
 
-      it(`should return ${tests.exists.statusCode}`, async () => {
+      it(`should return ${
+        tests.spaceAware.statusCode
+      } when getting a space aware doc`, async () => {
         await supertest
           .get(
             `${getUrlPrefix(spaceId)}/api/saved_objects/visualization/${getIdPrefix(
               spaceId
-            )}${existsId}`
+            )}${spaceAwareId}`
           )
           .auth(auth.username, auth.password)
-          .expect(tests.exists.statusCode)
-          .then(tests.exists.response);
+          .expect(tests.spaceAware.statusCode)
+          .then(tests.spaceAware.response);
+      });
+
+      it(`should return ${
+        tests.notSpaceAware.statusCode
+      } when deleting a non-space-aware doc`, async () => {
+        await supertest
+          .get(`${getUrlPrefix(spaceId)}/api/saved_objects/globaltype/${notSpaceAwareId}`)
+          .auth(auth.username, auth.password)
+          .expect(tests.notSpaceAware.statusCode)
+          .then(tests.notSpaceAware.response);
       });
 
       describe('document does not exist', () => {
@@ -91,11 +105,15 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) 
     return createExpectNotFound(doesntExistId, spaceId);
   };
 
-  const createExpectExistsNotFound = (spaceId = DEFAULT_SPACE_ID) => {
-    return createExpectNotFound(existsId, spaceId);
+  const createExpectSpaceAwareNotFound = (spaceId = DEFAULT_SPACE_ID) => {
+    return createExpectNotFound(spaceAwareId, spaceId);
   };
 
-  const createExpectRbacForbidden = () => (resp: any) => {
+  const createExpectNotSpaceAwareNotFound = (spaceId = DEFAULT_SPACE_ID) => {
+    return createExpectNotFound(spaceAwareId, spaceId);
+  };
+
+  const createExpectSpaceAwareRbacForbidden = () => (resp: any) => {
     expect(resp.body).to.eql({
       error: 'Forbidden',
       message: `Unable to get visualization, missing action:saved_objects/visualization/get`,
@@ -103,7 +121,15 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) 
     });
   };
 
-  const createExpectResults = (spaceId = DEFAULT_SPACE_ID) => (resp: any) => {
+  const createExpectNotSpaceAwareRbacForbidden = () => (resp: any) => {
+    expect(resp.body).to.eql({
+      error: 'Forbidden',
+      message: `Unable to get globaltype, missing action:saved_objects/globaltype/get`,
+      statusCode: 403,
+    });
+  };
+
+  const createExpectSpaceAwareResults = (spaceId = DEFAULT_SPACE_ID) => (resp: any) => {
     expect(resp.body).to.eql({
       id: `${getIdPrefix(spaceId)}dd7caf20-9efd-11e7-acb3-3dab96693fab`,
       type: 'visualization',
@@ -121,12 +147,27 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) 
     });
   };
 
+  const createExpectNotSpaceAwareResults = (spaceId = DEFAULT_SPACE_ID) => (resp: any) => {
+    expect(resp.body).to.eql({
+      id: `${notSpaceAwareId}`,
+      type: 'globaltype',
+      updated_at: '2017-09-21T18:59:16.270Z',
+      version: resp.body.version,
+      attributes: {
+        name: 'My favorite global object',
+      },
+    });
+  };
+
   return {
+    createExpectNotSpaceAwareNotFound,
+    createExpectNotSpaceAwareRbacForbidden,
+    createExpectNotSpaceAwareResults,
+    createExpectSpaceAwareResults,
     createExpectDoesntExistNotFound,
-    createExpectExistsNotFound,
+    createExpectSpaceAwareNotFound,
     createExpectLegacyForbidden,
-    createExpectRbacForbidden,
-    createExpectResults,
+    createExpectSpaceAwareRbacForbidden,
     getTest,
   };
 }

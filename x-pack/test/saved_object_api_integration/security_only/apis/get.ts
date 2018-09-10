@@ -16,7 +16,8 @@ export default function({ getService }: TestInvoker) {
   const {
     createExpectDoesntExistNotFound,
     createExpectLegacyForbidden,
-    createExpectResults,
+    createExpectSpaceAwareResults,
+    createExpectNotSpaceAwareResults,
     getTest,
   } = getTestSuiteFactory(esArchiver, supertest);
 
@@ -27,7 +28,11 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.NOT_A_KIBANA_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
+          statusCode: 403,
+          response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
+        },
+        notSpaceAware: {
           statusCode: 403,
           response: createExpectLegacyForbidden(AUTHENTICATION.NOT_A_KIBANA_USER.USERNAME),
         },
@@ -44,9 +49,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.SUPERUSER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -61,9 +70,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_LEGACY_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -78,9 +91,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_LEGACY_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -95,9 +112,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -112,9 +133,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_DUAL_PRIVILEGES_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -129,9 +154,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -146,9 +175,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_DASHBOARD_ONLY_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
           statusCode: 200,
-          response: createExpectResults(),
+          response: createExpectSpaceAwareResults(),
+        },
+        notSpaceAware: {
+          statusCode: 200,
+          response: createExpectNotSpaceAwareResults(),
         },
         doesntExist: {
           statusCode: 404,
@@ -163,7 +196,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
+          ),
+        },
+        notSpaceAware: {
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_ALL_USER.USERNAME
@@ -184,7 +223,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
+          ),
+        },
+        notSpaceAware: {
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_DEFAULT_SPACE_READ_USER.USERNAME
@@ -205,7 +250,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
+          ),
+        },
+        notSpaceAware: {
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_SPACE_1_ALL_USER.USERNAME
@@ -226,7 +277,13 @@ export default function({ getService }: TestInvoker) {
         password: AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.PASSWORD,
       },
       tests: {
-        exists: {
+        spaceAware: {
+          statusCode: 403,
+          response: createExpectLegacyForbidden(
+            AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
+          ),
+        },
+        notSpaceAware: {
           statusCode: 403,
           response: createExpectLegacyForbidden(
             AUTHENTICATION.KIBANA_RBAC_SPACE_1_READ_USER.USERNAME
