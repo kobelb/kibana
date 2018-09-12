@@ -35,8 +35,8 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     const { auth = {}, spaceId = DEFAULT_SPACE_ID, tests } = definition;
 
     describeFn(description, () => {
-      before(() => esArchiver.load('saved_objects/spaces'));
-      after(() => esArchiver.unload('saved_objects/spaces'));
+      beforeEach(() => esArchiver.load('saved_objects/spaces'));
+      afterEach(() => esArchiver.unload('saved_objects/spaces'));
 
       it(`should return ${tests.spaceAware.statusCode} when deleting a space-aware doc`, async () =>
         await supertest
@@ -76,6 +76,7 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
   };
 
   const deleteTest = makeDeleteTest(describe);
+  // @ts-ignore
   deleteTest.only = makeDeleteTest(describe.only);
 
   const createExpectLegacyForbidden = (username: string) => (resp: any) => {

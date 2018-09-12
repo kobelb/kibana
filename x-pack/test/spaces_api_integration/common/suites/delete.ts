@@ -31,8 +31,8 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
     { auth = {}, spaceId, tests }: DeleteTestDefinition
   ) => {
     describeFn(description, () => {
-      before(() => esArchiver.load('saved_objects/spaces'));
-      after(() => esArchiver.unload('saved_objects/spaces'));
+      beforeEach(() => esArchiver.load('saved_objects/spaces'));
+      afterEach(() => esArchiver.unload('saved_objects/spaces'));
 
       it(`should return ${tests.exists.statusCode}`, async () => {
         return supertest
@@ -65,6 +65,8 @@ export function deleteTestSuiteFactory(esArchiver: any, supertest: SuperTest<any
   };
 
   const deleteTest = makeDeleteTest(describe);
+  // @ts-ignore
+  deleteTest.only = makeDeleteTest(describe.only);
 
   const createExpectResult = (expectedResult: any) => (resp: any) => {
     expect(resp.body).to.eql(expectedResult);

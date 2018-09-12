@@ -38,8 +38,8 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) 
     const { auth = {}, spaceId = DEFAULT_SPACE_ID, tests } = definition;
 
     describeFn(description, () => {
-      before(() => esArchiver.load('saved_objects/spaces'));
-      after(() => esArchiver.unload('saved_objects/spaces'));
+      beforeEach(() => esArchiver.load('saved_objects/spaces'));
+      afterEach(() => esArchiver.unload('saved_objects/spaces'));
 
       it(`should return ${
         tests.spaceAware.statusCode
@@ -82,6 +82,7 @@ export function getTestSuiteFactory(esArchiver: any, supertest: SuperTest<any>) 
   };
 
   const getTest = makeGetTest(describe);
+  // @ts-ignore
   getTest.only = makeGetTest(describe.only);
 
   const createExpectLegacyForbidden = (username: string) => (resp: any) => {
