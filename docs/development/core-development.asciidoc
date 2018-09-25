@@ -16,3 +16,5 @@ include::core/development-modules.asciidoc[]
 include::core/development-elasticsearch.asciidoc[]
 
 include::core/development-functional-tests.asciidoc[]
+
+include::core/development-debugging-server.asciidoc[]

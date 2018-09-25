@@ -1,0 +1,20 @@
+[[development-debugging-server]]
+=== Debugging the Kibana server
+
+To debug the Kibana server using an interactive debugger, it's much easier to do so running Kibana without dev mode.
+Additionally, when the optimizer runs with the debugger attached, it takes a significantly longer amount of time. To quickly get debugging,
+start up Kibana without a basepath (as when it changes we have to reoptimize) and without the debugger attached:
+
+["source","shell"]
+-----------
+node ./scripts/kibana.js -c ./config/kibana.dev.yml
+-----------
+
+and after Kibana has come online and gotten past the optimizer, kill the process and then start it up with the debugger:
+
+["source","shell"]
+-----------
+node --inspect-brk ./scripts/kibana.js -c ./config/kibana.dev.yml
+-----------
+
+Once Kibana is up and running, open Chrome and go to `chrome://inspect/#devices` and click "Open Dedicated DevTools for Node". The debugger should attach at this point, and you can place breakpoints. 
