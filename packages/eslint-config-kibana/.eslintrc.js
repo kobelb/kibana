@@ -46,6 +46,7 @@ module.exports = {
     'no-cond-assign': 'off',
     'no-const-assign': 'error',
     'no-debugger': 'error',
+    'no-dynamic-require': 'error',
     'no-empty': 'error',
     'no-eval': 'error',
     'no-extend-native': 'error',
