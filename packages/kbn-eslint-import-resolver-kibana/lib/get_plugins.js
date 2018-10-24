@@ -55,6 +55,7 @@ exports.getPlugins = function(config, kibanaPath, projectRoot) {
   return pluginsFromMap.concat(
     glob.sync(globPatterns).map(pkgJsonPath => {
       const path = dirname(pkgJsonPath);
+      // eslint-disable-next-line import/no-dynamic-require
       const pkg = require(pkgJsonPath);
       return {
         name: pkg.name,

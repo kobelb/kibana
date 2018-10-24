@@ -20,6 +20,7 @@ async function listFiles() {
   const pattern = resolve(__dirname, './apis/*/index.js');
   const files = await scan(pattern);
   files.forEach(file => {
+    // eslint-disable-next-line import/no-dynamic-require
     const { name, description } = require(file);
     console.log('    ' + bold(`node ${argv.$0} ${name}`));
     console.log(`      ${description}`);

@@ -24,6 +24,7 @@ const loaded = new Promise(resolve => {
       global.canvas.register = d => types[type].register(d);
 
       paths.forEach(path => {
+        // eslint-disable-next-line import/no-dynamic-require
         require(path);
       });
 

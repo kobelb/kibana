@@ -18,6 +18,7 @@
  */
 
 const filename = require('path').basename(__filename);
+// eslint-disable-next-line import/no-dynamic-require
 const fn = require(`../${filename}`);
 
 import moment from 'moment';

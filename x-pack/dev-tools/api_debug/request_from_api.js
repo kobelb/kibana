@@ -56,6 +56,7 @@ function prettyPrintJson(json) {
 
 export async function requestFromApi(argv, requestType) {
   const pattern = resolve(__dirname, `./apis/${requestType}/index.js`);
+  // eslint-disable-next-line import/no-dynamic-require
   const { method, path, body } = require(pattern);
   const { host, auth, basePath } = getRequestParams(argv);
   if (argv.k || !argv.ssl) {

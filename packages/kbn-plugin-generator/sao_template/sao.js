@@ -27,6 +27,7 @@ const chalk = require('chalk');
 
 const pkg = require('../package.json');
 const kibanaPkgPath = require.resolve('../../../package.json');
+// eslint-disable-next-line import/no-dynamic-require
 const kibanaPkg = require(kibanaPkgPath);
 
 const KBN_DIR = dirname(kibanaPkgPath);

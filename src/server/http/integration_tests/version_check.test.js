@@ -23,6 +23,7 @@ import * as kbnTestServer from '../../../test_utils/kbn_server';
 const src = resolve.bind(null, __dirname, '../../../../src');
 
 const versionHeader = 'kbn-version';
+// eslint-disable-next-line import/no-dynamic-require
 const version = require(src('../package.json')).version;
 
 describe('version_check request filter', function () {

@@ -25,6 +25,7 @@ import processFunctionDefinition from './process_function_definition';
 export default function (directory) {
 
   function getTuple(directory, name) {
+    // eslint-disable-next-line import/no-dynamic-require
     return [name, require('../' + directory + '/' + name)];
   }
 

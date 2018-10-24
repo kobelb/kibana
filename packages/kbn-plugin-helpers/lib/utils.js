@@ -26,9 +26,11 @@ function babelRegister() {
 
   try {
     // add support for moved babel-register source: https://github.com/elastic/kibana/pull/13973
+    // eslint-disable-next-line import/no-dynamic-require
     require(resolve(plugin.kibanaRoot, 'src/setup_node_env/babel_register'));
   } catch (error) {
     if (error.code === 'MODULE_NOT_FOUND') {
+      // eslint-disable-next-line import/no-dynamic-require
       require(resolve(plugin.kibanaRoot, 'src/optimize/babel/register'));
     } else {
       throw error;
@@ -42,6 +44,7 @@ function resolveKibanaPath(path) {
 }
 
 function readFtrConfigFile(log, path, settingOverrides) {
+  // eslint-disable-next-line import/no-dynamic-require
   return require(resolveKibanaPath('src/functional_test_runner')).readConfigFile(
     log,
     path,

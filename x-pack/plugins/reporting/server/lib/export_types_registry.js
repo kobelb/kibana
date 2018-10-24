@@ -28,6 +28,7 @@ async function exportTypesRegistryFn(server) {
   files.forEach(file => {
     server.log(['reporting', 'debug', 'exportTypes'], `Found exportType at ${file}`);
 
+    // eslint-disable-next-line import/no-dynamic-require
     const { register } = require(file);
     register(exportTypesRegistry);
   });

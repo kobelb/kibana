@@ -25,6 +25,7 @@ import { transformDeprecations } from './transform_deprecations';
 async function getSettingsFromFile(log, path, settingOverrides) {
   log.debug('Loading config file from %j', path);
 
+  // eslint-disable-next-line import/no-dynamic-require
   const configModule = require(path);
   const configProvider = configModule.__esModule
     ? configModule.default

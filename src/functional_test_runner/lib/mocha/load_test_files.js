@@ -48,6 +48,7 @@ export const loadTestFiles = ({ mocha, log, lifecycle, providers, paths, exclude
     loadTracer(path, `testFile[${path}]`, () => {
       log.verbose('Loading test file %s', path);
 
+      // eslint-disable-next-line import/no-dynamic-require
       const testModule = require(path);
       const testProvider = testModule.__esModule
         ? testModule.default
