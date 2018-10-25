@@ -69,6 +69,12 @@ app.directive('dashboardViewportProvider', function (reactDirective) {
   return reactDirective(DashboardViewportProvider);
 });
 
+app.service('dashboardConfig', function () {
+  return {
+    hideWriteControls: false,
+  };
+});
+
 app.directive('dashboardApp', function ($injector) {
   const courier = $injector.get('courier');
   const AppState = $injector.get('AppState');
@@ -89,7 +95,7 @@ app.directive('dashboardApp', function ($injector) {
       getAppState,
       dashboardConfig,
       localStorage,
-      breadcrumbState
+      breadcrumbState,
     ) {
       const filterManager = Private(FilterManagerProvider);
       const filterBar = Private(FilterBarQueryFilterProvider);
