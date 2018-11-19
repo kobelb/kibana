@@ -13,7 +13,8 @@ import { CheckPrivilegesAtResourceResponse, CheckPrivilegesWithRequest } from '.
  */
 
 export type CheckPrivilegesDynamically = (
-  privilegeOrPrivileges: string | string[]
+  privilegeOrPrivileges: string | string[],
+  clusterPrivileges?: string[]
 ) => Promise<CheckPrivilegesAtResourceResponse>;
 
 export type CheckPrivilegesDynamicallyWithRequest = (
@@ -26,12 +27,15 @@ export function checkPrivilegesDynamicallyWithRequestFactory(
 ): CheckPrivilegesDynamicallyWithRequest {
   return function checkPrivilegesDynamicallyWithRequest(request: Record<string, any>) {
     const checkPrivileges = checkPrivilegesWithRequest(request);
-    return async function checkPrivilegesDynamically(privilegeOrPrivileges: string | string[]) {
+    return async function checkPrivilegesDynamically(
+      privilegeOrPrivileges: string | string[],
+      clusterPrivileges?: string[]
+    ) {
       if (spaces.isEnabled) {
         const spaceId = spaces.getSpaceId(request);
-        return await checkPrivileges.atSpace(spaceId, privilegeOrPrivileges);
+        return await checkPrivileges.atSpace(spaceId, privilegeOrPrivileges, clusterPrivileges);
       } else {
-        return await checkPrivileges.globally(privilegeOrPrivileges);
+        return await checkPrivileges.globally(privilegeOrPrivileges, clusterPrivileges);
       }
     };
   };

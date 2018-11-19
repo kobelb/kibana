@@ -6,13 +6,16 @@
 
 export interface HasPrivilegesResponseApplication {
   [resource: string]: {
-    [privilegeName: string]: boolean;
+    [privilege: string]: boolean;
   };
 }
 
 export interface HasPrivilegesResponse {
   has_all_requested: boolean;
   username: string;
+  cluster: {
+    [privilege: string]: boolean;
+  };
   application: {
     [applicationName: string]: HasPrivilegesResponseApplication;
   };

@@ -23,12 +23,18 @@ interface CheckPrivilegesAtResourcesResponse {
       [privilege: string]: boolean;
     };
   };
+  clusterPrivileges: {
+    [privilege: string]: boolean;
+  };
 }
 
 export interface CheckPrivilegesAtResourceResponse {
   hasAllRequested: boolean;
   username: string;
   privileges: {
+    [privilege: string]: boolean;
+  };
+  clusterPrivileges: {
     [privilege: string]: boolean;
   };
 }
@@ -41,6 +47,9 @@ export interface CheckPrivilegesAtSpacesResponse {
       [privilege: string]: boolean;
     };
   };
+  clusterPrivileges: {
+    [privilege: string]: boolean;
+  };
 }
 
 export type CheckPrivilegesWithRequest = (request: any) => CheckPrivileges;
@@ -48,13 +57,18 @@ export type CheckPrivilegesWithRequest = (request: any) => CheckPrivileges;
 export interface CheckPrivileges {
   atSpace(
     spaceId: string,
-    privilegeOrPrivileges: string | string[]
+    privilegeOrPrivileges: string | string[],
+    clusterPrivileges?: string[]
   ): Promise<CheckPrivilegesAtResourceResponse>;
   atSpaces(
     spaceIds: string[],
-    privilegeOrPrivileges: string | string[]
+    privilegeOrPrivileges: string | string[],
+    clusterPrivileges?: string[]
   ): Promise<CheckPrivilegesAtSpacesResponse>;
-  globally(privilegeOrPrivileges: string | string[]): Promise<CheckPrivilegesAtResourceResponse>;
+  globally(
+    privilegeOrPrivileges: string | string[],
+    clusterPrivileges?: string[]
+  ): Promise<CheckPrivilegesAtResourceResponse>;
 }
 
 export function checkPrivilegesWithRequestFactory(
@@ -75,7 +89,8 @@ export function checkPrivilegesWithRequestFactory(
   return function checkPrivilegesWithRequest(request: any): CheckPrivileges {
     const checkPrivilegesAtResources = async (
       resources: string[],
-      privilegeOrPrivileges: string | string[]
+      privilegeOrPrivileges: string | string[],
+      clusterPrivileges?: string[]
     ): Promise<CheckPrivilegesAtResourcesResponse> => {
       const privileges = Array.isArray(privilegeOrPrivileges)
         ? privilegeOrPrivileges
@@ -87,6 +102,7 @@ export function checkPrivilegesWithRequestFactory(
         'shield.hasPrivileges',
         {
           body: {
+            cluster: clusterPrivileges,
             applications: [
               {
                 application,
@@ -120,48 +136,71 @@ export function checkPrivilegesWithRequestFactory(
         resourcePrivileges: transform(applicationPrivilegesResponse, (result, value, key) => {
           result[key!] = pick(value, privileges);
         }),
+        clusterPrivileges: hasPrivilegesResponse.cluster,
       };
     };
 
     const checkPrivilegesAtResource = async (
       resource: string,
-      privilegeOrPrivileges: string | string[]
-    ) => {
-      const { hasAllRequested, username, resourcePrivileges } = await checkPrivilegesAtResources(
+      privilegeOrPrivileges: string | string[],
+      clusterPrivileges?: string[]
+    ): Promise<CheckPrivilegesAtResourceResponse> => {
+      const response = await checkPrivilegesAtResources(
         [resource],
-        privilegeOrPrivileges
+        privilegeOrPrivileges,
+        clusterPrivileges
       );
+
       return {
-        hasAllRequested,
-        username,
-        privileges: resourcePrivileges[resource],
+        hasAllRequested: response.hasAllRequested,
+        username: response.username,
+        privileges: response.resourcePrivileges[resource],
+        clusterPrivileges: response.clusterPrivileges,
       };
     };
 
     return {
-      async atSpace(spaceId: string, privilegeOrPrivileges: string | string[]) {
+      async atSpace(
+        spaceId: string,
+        privilegeOrPrivileges: string | string[],
+        clusterPrivileges?: string[]
+      ) {
         const spaceResource = ResourceSerializer.serializeSpaceResource(spaceId);
-        return await checkPrivilegesAtResource(spaceResource, privilegeOrPrivileges);
+        return await checkPrivilegesAtResource(
+          spaceResource,
+          privilegeOrPrivileges,
+          clusterPrivileges
+        );
       },
-      async atSpaces(spaceIds: string[], privilegeOrPrivileges: string | string[]) {
+      async atSpaces(
+        spaceIds: string[],
+        privilegeOrPrivileges: string | string[],
+        clusterPrivileges?: string[]
+      ) {
         const spaceResources = spaceIds.map(spaceId =>
           ResourceSerializer.serializeSpaceResource(spaceId)
         );
-        const { hasAllRequested, username, resourcePrivileges } = await checkPrivilegesAtResources(
+        const response = await checkPrivilegesAtResources(
           spaceResources,
-          privilegeOrPrivileges
+          privilegeOrPrivileges,
+          clusterPrivileges
         );
         return {
-          hasAllRequested,
-          username,
+          hasAllRequested: response.hasAllRequested,
+          username: response.username,
           // we need to turn the resource responses back into the space ids
-          spacePrivileges: transform(resourcePrivileges, (result, value, key) => {
+          spacePrivileges: transform(response.resourcePrivileges, (result, value, key) => {
             result[ResourceSerializer.deserializeSpaceResource(key!)] = value;
           }),
+          clusterPrivileges: response.clusterPrivileges,
         };
       },
-      async globally(privilegeOrPrivileges: string | string[]) {
-        return await checkPrivilegesAtResource(GLOBAL_RESOURCE, privilegeOrPrivileges);
+      async globally(privilegeOrPrivileges: string | string[], clusterPrivileges?: string[]) {
+        return await checkPrivilegesAtResource(
+          GLOBAL_RESOURCE,
+          privilegeOrPrivileges,
+          clusterPrivileges
+        );
       },
     };
   };

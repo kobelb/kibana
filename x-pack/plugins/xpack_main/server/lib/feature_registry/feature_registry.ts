@@ -24,6 +24,7 @@ export interface Feature {
   icon?: IconType;
   description?: string;
   navLinkId?: string;
+  clusterPrivilege?: string;
   privileges: {
     [key: string]: FeaturePrivilegeDefinition;
   };
