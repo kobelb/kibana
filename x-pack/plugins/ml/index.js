@@ -68,7 +68,9 @@ export const ml = (kibana) => {
         name: 'Machine Learning',
         icon: 'mlApp',
         navLinkId: 'ml',
-        clusterPrivilege: 'manage_ml'
+        privileges: {
+          cluster: ['manage_ml']
+        }
       });
 
       // Add server routes and initialize the plugin here

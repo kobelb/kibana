@@ -13,21 +13,23 @@ const kibanaFeatures: Feature[] = [
     icon: 'discoverApp',
     navLinkId: 'kibana:discover',
     privileges: {
-      all: {
-        app: ['kibana'],
-        savedObject: {
-          all: ['search'],
-          read: ['config', 'index-pattern'],
+      kibana: {
+        all: {
+          app: ['kibana'],
+          savedObject: {
+            all: ['search'],
+            read: ['config', 'index-pattern'],
+          },
+          ui: ['kibana:discover'],
         },
-        ui: ['kibana:discover'],
-      },
-      read: {
-        app: ['kibana'],
-        savedObject: {
-          all: [],
-          read: ['config', 'index-pattern', 'search'],
+        read: {
+          app: ['kibana'],
+          savedObject: {
+            all: [],
+            read: ['config', 'index-pattern', 'search'],
+          },
+          ui: [],
         },
-        ui: [],
       },
     },
   },
@@ -37,21 +39,23 @@ const kibanaFeatures: Feature[] = [
     icon: 'visualizeApp',
     navLinkId: 'kibana:visualize',
     privileges: {
-      all: {
-        app: ['kibana'],
-        savedObject: {
-          all: ['visualization'],
-          read: ['config', 'index-pattern', 'search'],
+      kibana: {
+        all: {
+          app: ['kibana'],
+          savedObject: {
+            all: ['visualization'],
+            read: ['config', 'index-pattern', 'search'],
+          },
+          ui: ['kibana:visualize'],
         },
-        ui: ['kibana:visualize'],
-      },
-      read: {
-        app: ['kibana'],
-        savedObject: {
-          all: [],
-          read: ['config', 'index-pattern', 'search', 'visualization'],
+        read: {
+          app: ['kibana'],
+          savedObject: {
+            all: [],
+            read: ['config', 'index-pattern', 'search', 'visualization'],
+          },
+          ui: [],
         },
-        ui: [],
       },
     },
   },
@@ -61,29 +65,31 @@ const kibanaFeatures: Feature[] = [
     icon: 'dashboardApp',
     navLinkId: 'kibana:dashboard',
     privileges: {
-      all: {
-        app: ['kibana'],
-        savedObject: {
-          all: ['dashboard'],
-          read: ['config', 'index-pattern', 'search', 'visualization', 'timelion', 'canvas'],
+      kibana: {
+        all: {
+          app: ['kibana'],
+          savedObject: {
+            all: ['dashboard'],
+            read: ['config', 'index-pattern', 'search', 'visualization', 'timelion', 'canvas'],
+          },
+          ui: ['kibana:dashboard'],
         },
-        ui: ['kibana:dashboard'],
-      },
-      read: {
-        app: ['kibana'],
-        savedObject: {
-          all: [],
-          read: [
-            'config',
-            'index-pattern',
-            'search',
-            'visualization',
-            'timelion',
-            'canvas',
-            'dashboard',
-          ],
+        read: {
+          app: ['kibana'],
+          savedObject: {
+            all: [],
+            read: [
+              'config',
+              'index-pattern',
+              'search',
+              'visualization',
+              'timelion',
+              'canvas',
+              'dashboard',
+            ],
+          },
+          ui: [],
         },
-        ui: [],
       },
     },
   },
@@ -93,14 +99,16 @@ const kibanaFeatures: Feature[] = [
     icon: 'devToolsApp',
     navLinkId: 'kibana:dev_tools',
     privileges: {
-      all: {
-        api: ['console/execute'],
-        app: ['kibana'],
-        savedObject: {
-          all: [],
-          read: ['config'],
+      kibana: {
+        all: {
+          api: ['console/execute'],
+          app: ['kibana'],
+          savedObject: {
+            all: [],
+            read: ['config'],
+          },
+          ui: [],
         },
-        ui: [],
       },
     },
   },
@@ -110,13 +118,15 @@ const kibanaFeatures: Feature[] = [
     icon: 'managementApp',
     navLinkId: 'kibana:management:advancedSettings',
     privileges: {
-      all: {
-        app: ['kibana'],
-        savedObject: {
-          all: ['config'],
-          read: [],
+      kibana: {
+        all: {
+          app: ['kibana'],
+          savedObject: {
+            all: ['config'],
+            read: [],
+          },
+          ui: [],
         },
-        ui: [],
       },
     },
   },
@@ -129,21 +139,23 @@ const timelionFeatures: Feature[] = [
     icon: 'timelionApp',
     navLinkId: 'timelion',
     privileges: {
-      all: {
-        app: ['timelion'],
-        savedObject: {
-          all: ['timelion'],
-          read: ['config', 'index-pattern'],
+      kibana: {
+        all: {
+          app: ['timelion'],
+          savedObject: {
+            all: ['timelion'],
+            read: ['config', 'index-pattern'],
+          },
+          ui: [],
         },
-        ui: [],
-      },
-      read: {
-        app: ['timelion'],
-        savedObject: {
-          all: [],
-          read: ['config', 'index-pattern', 'timelion'],
+        read: {
+          app: ['timelion'],
+          savedObject: {
+            all: [],
+            read: ['config', 'index-pattern', 'timelion'],
+          },
+          ui: [],
         },
-        ui: [],
       },
     },
   },

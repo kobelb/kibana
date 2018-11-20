@@ -7,14 +7,34 @@
 import { IconType } from '@elastic/eui';
 import _ from 'lodash';
 
-export interface FeaturePrivilegeDefinition {
-  api?: string[];
-  app: string[];
-  savedObject: {
-    all: string[];
-    read: string[];
+export function isFeaturePrivilegesKibana(
+  privileges: FeaturePrivilegesKibana | FeaturePrivilegesCluster
+): privileges is FeaturePrivilegesKibana {
+  return (privileges as FeaturePrivilegesKibana).kibana !== undefined;
+}
+
+export function isFeaturePrivilegesCluster(
+  privileges: FeaturePrivilegesKibana | FeaturePrivilegesCluster
+): privileges is FeaturePrivilegesCluster {
+  return (privileges as FeaturePrivilegesCluster).cluster !== undefined;
+}
+
+export interface FeaturePrivilegesKibana {
+  kibana: {
+    [key: string]: {
+      api?: string[];
+      app: string[];
+      savedObject: {
+        all: string[];
+        read: string[];
+      };
+      ui: string[];
+    };
   };
-  ui: string[];
+}
+
+export interface FeaturePrivilegesCluster {
+  cluster: string[];
 }
 
 export interface Feature {
@@ -24,10 +44,7 @@ export interface Feature {
   icon?: IconType;
   description?: string;
   navLinkId?: string;
-  clusterPrivilege?: string;
-  privileges: {
-    [key: string]: FeaturePrivilegeDefinition;
-  };
+  privileges: FeaturePrivilegesKibana | FeaturePrivilegesCluster;
 }
 
 const features: Record<string, Feature> = {};

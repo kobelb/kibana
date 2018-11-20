@@ -4,9 +4,9 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { mapValues, uniq } from 'lodash';
+import { mapValues } from 'lodash';
 import { UICapabilities } from 'ui/capabilities';
-import { Feature } from '../../../../xpack_main/types';
+import { Feature, isFeaturePrivilegesCluster } from '../../../../xpack_main/types';
 import { Actions } from './actions';
 import { CheckPrivilegesAtResourceResponse } from './check_privileges';
 import { CheckPrivilegesDynamically } from './check_privileges_dynamically';
@@ -26,10 +26,11 @@ export function disableUICapabilitesFactory(
 
   const usingPrivileges = async (uiCapabilities: UICapabilities) => {
     const features: Feature[] = server.plugins.xpack_main.getFeatures();
-    const clusterPrivileges = features.reduce<string[]>(
-      (acc, feature) => [...acc, ...(feature.clusterPrivilege ? [feature.clusterPrivilege] : [])],
-      []
-    );
+    const clusterPrivileges = features
+      .map(feature => feature.privileges)
+      .filter(isFeaturePrivilegesCluster)
+      .reduce<string[]>((acc, privileges) => [...acc, ...privileges.cluster], []);
+
     const uiActions = Object.entries(uiCapabilities).reduce<string[]>(
       (acc, [featureId, featureUICapabilities]) => [
         ...acc,
@@ -57,12 +58,18 @@ export function disableUICapabilitesFactory(
     }
 
     const clusterBasedFeatures = features
-      .filter(feature => feature.clusterPrivilege && feature.navLinkId)
+      .filter(feature => feature.navLinkId)
       .reduce<Record<string, any>>((acc, feature) => {
+        if (!isFeaturePrivilegesCluster(feature.privileges)) {
+          return acc;
+        }
+
+        const enabled = feature.privileges.cluster.every(
+          clusterPrivilege => checkPrivilegesResponse.clusterPrivileges[clusterPrivilege] === true
+        );
         return {
           ...acc,
-          [actions.ui.get('navLinks', feature.navLinkId!)]:
-            checkPrivilegesResponse.clusterPrivileges[feature.clusterPrivilege!] === true,
+          [actions.ui.get('navLinks', feature.navLinkId!)]: enabled,
         };
       }, {});
 

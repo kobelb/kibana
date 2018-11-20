@@ -61,13 +61,15 @@ export function apm(kibana) {
         icon: 'apmApp',
         navLinkId: 'apm',
         privileges: {
-          all: {
-            app: ['apm'],
-            savedObject: {
-              all: [],
-              read: ['config']
-            },
-            ui: []
+          kibana: {
+            all: {
+              app: ['apm'],
+              savedObject: {
+                all: [],
+                read: ['config']
+              },
+              ui: []
+            }
           }
         }
       });

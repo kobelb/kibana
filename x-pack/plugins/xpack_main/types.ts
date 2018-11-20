@@ -4,4 +4,10 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-export { Feature } from './server/lib/feature_registry';
+export {
+  Feature,
+  FeaturePrivilegesCluster,
+  FeaturePrivilegesKibana,
+  isFeaturePrivilegesKibana,
+  isFeaturePrivilegesCluster,
+} from './server/lib/feature_registry';

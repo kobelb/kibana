@@ -56,21 +56,23 @@ export function graph(kibana) {
         icon: 'graphApp',
         navLinkId: 'graph',
         privileges: {
-          all: {
-            app: ['graph'],
-            savedObject: {
-              all: ['graph-workspace'],
-              read: ['config', 'index-pattern'],
+          kibana: {
+            all: {
+              app: ['graph'],
+              savedObject: {
+                all: ['graph-workspace'],
+                read: ['config', 'index-pattern'],
+              },
+              ui: [],
             },
-            ui: [],
-          },
-          read: {
-            app: ['graph'],
-            savedObject: {
-              all: [],
-              read: ['config', 'index-pattern', 'graph-workspace'],
-            },
-            ui: [],
+            read: {
+              app: ['graph'],
+              savedObject: {
+                all: [],
+                read: ['config', 'index-pattern', 'graph-workspace'],
+              },
+              ui: [],
+            }
           }
         }
       });

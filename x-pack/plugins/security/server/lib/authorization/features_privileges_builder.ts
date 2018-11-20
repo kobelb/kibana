@@ -5,7 +5,7 @@
  */
 
 import { Dictionary, flatten, mapValues } from 'lodash';
-import { Feature } from '../../../../xpack_main/types';
+import { Feature, isFeaturePrivilegesKibana } from '../../../../xpack_main/types';
 import { Actions } from './actions';
 
 export type FeaturesPrivileges = Record<string, Record<string, string[]>>;
@@ -28,11 +28,15 @@ export class FeaturesPrivilegesBuilder {
     return flatten(
       features.map(feature => {
         const { privileges } = feature;
-        if (!privileges || !privileges.read || !privileges.read.api) {
+        if (!privileges || !isFeaturePrivilegesKibana(privileges)) {
           return [];
         }
 
-        return feature.privileges.read.api!.map(api => this.actions.api.get(api));
+        if (!privileges.kibana.read || !privileges.kibana.read.api) {
+          return [];
+        }
+
+        return privileges.kibana.read.api!.map(api => this.actions.api.get(api));
       })
     );
   }
@@ -41,11 +45,15 @@ export class FeaturesPrivilegesBuilder {
     return flatten(
       features.map(feature => {
         const { privileges } = feature;
-        if (!privileges || !privileges.read || !privileges.read.ui) {
+        if (!privileges || !isFeaturePrivilegesKibana(privileges)) {
           return [];
         }
 
-        return feature.privileges.read.ui!.map(uiCapability =>
+        if (!privileges.kibana.read || !privileges.kibana.ui) {
+          return [];
+        }
+
+        return privileges.kibana.read.ui!.map(uiCapability =>
           this.actions.ui.get(feature.id, uiCapability)
         );
       })
@@ -53,7 +61,11 @@ export class FeaturesPrivilegesBuilder {
   }
 
   private buildFeaturePrivileges(feature: Feature): Dictionary<string[]> {
-    return mapValues(feature.privileges, privilegeDefinition => [
+    if (!isFeaturePrivilegesKibana(feature.privileges)) {
+      return {};
+    }
+
+    return mapValues(feature.privileges.kibana!, privilegeDefinition => [
       this.actions.login,
       this.actions.version,
       ...(privilegeDefinition.api
