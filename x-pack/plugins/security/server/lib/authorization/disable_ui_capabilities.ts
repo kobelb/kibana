@@ -56,16 +56,15 @@ export function disableUICapabilitesFactory(
       throw err;
     }
 
-    const clusterDisabledFeatures = features
-      .filter(
-        feature =>
-          feature.clusterPrivilege &&
-          feature.navLinkId &&
-          checkPrivilegesResponse.clusterPrivileges[feature.clusterPrivilege!] === false
-      )
-      .reduce<string[]>((acc, feature) => {
-        return [...acc, actions.ui.get('navlink', feature.navLinkId!)];
-      }, []);
+    const clusterBasedFeatures = features
+      .filter(feature => feature.clusterPrivilege && feature.navLinkId)
+      .reduce<Record<string, any>>((acc, feature) => {
+        return {
+          ...acc,
+          [actions.ui.get('navLinks', feature.navLinkId!)]:
+            checkPrivilegesResponse.clusterPrivileges[feature.clusterPrivilege!] === true,
+        };
+      }, {});
 
     return mapValues(uiCapabilities, (featureUICapabilities, featureId) => {
       return mapValues(featureUICapabilities, (enabled, uiCapability) => {
@@ -76,8 +75,8 @@ export function disableUICapabilitesFactory(
 
         const action = actions.ui.get(featureId!, uiCapability!);
         return (
-          checkPrivilegesResponse.privileges[action] === true &&
-          !clusterDisabledFeatures.includes(action)
+          checkPrivilegesResponse.privileges[action] === true ||
+          clusterBasedFeatures[action] === true
         );
       });
     });
