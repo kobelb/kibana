@@ -15,7 +15,7 @@ export class FeaturesClusterPrivileges {
     this.allClusterPrivileges = features
       .map(feature => feature.privileges)
       .filter(isFeaturePrivilegesCluster)
-      .reduce<string[]>((acc, privileges) => [...acc, ...privileges.cluster], []);
+      .reduce<string[]>((acc, privileges) => [...acc, ...Object.keys(privileges.cluster)], []);
 
     this.actionToClusterPrivileges = features
       .filter(feature => feature.navLinkId)
@@ -24,8 +24,20 @@ export class FeaturesClusterPrivileges {
           return acc;
         }
 
-        const action = actions.ui.get('navLinks', feature.navLinkId!);
-        acc[action] = [...(acc[action] || []), ...feature.privileges.cluster];
+        for (const [clusterPrivilege, definition] of Object.entries(feature.privileges.cluster)) {
+          if (definition.ui.navLink) {
+            const action = actions.ui.get('navLinks', feature.navLinkId!);
+            acc[action] = [...(acc[action] || []), clusterPrivilege];
+          }
+
+          if (definition.ui.capability) {
+            for (const capability of definition.ui.capability) {
+              const action = actions.ui.get(feature.id, capability);
+              acc[action] = [...(acc[action] || []), clusterPrivilege];
+            }
+          }
+        }
+
         return acc;
       }, {});
   }

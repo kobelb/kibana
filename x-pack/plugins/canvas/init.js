@@ -40,7 +40,9 @@ export default async function(server /*options*/) {
             all: ['canvas'],
             read: ['config', 'index-pattern'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
         read: {
           app: ['canvas'],
@@ -48,7 +50,9 @@ export default async function(server /*options*/) {
             all: [],
             read: ['config', 'index-pattern', 'canvas'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },

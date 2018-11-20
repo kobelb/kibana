@@ -20,7 +20,9 @@ const kibanaFeatures: Feature[] = [
             all: ['search'],
             read: ['config', 'index-pattern'],
           },
-          ui: ['kibana:discover'],
+          ui: {
+            navLink: true,
+          },
         },
         read: {
           app: ['kibana'],
@@ -28,7 +30,9 @@ const kibanaFeatures: Feature[] = [
             all: [],
             read: ['config', 'index-pattern', 'search'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },
@@ -46,7 +50,9 @@ const kibanaFeatures: Feature[] = [
             all: ['visualization'],
             read: ['config', 'index-pattern', 'search'],
           },
-          ui: ['kibana:visualize'],
+          ui: {
+            navLink: true,
+          },
         },
         read: {
           app: ['kibana'],
@@ -54,7 +60,9 @@ const kibanaFeatures: Feature[] = [
             all: [],
             read: ['config', 'index-pattern', 'search', 'visualization'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },
@@ -72,7 +80,9 @@ const kibanaFeatures: Feature[] = [
             all: ['dashboard'],
             read: ['config', 'index-pattern', 'search', 'visualization', 'timelion', 'canvas'],
           },
-          ui: ['kibana:dashboard'],
+          ui: {
+            navLink: true,
+          },
         },
         read: {
           app: ['kibana'],
@@ -88,7 +98,9 @@ const kibanaFeatures: Feature[] = [
               'dashboard',
             ],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },
@@ -107,7 +119,9 @@ const kibanaFeatures: Feature[] = [
             all: [],
             read: ['config'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },
@@ -125,7 +139,9 @@ const kibanaFeatures: Feature[] = [
             all: ['config'],
             read: [],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },
@@ -146,7 +162,9 @@ const timelionFeatures: Feature[] = [
             all: ['timelion'],
             read: ['config', 'index-pattern'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
         read: {
           app: ['timelion'],
@@ -154,7 +172,9 @@ const timelionFeatures: Feature[] = [
             all: [],
             read: ['config', 'index-pattern', 'timelion'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       },
     },

@@ -69,7 +69,18 @@ export const ml = (kibana) => {
         icon: 'mlApp',
         navLinkId: 'ml',
         privileges: {
-          cluster: ['manage_ml']
+          cluster: {
+            manage_ml: {
+              ui: {
+                navLink: true,
+              },
+            },
+            manage_ccr: {
+              ui: {
+                navLink: true,
+              },
+            }
+          }
         }
       });
 

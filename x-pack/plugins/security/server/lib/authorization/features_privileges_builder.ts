@@ -36,7 +36,9 @@ export class FeaturesPrivilegesBuilder {
           return [];
         }
 
-        return privileges.kibana.read.api!.map(api => this.actions.api.get(api));
+        const { api } = privileges.kibana.read;
+
+        return api!.map(operation => this.actions.api.get(operation));
       })
     );
   }
@@ -49,13 +51,20 @@ export class FeaturesPrivilegesBuilder {
           return [];
         }
 
-        if (!privileges.kibana.read || !privileges.kibana.ui) {
+        if (!privileges.kibana.read || !privileges.kibana.read.ui) {
           return [];
         }
 
-        return privileges.kibana.read.ui!.map(uiCapability =>
-          this.actions.ui.get(feature.id, uiCapability)
-        );
+        const { ui } = privileges.kibana.read;
+
+        return [
+          ...(ui.capability
+            ? ui.capability.map(uiCapability => this.actions.ui.get(feature.id, uiCapability))
+            : []),
+          ...(feature.navLinkId && ui.navLink
+            ? [this.actions.ui.get('navLinks', feature.navLinkId)]
+            : []),
+        ];
       })
     );
   }
@@ -82,8 +91,14 @@ export class FeaturesPrivilegesBuilder {
           this.actions.savedObject.readOperations(types)
         )
       ),
-      ...privilegeDefinition.ui.map(ui => this.actions.ui.get(feature.id, ui)),
-      ...(feature.navLinkId ? [this.actions.ui.get('navLinks', feature.navLinkId)] : []),
+      ...(privilegeDefinition.ui.capability
+        ? privilegeDefinition.ui.capability.map(uiCapability =>
+            this.actions.ui.get(feature.id, uiCapability)
+          )
+        : []),
+      ...(feature.navLinkId && privilegeDefinition.ui.navLink
+        ? [this.actions.ui.get('navLinks', feature.navLinkId)]
+        : []),
     ]);
   }
 }

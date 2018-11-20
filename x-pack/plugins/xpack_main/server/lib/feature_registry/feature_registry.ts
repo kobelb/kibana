@@ -21,20 +21,30 @@ export function isFeaturePrivilegesCluster(
 
 export interface FeaturePrivilegesKibana {
   kibana: {
-    [key: string]: {
+    [feature: string]: {
       api?: string[];
       app: string[];
       savedObject: {
         all: string[];
         read: string[];
       };
-      ui: string[];
+      ui: {
+        navLink?: boolean;
+        capability?: string[];
+      };
     };
   };
 }
 
 export interface FeaturePrivilegesCluster {
-  cluster: string[];
+  cluster: {
+    [clusterPrivilege: string]: {
+      ui: {
+        navLink?: boolean;
+        capability: string[];
+      };
+    };
+  };
 }
 
 export interface Feature {

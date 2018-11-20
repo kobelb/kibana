@@ -68,7 +68,9 @@ export function apm(kibana) {
                 all: [],
                 read: ['config']
               },
-              ui: []
+              ui: {
+                navLink: true
+              }
             }
           }
         }

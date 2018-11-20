@@ -67,7 +67,9 @@ export const init = (monitoringPlugin, server) => {
             all: [],
             read: ['config'],
           },
-          ui: [],
+          ui: {
+            navLink: true,
+          },
         },
       }
     }

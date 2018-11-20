@@ -63,7 +63,9 @@ export function graph(kibana) {
                 all: ['graph-workspace'],
                 read: ['config', 'index-pattern'],
               },
-              ui: [],
+              ui: {
+                navLink: true,
+              },
             },
             read: {
               app: ['graph'],
@@ -71,7 +73,9 @@ export function graph(kibana) {
                 all: [],
                 read: ['config', 'index-pattern', 'graph-workspace'],
               },
-              ui: [],
+              ui: {
+                navLink: true,
+              },
             }
           }
         }
