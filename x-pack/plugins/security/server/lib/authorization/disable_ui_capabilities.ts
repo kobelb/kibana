@@ -6,10 +6,11 @@
 
 import { mapValues } from 'lodash';
 import { UICapabilities } from 'ui/capabilities';
-import { Feature, isFeaturePrivilegesCluster } from '../../../../xpack_main/types';
+import { Feature } from '../../../../xpack_main/types';
 import { Actions } from './actions';
 import { CheckPrivilegesAtResourceResponse } from './check_privileges';
 import { CheckPrivilegesDynamically } from './check_privileges_dynamically';
+import { FeaturesClusterPrivileges } from './features_cluster_privileges';
 
 export function disableUICapabilitesFactory(
   server: Record<string, any>,
@@ -25,12 +26,6 @@ export function disableUICapabilitesFactory(
   };
 
   const usingPrivileges = async (uiCapabilities: UICapabilities) => {
-    const features: Feature[] = server.plugins.xpack_main.getFeatures();
-    const clusterPrivileges = features
-      .map(feature => feature.privileges)
-      .filter(isFeaturePrivilegesCluster)
-      .reduce<string[]>((acc, privileges) => [...acc, ...privileges.cluster], []);
-
     const uiActions = Object.entries(uiCapabilities).reduce<string[]>(
       (acc, [featureId, featureUICapabilities]) => [
         ...acc,
@@ -40,6 +35,10 @@ export function disableUICapabilitesFactory(
       ],
       []
     );
+
+    const features: Feature[] = server.plugins.xpack_main.getFeatures();
+    const featuresClusterPrivileges = new FeaturesClusterPrivileges(features, actions);
+    const clusterPrivileges = featuresClusterPrivileges.getAllClusterPrivileges();
 
     let checkPrivilegesResponse: CheckPrivilegesAtResourceResponse;
     try {
@@ -57,22 +56,6 @@ export function disableUICapabilitesFactory(
       throw err;
     }
 
-    const clusterBasedFeatures = features
-      .filter(feature => feature.navLinkId)
-      .reduce<Record<string, any>>((acc, feature) => {
-        if (!isFeaturePrivilegesCluster(feature.privileges)) {
-          return acc;
-        }
-
-        const enabled = feature.privileges.cluster.every(
-          clusterPrivilege => checkPrivilegesResponse.clusterPrivileges[clusterPrivilege] === true
-        );
-        return {
-          ...acc,
-          [actions.ui.get('navLinks', feature.navLinkId!)]: enabled,
-        };
-      }, {});
-
     return mapValues(uiCapabilities, (featureUICapabilities, featureId) => {
       return mapValues(featureUICapabilities, (enabled, uiCapability) => {
         // if the uiCapability has already been disabled, we don't want to re-enable it
@@ -83,7 +66,10 @@ export function disableUICapabilitesFactory(
         const action = actions.ui.get(featureId!, uiCapability!);
         return (
           checkPrivilegesResponse.privileges[action] === true ||
-          clusterBasedFeatures[action] === true
+          featuresClusterPrivileges.isActionEnabled(
+            action,
+            checkPrivilegesResponse.clusterPrivileges
+          )
         );
       });
     });
