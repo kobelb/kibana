@@ -11,9 +11,10 @@ export function validateEsPrivilegeResponse(
   response: HasPrivilegesResponse,
   application: string,
   actions: string[],
-  resources: string[]
+  resources: string[],
+  clusterPrivileges: string[]
 ) {
-  const schema = buildValidationSchema(application, actions, resources);
+  const schema = buildValidationSchema(application, actions, resources, clusterPrivileges);
   const { error, value } = schema.validate(response);
 
   if (error) {
@@ -36,7 +37,23 @@ function buildActionsValidationSchema(actions: string[]) {
   }).required();
 }
 
-function buildValidationSchema(application: string, actions: string[], resources: string[]) {
+function buildClusterValidationSchema(clusterPrivileges: string[]) {
+  return Joi.object({
+    ...clusterPrivileges.reduce<Record<string, any>>((acc, clusterPrivilege) => {
+      return {
+        ...acc,
+        [clusterPrivilege]: Joi.bool().required(),
+      };
+    }, {}),
+  }).required();
+}
+
+function buildValidationSchema(
+  application: string,
+  actions: string[],
+  resources: string[],
+  clusterPrivileges: string[]
+) {
   const actionValidationSchema = buildActionsValidationSchema(actions);
 
   const resourceValidationSchema = Joi.object({
@@ -48,10 +65,12 @@ function buildValidationSchema(application: string, actions: string[], resources
     }, {}),
   }).required();
 
+  const clusterValidationSchema = buildClusterValidationSchema(clusterPrivileges);
+
   return Joi.object({
     username: Joi.string().required(),
     has_all_requested: Joi.bool(),
-    cluster: Joi.object(),
+    cluster: clusterValidationSchema,
     application: Joi.object({
       [application]: resourceValidationSchema,
     }).required(),

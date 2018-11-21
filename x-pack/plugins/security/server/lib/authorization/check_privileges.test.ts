@@ -34,6 +34,7 @@ describe('#atSpace', () => {
     options: {
       spaceId: string;
       privilegeOrPrivileges: string | string[];
+      clusterPrivileges: string[];
       esHasPrivilegesResponse: HasPrivilegesResponse;
       expectedResult?: any;
       expectErrorThrown?: any;
@@ -54,7 +55,8 @@ describe('#atSpace', () => {
       try {
         actualResult = await checkPrivileges.atSpace(
           options.spaceId,
-          options.privilegeOrPrivileges
+          options.privilegeOrPrivileges,
+          options.clusterPrivileges
         );
       } catch (err) {
         errorThrown = err;
@@ -65,6 +67,7 @@ describe('#atSpace', () => {
         'shield.hasPrivileges',
         {
           body: {
+            cluster: options.clusterPrivileges,
             applications: [
               {
                 application,
@@ -88,17 +91,20 @@ describe('#atSpace', () => {
       }
 
       if (options.expectErrorThrown) {
+        expect(errorThrown).not.toBeNull();
         expect(errorThrown).toMatchSnapshot();
       }
     });
   };
 
-  checkPrivilegesAtSpaceTest('successful when checking for login and user has login', {
+  checkPrivilegesAtSpaceTest('returns login privilege when checking for login', {
     spaceId: 'space_1',
     privilegeOrPrivileges: mockActions.login,
+    clusterPrivileges: [],
     esHasPrivilegesResponse: {
       has_all_requested: true,
       username: 'foo-username',
+      cluster: {},
       application: {
         [application]: {
           'space:space_1': {
@@ -114,30 +120,7 @@ describe('#atSpace', () => {
       privileges: {
         [mockActions.login]: true,
       },
-    },
-  });
-
-  checkPrivilegesAtSpaceTest(`failure when checking for login and user doesn't have login`, {
-    spaceId: 'space_1',
-    privilegeOrPrivileges: mockActions.login,
-    esHasPrivilegesResponse: {
-      has_all_requested: false,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          'space:space_1': {
-            [mockActions.login]: false,
-            [mockActions.version]: true,
-          },
-        },
-      },
-    },
-    expectedResult: {
-      hasAllRequested: false,
-      username: 'foo-username',
-      privileges: {
-        [mockActions.login]: false,
-      },
+      clusterPrivileges: {},
     },
   });
 
@@ -146,9 +129,11 @@ describe('#atSpace', () => {
     {
       spaceId: 'space_1',
       privilegeOrPrivileges: mockActions.login,
+      clusterPrivileges: [],
       esHasPrivilegesResponse: {
         has_all_requested: false,
         username: 'foo-username',
+        cluster: {},
         application: {
           [application]: {
             'space:space_1': {
@@ -162,52 +147,27 @@ describe('#atSpace', () => {
     }
   );
 
-  checkPrivilegesAtSpaceTest(`successful when checking for two actions and the user has both`, {
+  checkPrivilegesAtSpaceTest(`successful when checking two application and cluster privileges`, {
     spaceId: 'space_1',
     privilegeOrPrivileges: [
       `saved_object:${savedObjectTypes[0]}/get`,
       `saved_object:${savedObjectTypes[1]}/get`,
     ],
+    clusterPrivileges: ['manage_foo', 'monitor_bar'],
     esHasPrivilegesResponse: {
-      has_all_requested: true,
+      has_all_requested: false,
       username: 'foo-username',
+      cluster: {
+        manage_foo: true,
+        monitor_bar: false,
+      },
       application: {
         [application]: {
           'space:space_1': {
             [mockActions.login]: true,
             [mockActions.version]: true,
             [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-        },
-      },
-    },
-    expectedResult: {
-      hasAllRequested: true,
-      username: 'foo-username',
-      privileges: {
-        [`saved_object:${savedObjectTypes[0]}/get`]: true,
-        [`saved_object:${savedObjectTypes[1]}/get`]: true,
-      },
-    },
-  });
-
-  checkPrivilegesAtSpaceTest(`failure when checking for two actions and the user has only one`, {
-    spaceId: 'space_1',
-    privilegeOrPrivileges: [
-      `saved_object:${savedObjectTypes[0]}/get`,
-      `saved_object:${savedObjectTypes[1]}/get`,
-    ],
-    esHasPrivilegesResponse: {
-      has_all_requested: false,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          'space:space_1': {
-            [mockActions.login]: true,
-            [mockActions.version]: true,
-            [`saved_object:${savedObjectTypes[0]}/get`]: false,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
+            [`saved_object:${savedObjectTypes[1]}/get`]: false,
           },
         },
       },
@@ -216,8 +176,12 @@ describe('#atSpace', () => {
       hasAllRequested: false,
       username: 'foo-username',
       privileges: {
-        [`saved_object:${savedObjectTypes[0]}/get`]: false,
-        [`saved_object:${savedObjectTypes[1]}/get`]: true,
+        [`saved_object:${savedObjectTypes[0]}/get`]: true,
+        [`saved_object:${savedObjectTypes[1]}/get`]: false,
+      },
+      clusterPrivileges: {
+        manage_foo: true,
+        monitor_bar: false,
       },
     },
   });
@@ -228,9 +192,11 @@ describe('#atSpace', () => {
       {
         spaceId: 'space_1',
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               'space:space_1': {
@@ -247,13 +213,67 @@ describe('#atSpace', () => {
     );
 
     checkPrivilegesAtSpaceTest(
-      `throws a validation error when privileges are missing in the response`,
+      `throws a validation error when application privileges are missing in the response`,
       {
         spaceId: 'space_1',
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
+          application: {
+            [application]: {
+              'space:space_1': {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+              },
+            },
+          },
+        },
+        expectErrorThrown: true,
+      }
+    );
+
+    checkPrivilegesAtSpaceTest(
+      `throws a validation error when a cluster privilege is missing in the response`,
+      {
+        spaceId: 'space_1',
+        privilegeOrPrivileges: [],
+        clusterPrivileges: ['manage_foo', 'monitor_bar'],
+        esHasPrivilegesResponse: {
+          has_all_requested: false,
+          username: 'foo-username',
+          cluster: {
+            manage_foo: true,
+          },
+          application: {
+            [application]: {
+              'space:space_1': {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+              },
+            },
+          },
+        },
+        expectErrorThrown: true,
+      }
+    );
+
+    checkPrivilegesAtSpaceTest(
+      `throws a validation error when an extra cluster privilege is in the response`,
+      {
+        spaceId: 'space_1',
+        privilegeOrPrivileges: [],
+        clusterPrivileges: ['manage_foo', 'monitor_bar'],
+        esHasPrivilegesResponse: {
+          has_all_requested: false,
+          username: 'foo-username',
+          cluster: {
+            manage_foo: true,
+            monitor_bar: true,
+            manage_bar: false,
+          },
           application: {
             [application]: {
               'space:space_1': {
@@ -275,6 +295,7 @@ describe('#atSpaces', () => {
     options: {
       spaceIds: string[];
       privilegeOrPrivileges: string | string[];
+      clusterPrivileges: string[];
       esHasPrivilegesResponse: HasPrivilegesResponse;
       expectedResult?: any;
       expectErrorThrown?: any;
@@ -295,7 +316,8 @@ describe('#atSpaces', () => {
       try {
         actualResult = await checkPrivileges.atSpaces(
           options.spaceIds,
-          options.privilegeOrPrivileges
+          options.privilegeOrPrivileges,
+          options.clusterPrivileges
         );
       } catch (err) {
         errorThrown = err;
@@ -306,6 +328,7 @@ describe('#atSpaces', () => {
         'shield.hasPrivileges',
         {
           body: {
+            cluster: options.clusterPrivileges,
             applications: [
               {
                 application,
@@ -329,91 +352,58 @@ describe('#atSpaces', () => {
       }
 
       if (options.expectErrorThrown) {
+        expect(errorThrown).not.toBeNull();
         expect(errorThrown).toMatchSnapshot();
       }
     });
   };
 
-  checkPrivilegesAtSpacesTest(
-    'successful when checking for login and user has login at both spaces',
-    {
-      spaceIds: ['space_1', 'space_2'],
-      privilegeOrPrivileges: mockActions.login,
-      esHasPrivilegesResponse: {
-        has_all_requested: true,
-        username: 'foo-username',
-        application: {
-          [application]: {
-            'space:space_1': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-            },
-            'space:space_2': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-            },
-          },
-        },
-      },
-      expectedResult: {
-        hasAllRequested: true,
-        username: 'foo-username',
-        spacePrivileges: {
-          space_1: {
+  checkPrivilegesAtSpacesTest('returns login privileges when checking for login', {
+    spaceIds: ['space_1', 'space_2'],
+    privilegeOrPrivileges: mockActions.login,
+    clusterPrivileges: [],
+    esHasPrivilegesResponse: {
+      has_all_requested: true,
+      username: 'foo-username',
+      cluster: {},
+      application: {
+        [application]: {
+          'space:space_1': {
             [mockActions.login]: true,
+            [mockActions.version]: true,
           },
-          space_2: {
+          'space:space_2': {
             [mockActions.login]: true,
+            [mockActions.version]: true,
           },
         },
       },
-    }
-  );
-
-  checkPrivilegesAtSpacesTest(
-    'failure when checking for login and user has login at only one space',
-    {
-      spaceIds: ['space_1', 'space_2'],
-      privilegeOrPrivileges: mockActions.login,
-      esHasPrivilegesResponse: {
-        has_all_requested: false,
-        username: 'foo-username',
-        application: {
-          [application]: {
-            'space:space_1': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-            },
-            'space:space_2': {
-              [mockActions.login]: false,
-              [mockActions.version]: true,
-            },
-          },
+    },
+    expectedResult: {
+      hasAllRequested: true,
+      username: 'foo-username',
+      spacePrivileges: {
+        space_1: {
+          [mockActions.login]: true,
+        },
+        space_2: {
+          [mockActions.login]: true,
         },
       },
-      expectedResult: {
-        hasAllRequested: false,
-        username: 'foo-username',
-        spacePrivileges: {
-          space_1: {
-            [mockActions.login]: true,
-          },
-          space_2: {
-            [mockActions.login]: false,
-          },
-        },
-      },
-    }
-  );
+      clusterPrivileges: {},
+    },
+  });
 
   checkPrivilegesAtSpacesTest(
     `throws error when checking for login and user has login but doesn't have version`,
     {
       spaceIds: ['space_1', 'space_2'],
       privilegeOrPrivileges: mockActions.login,
+      clusterPrivileges: [],
       esHasPrivilegesResponse: {
         has_all_requested: false,
         username: 'foo-username',
+        cluster: {},
         application: {
           [application]: {
             'space:space_1': {
@@ -431,87 +421,22 @@ describe('#atSpaces', () => {
     }
   );
 
-  checkPrivilegesAtSpacesTest(`throws error when Elasticsearch returns malformed response`, {
-    spaceIds: ['space_1', 'space_2'],
-    privilegeOrPrivileges: [
-      `saved_object:${savedObjectTypes[0]}/get`,
-      `saved_object:${savedObjectTypes[1]}/get`,
-    ],
-    esHasPrivilegesResponse: {
-      has_all_requested: true,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          'space:space_1': {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-          'space:space_2': {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-        },
-      },
-    },
-    expectErrorThrown: true,
-  });
-
   checkPrivilegesAtSpacesTest(
-    `successful when checking for two actions at two spaces and user has it all`,
+    `successful when checking two application and cluster privileges at two spaces`,
     {
       spaceIds: ['space_1', 'space_2'],
       privilegeOrPrivileges: [
         `saved_object:${savedObjectTypes[0]}/get`,
         `saved_object:${savedObjectTypes[1]}/get`,
       ],
-      esHasPrivilegesResponse: {
-        has_all_requested: true,
-        username: 'foo-username',
-        application: {
-          [application]: {
-            'space:space_1': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-              [`saved_object:${savedObjectTypes[0]}/get`]: true,
-              [`saved_object:${savedObjectTypes[1]}/get`]: true,
-            },
-            'space:space_2': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-              [`saved_object:${savedObjectTypes[0]}/get`]: true,
-              [`saved_object:${savedObjectTypes[1]}/get`]: true,
-            },
-          },
-        },
-      },
-      expectedResult: {
-        hasAllRequested: true,
-        username: 'foo-username',
-        spacePrivileges: {
-          space_1: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-          space_2: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-        },
-      },
-    }
-  );
-
-  checkPrivilegesAtSpacesTest(
-    `failure when checking for two actions at two spaces and user has one action at one space`,
-    {
-      spaceIds: ['space_1', 'space_2'],
-      privilegeOrPrivileges: [
-        `saved_object:${savedObjectTypes[0]}/get`,
-        `saved_object:${savedObjectTypes[1]}/get`,
-      ],
+      clusterPrivileges: ['manage_foo', 'monitor_bar'],
       esHasPrivilegesResponse: {
         has_all_requested: false,
         username: 'foo-username',
+        cluster: {
+          manage_foo: true,
+          monitor_bar: false,
+        },
         application: {
           [application]: {
             'space:space_1': {
@@ -524,7 +449,7 @@ describe('#atSpaces', () => {
               [mockActions.login]: true,
               [mockActions.version]: true,
               [`saved_object:${savedObjectTypes[0]}/get`]: false,
-              [`saved_object:${savedObjectTypes[1]}/get`]: false,
+              [`saved_object:${savedObjectTypes[1]}/get`]: true,
             },
           },
         },
@@ -539,112 +464,55 @@ describe('#atSpaces', () => {
           },
           space_2: {
             [`saved_object:${savedObjectTypes[0]}/get`]: false,
-            [`saved_object:${savedObjectTypes[1]}/get`]: false,
-          },
-        },
-      },
-    }
-  );
-
-  checkPrivilegesAtSpacesTest(
-    `failure when checking for two actions at two spaces and user has two actions at one space`,
-    {
-      spaceIds: ['space_1', 'space_2'],
-      privilegeOrPrivileges: [
-        `saved_object:${savedObjectTypes[0]}/get`,
-        `saved_object:${savedObjectTypes[1]}/get`,
-      ],
-      esHasPrivilegesResponse: {
-        has_all_requested: false,
-        username: 'foo-username',
-        application: {
-          [application]: {
-            'space:space_1': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-              [`saved_object:${savedObjectTypes[0]}/get`]: true,
-              [`saved_object:${savedObjectTypes[1]}/get`]: true,
-            },
-            'space:space_2': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-              [`saved_object:${savedObjectTypes[0]}/get`]: false,
-              [`saved_object:${savedObjectTypes[1]}/get`]: false,
-            },
-          },
-        },
-      },
-      expectedResult: {
-        hasAllRequested: false,
-        username: 'foo-username',
-        spacePrivileges: {
-          space_1: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
             [`saved_object:${savedObjectTypes[1]}/get`]: true,
           },
-          space_2: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: false,
-            [`saved_object:${savedObjectTypes[1]}/get`]: false,
-          },
         },
-      },
-    }
-  );
-
-  checkPrivilegesAtSpacesTest(
-    `failure when checking for two actions at two spaces and user has two actions at one space & one action at the other`,
-    {
-      spaceIds: ['space_1', 'space_2'],
-      privilegeOrPrivileges: [
-        `saved_object:${savedObjectTypes[0]}/get`,
-        `saved_object:${savedObjectTypes[1]}/get`,
-      ],
-      esHasPrivilegesResponse: {
-        has_all_requested: false,
-        username: 'foo-username',
-        application: {
-          [application]: {
-            'space:space_1': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-              [`saved_object:${savedObjectTypes[0]}/get`]: true,
-              [`saved_object:${savedObjectTypes[1]}/get`]: true,
-            },
-            'space:space_2': {
-              [mockActions.login]: true,
-              [mockActions.version]: true,
-              [`saved_object:${savedObjectTypes[0]}/get`]: true,
-              [`saved_object:${savedObjectTypes[1]}/get`]: false,
-            },
-          },
-        },
-      },
-      expectedResult: {
-        hasAllRequested: false,
-        username: 'foo-username',
-        spacePrivileges: {
-          space_1: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-          space_2: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: false,
-          },
+        clusterPrivileges: {
+          manage_foo: true,
+          monitor_bar: false,
         },
       },
     }
   );
 
   describe('with a malformed Elasticsearch response', () => {
+    checkPrivilegesAtSpacesTest(`throws error when Elasticsearch returns malformed response`, {
+      spaceIds: ['space_1', 'space_2'],
+      privilegeOrPrivileges: [
+        `saved_object:${savedObjectTypes[0]}/get`,
+        `saved_object:${savedObjectTypes[1]}/get`,
+      ],
+      clusterPrivileges: [],
+      esHasPrivilegesResponse: {
+        has_all_requested: true,
+        username: 'foo-username',
+        cluster: {},
+        application: {
+          [application]: {
+            'space:space_1': {
+              [`saved_object:${savedObjectTypes[0]}/get`]: true,
+              [`saved_object:${savedObjectTypes[1]}/get`]: true,
+            },
+            'space:space_2': {
+              [`saved_object:${savedObjectTypes[0]}/get`]: true,
+              [`saved_object:${savedObjectTypes[1]}/get`]: true,
+            },
+          },
+        },
+      },
+      expectErrorThrown: true,
+    });
+
     checkPrivilegesAtSpacesTest(
       `throws a validation error when an extra privilege is present in the response`,
       {
         spaceIds: ['space_1', 'space_2'],
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               'space:space_1': {
@@ -671,9 +539,11 @@ describe('#atSpaces', () => {
       {
         spaceIds: ['space_1', 'space_2'],
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               'space:space_1': {
@@ -698,9 +568,11 @@ describe('#atSpaces', () => {
       {
         spaceIds: ['space_1', 'space_2'],
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               'space:space_1': {
@@ -730,12 +602,78 @@ describe('#atSpaces', () => {
       {
         spaceIds: ['space_1', 'space_2'],
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               'space:space_1': {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+                [`saved_object:${savedObjectTypes[0]}/get`]: false,
+              },
+            },
+          },
+        },
+        expectErrorThrown: true,
+      }
+    );
+
+    checkPrivilegesAtSpacesTest(
+      `throws a validation error when missing a cluster privilege in the response`,
+      {
+        spaceIds: ['space_1', 'space_2'],
+        privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: ['manage_foo', 'monitor_bar'],
+        esHasPrivilegesResponse: {
+          has_all_requested: false,
+          username: 'foo-username',
+          cluster: {
+            manage_foo: true,
+          },
+          application: {
+            [application]: {
+              'space:space_1': {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+                [`saved_object:${savedObjectTypes[0]}/get`]: false,
+              },
+              'space:space_2': {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+                [`saved_object:${savedObjectTypes[0]}/get`]: false,
+              },
+            },
+          },
+        },
+        expectErrorThrown: true,
+      }
+    );
+
+    checkPrivilegesAtSpacesTest(
+      `throws a validation error when there's an extra cluster privilege in the response`,
+      {
+        spaceIds: ['space_1', 'space_2'],
+        privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: ['manage_foo', 'monitor_bar'],
+        esHasPrivilegesResponse: {
+          has_all_requested: false,
+          username: 'foo-username',
+          cluster: {
+            manage_foo: true,
+            monitor_bar: true,
+            manage_bar: false,
+          },
+          application: {
+            [application]: {
+              'space:space_1': {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+                [`saved_object:${savedObjectTypes[0]}/get`]: false,
+              },
+              'space:space_2': {
                 [mockActions.login]: true,
                 [mockActions.version]: true,
                 [`saved_object:${savedObjectTypes[0]}/get`]: false,
@@ -754,6 +692,7 @@ describe('#globally', () => {
     description: string,
     options: {
       privilegeOrPrivileges: string | string[];
+      clusterPrivileges: string[];
       esHasPrivilegesResponse: HasPrivilegesResponse;
       expectedResult?: any;
       expectErrorThrown?: any;
@@ -772,7 +711,10 @@ describe('#globally', () => {
       let actualResult;
       let errorThrown = null;
       try {
-        actualResult = await checkPrivileges.globally(options.privilegeOrPrivileges);
+        actualResult = await checkPrivileges.globally(
+          options.privilegeOrPrivileges,
+          options.clusterPrivileges
+        );
       } catch (err) {
         errorThrown = err;
       }
@@ -782,6 +724,7 @@ describe('#globally', () => {
         'shield.hasPrivileges',
         {
           body: {
+            cluster: options.clusterPrivileges,
             applications: [
               {
                 application,
@@ -805,16 +748,19 @@ describe('#globally', () => {
       }
 
       if (options.expectErrorThrown) {
+        expect(errorThrown).not.toBeNull();
         expect(errorThrown).toMatchSnapshot();
       }
     });
   };
 
-  checkPrivilegesGloballyTest('successful when checking for login and user has login', {
+  checkPrivilegesGloballyTest('returns login privilege when checking for login', {
     privilegeOrPrivileges: mockActions.login,
+    clusterPrivileges: [],
     esHasPrivilegesResponse: {
       has_all_requested: true,
       username: 'foo-username',
+      cluster: {},
       application: {
         [application]: {
           [GLOBAL_RESOURCE]: {
@@ -830,29 +776,7 @@ describe('#globally', () => {
       privileges: {
         [mockActions.login]: true,
       },
-    },
-  });
-
-  checkPrivilegesGloballyTest(`failure when checking for login and user doesn't have login`, {
-    privilegeOrPrivileges: mockActions.login,
-    esHasPrivilegesResponse: {
-      has_all_requested: false,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          [GLOBAL_RESOURCE]: {
-            [mockActions.login]: false,
-            [mockActions.version]: true,
-          },
-        },
-      },
-    },
-    expectedResult: {
-      hasAllRequested: false,
-      username: 'foo-username',
-      privileges: {
-        [mockActions.login]: false,
-      },
+      clusterPrivileges: {},
     },
   });
 
@@ -860,9 +784,11 @@ describe('#globally', () => {
     `throws error when checking for login and user has login but doesn't have version`,
     {
       privilegeOrPrivileges: mockActions.login,
+      clusterPrivileges: [],
       esHasPrivilegesResponse: {
         has_all_requested: false,
         username: 'foo-username',
+        cluster: {},
         application: {
           [application]: {
             [GLOBAL_RESOURCE]: {
@@ -876,92 +802,57 @@ describe('#globally', () => {
     }
   );
 
-  checkPrivilegesGloballyTest(`throws error when Elasticsearch returns malformed response`, {
-    privilegeOrPrivileges: [
-      `saved_object:${savedObjectTypes[0]}/get`,
-      `saved_object:${savedObjectTypes[1]}/get`,
-    ],
-    esHasPrivilegesResponse: {
-      has_all_requested: false,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          [GLOBAL_RESOURCE]: {
-            [`saved_object:${savedObjectTypes[0]}/get`]: false,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
+  checkPrivilegesGloballyTest(
+    `successful when checking for two application and cluster privileges`,
+    {
+      privilegeOrPrivileges: [
+        `saved_object:${savedObjectTypes[0]}/get`,
+        `saved_object:${savedObjectTypes[1]}/get`,
+      ],
+      clusterPrivileges: ['manage_foo', 'monitor_bar'],
+      esHasPrivilegesResponse: {
+        has_all_requested: false,
+        username: 'foo-username',
+        cluster: {
+          manage_foo: true,
+          monitor_bar: false,
+        },
+        application: {
+          [application]: {
+            [GLOBAL_RESOURCE]: {
+              [mockActions.login]: true,
+              [mockActions.version]: true,
+              [`saved_object:${savedObjectTypes[0]}/get`]: true,
+              [`saved_object:${savedObjectTypes[1]}/get`]: false,
+            },
           },
         },
       },
-    },
-    expectErrorThrown: true,
-  });
-
-  checkPrivilegesGloballyTest(`successful when checking for two actions and the user has both`, {
-    privilegeOrPrivileges: [
-      `saved_object:${savedObjectTypes[0]}/get`,
-      `saved_object:${savedObjectTypes[1]}/get`,
-    ],
-    esHasPrivilegesResponse: {
-      has_all_requested: true,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          [GLOBAL_RESOURCE]: {
-            [mockActions.login]: true,
-            [mockActions.version]: true,
-            [`saved_object:${savedObjectTypes[0]}/get`]: true,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
+      expectedResult: {
+        hasAllRequested: false,
+        username: 'foo-username',
+        privileges: {
+          [`saved_object:${savedObjectTypes[0]}/get`]: true,
+          [`saved_object:${savedObjectTypes[1]}/get`]: false,
+        },
+        clusterPrivileges: {
+          manage_foo: true,
+          monitor_bar: false,
         },
       },
-    },
-    expectedResult: {
-      hasAllRequested: true,
-      username: 'foo-username',
-      privileges: {
-        [`saved_object:${savedObjectTypes[0]}/get`]: true,
-        [`saved_object:${savedObjectTypes[1]}/get`]: true,
-      },
-    },
-  });
-
-  checkPrivilegesGloballyTest(`failure when checking for two actions and the user has only one`, {
-    privilegeOrPrivileges: [
-      `saved_object:${savedObjectTypes[0]}/get`,
-      `saved_object:${savedObjectTypes[1]}/get`,
-    ],
-    esHasPrivilegesResponse: {
-      has_all_requested: false,
-      username: 'foo-username',
-      application: {
-        [application]: {
-          [GLOBAL_RESOURCE]: {
-            [mockActions.login]: true,
-            [mockActions.version]: true,
-            [`saved_object:${savedObjectTypes[0]}/get`]: false,
-            [`saved_object:${savedObjectTypes[1]}/get`]: true,
-          },
-        },
-      },
-    },
-    expectedResult: {
-      hasAllRequested: false,
-      username: 'foo-username',
-      privileges: {
-        [`saved_object:${savedObjectTypes[0]}/get`]: false,
-        [`saved_object:${savedObjectTypes[1]}/get`]: true,
-      },
-    },
-  });
+    }
+  );
 
   describe('with a malformed Elasticsearch response', () => {
     checkPrivilegesGloballyTest(
       `throws a validation error when an extra privilege is present in the response`,
       {
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               [GLOBAL_RESOURCE]: {
@@ -981,14 +872,68 @@ describe('#globally', () => {
       `throws a validation error when privileges are missing in the response`,
       {
         privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: [],
         esHasPrivilegesResponse: {
           has_all_requested: false,
           username: 'foo-username',
+          cluster: {},
           application: {
             [application]: {
               [GLOBAL_RESOURCE]: {
                 [mockActions.login]: true,
                 [mockActions.version]: true,
+              },
+            },
+          },
+        },
+        expectErrorThrown: true,
+      }
+    );
+
+    checkPrivilegesGloballyTest(
+      `throws a validation error when cluster privilege is missing in the response`,
+      {
+        privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: ['manage_foo', 'monitor_bar'],
+        esHasPrivilegesResponse: {
+          has_all_requested: false,
+          username: 'foo-username',
+          cluster: {
+            manage_foo: true,
+          },
+          application: {
+            [application]: {
+              [GLOBAL_RESOURCE]: {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+                [`saved_object:${savedObjectTypes[0]}/get`]: true,
+              },
+            },
+          },
+        },
+        expectErrorThrown: true,
+      }
+    );
+
+    checkPrivilegesGloballyTest(
+      `throws a validation error when an extra cluster privilege is in the response`,
+      {
+        privilegeOrPrivileges: [`saved_object:${savedObjectTypes[0]}/get`],
+        clusterPrivileges: ['manage_foo', 'monitor_bar'],
+        esHasPrivilegesResponse: {
+          has_all_requested: false,
+          username: 'foo-username',
+          cluster: {
+            manage_foo: true,
+            monitor_bar: true,
+            manage_bar: false,
+          },
+          application: {
+            [application]: {
+              [GLOBAL_RESOURCE]: {
+                [mockActions.login]: true,
+                [mockActions.version]: true,
+                [`saved_object:${savedObjectTypes[0]}/get`]: true,
               },
             },
           },

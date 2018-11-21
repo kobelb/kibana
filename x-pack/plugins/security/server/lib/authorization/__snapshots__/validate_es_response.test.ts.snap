@@ -1,5 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`validateEsPrivilegeResponse fails validation when a cluster privilege is malformed in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"cluster\\" fails because [child \\"clusterPrivilege2\\" fails because [\\"clusterPrivilege2\\" must be a boolean]]"`;
+
+exports[`validateEsPrivilegeResponse fails validation when a cluster privilege is missing in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"cluster\\" fails because [child \\"clusterPrivilege2\\" fails because [\\"clusterPrivilege2\\" is required]]"`;
+
 exports[`validateEsPrivilegeResponse fails validation when an action is malformed in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"application\\" fails because [child \\"foo-application\\" fails because [child \\"foo-resource\\" fails because [child \\"action3\\" fails because [\\"action3\\" must be a boolean]]]]"`;
 
 exports[`validateEsPrivilegeResponse fails validation when an action is missing in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"application\\" fails because [child \\"foo-application\\" fails because [child \\"foo-resource\\" fails because [child \\"action2\\" fails because [\\"action2\\" is required]]]]"`;
@@ -19,3 +23,5 @@ exports[`validateEsPrivilegeResponse fails validation when the requested applica
 exports[`validateEsPrivilegeResponse fails validation when the resource propertry is malformed in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"application\\" fails because [child \\"foo-application\\" fails because [child \\"foo-resource\\" fails because [\\"foo-resource\\" must be an object]]]"`;
 
 exports[`validateEsPrivilegeResponse fails validation when there are no resource properties in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"application\\" fails because [child \\"foo-application\\" fails because [child \\"foo-resource\\" fails because [\\"foo-resource\\" is required]]]"`;
+
+exports[`validateEsPrivilegeResponse fails validation when there is an extra cluster privilege in the response 1`] = `"Invalid response received from Elasticsearch has_privilege endpoint. ValidationError: child \\"cluster\\" fails because [\\"clusterPrivilege3\\" is not allowed]"`;

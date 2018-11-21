@@ -90,7 +90,7 @@ export function checkPrivilegesWithRequestFactory(
     const checkPrivilegesAtResources = async (
       resources: string[],
       privilegeOrPrivileges: string | string[],
-      clusterPrivileges?: string[]
+      clusterPrivileges: string[] = []
     ): Promise<CheckPrivilegesAtResourcesResponse> => {
       const privileges = Array.isArray(privilegeOrPrivileges)
         ? privilegeOrPrivileges
@@ -118,7 +118,8 @@ export function checkPrivilegesWithRequestFactory(
         hasPrivilegesResponse,
         application,
         allApplicationPrivileges,
-        resources
+        resources,
+        clusterPrivileges
       );
 
       const applicationPrivilegesResponse = hasPrivilegesResponse.application[application];

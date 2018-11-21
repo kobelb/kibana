@@ -19,6 +19,10 @@ describe('validateEsPrivilegeResponse', () => {
   it('should validate a proper response', () => {
     const response = {
       ...commonResponse,
+      cluster: {
+        clusterPrivilege1: true,
+        clusterPrivilege2: true,
+      },
       application: {
         [application]: {
           [resource1]: {
@@ -39,7 +43,8 @@ describe('validateEsPrivilegeResponse', () => {
       response,
       application,
       ['action1', 'action2', 'action3'],
-      [resource1, resource2]
+      [resource1, resource2],
+      ['clusterPrivilege1', 'clusterPrivilege2']
     );
     expect(result).toEqual(response);
   });
@@ -47,6 +52,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when an action is missing in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: {
@@ -67,7 +73,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -75,6 +82,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when an extra action is present in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: {
@@ -97,7 +105,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -105,6 +114,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when an action is malformed in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: {
@@ -126,7 +136,8 @@ describe('validateEsPrivilegeResponse', () => {
         response as any,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -134,6 +145,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when an extra application is present in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: {
@@ -167,7 +179,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -175,6 +188,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when the requested application is missing from the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {},
     };
 
@@ -183,7 +197,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -191,6 +206,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when the "application" property is missing from the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       index: {},
     };
 
@@ -199,7 +215,8 @@ describe('validateEsPrivilegeResponse', () => {
         response as any,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -207,6 +224,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when an expected resource property is missing from the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: {
@@ -223,7 +241,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -231,6 +250,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when there are no resource properties in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {},
       },
@@ -241,7 +261,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -249,6 +270,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when an unexpected resource property is present in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: {
@@ -270,7 +292,8 @@ describe('validateEsPrivilegeResponse', () => {
         response,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
       )
     ).toThrowErrorMatchingSnapshot();
   });
@@ -278,6 +301,7 @@ describe('validateEsPrivilegeResponse', () => {
   it('fails validation when the resource propertry is malformed in the response', () => {
     const response = {
       ...commonResponse,
+      cluster: {},
       application: {
         [application]: {
           [resource1]: 'not-an-object',
@@ -295,7 +319,77 @@ describe('validateEsPrivilegeResponse', () => {
         response as any,
         application,
         ['action1', 'action2', 'action3'],
-        [resource1, resource2]
+        [resource1, resource2],
+        []
+      )
+    ).toThrowErrorMatchingSnapshot();
+  });
+
+  it('fails validation when a cluster privilege is missing in the response', () => {
+    const response = {
+      ...commonResponse,
+      cluster: {
+        clusterPrivilege1: true,
+      },
+      application: {
+        [application]: {},
+      },
+    };
+
+    expect(() =>
+      validateEsPrivilegeResponse(
+        response as any,
+        application,
+        [],
+        [],
+        ['clusterPrivilege1', 'clusterPrivilege2']
+      )
+    ).toThrowErrorMatchingSnapshot();
+  });
+
+  it('fails validation when there is an extra cluster privilege in the response', () => {
+    const response = {
+      ...commonResponse,
+      cluster: {
+        clusterPrivilege1: true,
+        clusterPrivilege2: true,
+        clusterPrivilege3: false,
+      },
+      application: {
+        [application]: {},
+      },
+    };
+
+    expect(() =>
+      validateEsPrivilegeResponse(
+        response as any,
+        application,
+        [],
+        [],
+        ['clusterPrivilege1', 'clusterPrivilege2']
+      )
+    ).toThrowErrorMatchingSnapshot();
+  });
+
+  it('fails validation when a cluster privilege is malformed in the response', () => {
+    const response = {
+      ...commonResponse,
+      cluster: {
+        clusterPrivilege1: true,
+        clusterPrivilege2: 'this should be a boolean',
+      },
+      application: {
+        [application]: {},
+      },
+    };
+
+    expect(() =>
+      validateEsPrivilegeResponse(
+        response as any,
+        application,
+        [],
+        [],
+        ['clusterPrivilege1', 'clusterPrivilege2']
       )
     ).toThrowErrorMatchingSnapshot();
   });

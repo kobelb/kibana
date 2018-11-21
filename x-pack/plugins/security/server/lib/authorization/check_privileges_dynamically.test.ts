@@ -19,15 +19,20 @@ test(`checkPrivileges.atSpace when spaces is enabled`, async () => {
   };
   const request = Symbol();
   const privilegeOrPrivileges = ['foo', 'bar'];
+  const clusterPrivileges = ['cluster_foo', 'cluster_bar'];
   const checkPrivilegesDynamically = checkPrivilegesDynamicallyWithRequestFactory(
     mockCheckPrivilegesWithRequest,
     mockSpaces
   )(request as any);
-  const result = await checkPrivilegesDynamically(privilegeOrPrivileges);
+  const result = await checkPrivilegesDynamically(privilegeOrPrivileges, clusterPrivileges);
 
   expect(result).toBe(expectedResult);
   expect(mockCheckPrivilegesWithRequest).toHaveBeenCalledWith(request);
-  expect(mockCheckPrivileges.atSpace).toHaveBeenCalledWith(spaceId, privilegeOrPrivileges);
+  expect(mockCheckPrivileges.atSpace).toHaveBeenCalledWith(
+    spaceId,
+    privilegeOrPrivileges,
+    clusterPrivileges
+  );
 });
 
 test(`checkPrivileges.globally when spaces is disabled`, async () => {
@@ -41,13 +46,17 @@ test(`checkPrivileges.globally when spaces is disabled`, async () => {
   };
   const request = Symbol();
   const privilegeOrPrivileges = ['foo', 'bar'];
+  const clusterPrivileges = ['cluster_foo', 'cluster_bar'];
   const checkPrivilegesDynamically = checkPrivilegesDynamicallyWithRequestFactory(
     mockCheckPrivilegesWithRequest,
     mockSpaces
   )(request as any);
-  const result = await checkPrivilegesDynamically(privilegeOrPrivileges);
+  const result = await checkPrivilegesDynamically(privilegeOrPrivileges, clusterPrivileges);
 
   expect(result).toBe(expectedResult);
   expect(mockCheckPrivilegesWithRequest).toHaveBeenCalledWith(request);
-  expect(mockCheckPrivileges.globally).toHaveBeenCalledWith(privilegeOrPrivileges);
+  expect(mockCheckPrivileges.globally).toHaveBeenCalledWith(
+    privilegeOrPrivileges,
+    clusterPrivileges
+  );
 });
