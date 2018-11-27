@@ -22,22 +22,29 @@ test(`builds privileges correctly`, () => {
       icon: 'arrowDown',
       navLinkId: 'kibana:foo-feature',
       privileges: {
-        all: {
-          app: ['foo-app'],
-          savedObject: {
-            all: ['foo-saved-object-type'],
-            read: ['bad-saved-object-type'],
+        kibana: {
+          all: {
+            app: ['foo-app'],
+            savedObject: {
+              all: ['foo-saved-object-type'],
+              read: ['bad-saved-object-type'],
+            },
+            ui: {
+              navLink: true,
+              capability: ['show', 'showSaveButton', 'showCreateButton'],
+            },
           },
-          ui: ['show', 'showSaveButton', 'showCreateButton'],
-        },
-        read: {
-          app: ['foo-app'],
-          api: ['foo/read/api'],
-          savedObject: {
-            all: [],
-            read: ['foo-saved-object-type', 'bar-saved-object-type'],
+          read: {
+            app: ['foo-app'],
+            api: ['foo/read/api'],
+            savedObject: {
+              all: [],
+              read: ['foo-saved-object-type', 'bar-saved-object-type'],
+            },
+            ui: {
+              capability: ['show'],
+            },
           },
-          ui: ['show'],
         },
       },
     },
@@ -45,23 +52,31 @@ test(`builds privileges correctly`, () => {
       id: 'bar-feature',
       name: 'Bar Feature',
       icon: 'arrowUp',
+      navLinkId: 'kibana:bar-feature',
       privileges: {
-        all: {
-          app: ['bar-app'],
-          savedObject: {
-            all: ['bar-saved-object-type'],
-            read: ['foo-saved-object-type'],
+        kibana: {
+          all: {
+            app: ['bar-app'],
+            savedObject: {
+              all: ['bar-saved-object-type'],
+              read: ['foo-saved-object-type'],
+            },
+            ui: {
+              capability: ['show', 'showSaveButton', 'showCreateButton'],
+            },
           },
-          ui: ['show', 'showSaveButton', 'showCreateButton'],
-        },
-        read: {
-          app: ['bar-app'],
-          api: ['bar/read/api'],
-          savedObject: {
-            all: [],
-            read: ['foo-saved-object-type', 'bar-saved-object-type'],
+          read: {
+            app: ['bar-app'],
+            api: ['bar/read/api'],
+            savedObject: {
+              all: [],
+              read: ['foo-saved-object-type', 'bar-saved-object-type'],
+            },
+            ui: {
+              navLink: true,
+              capability: ['show'],
+            },
           },
-          ui: ['show'],
         },
       },
     },
@@ -109,6 +124,7 @@ test(`builds privileges correctly`, () => {
           'saved_object:bar-saved-object-type/get',
           'saved_object:bar-saved-object-type/find',
           'ui:bar-feature/show',
+          'ui:navLinks/kibana:bar-feature',
         ],
       },
       'foo-feature': {
@@ -143,7 +159,6 @@ test(`builds privileges correctly`, () => {
           'saved_object:bar-saved-object-type/get',
           'saved_object:bar-saved-object-type/find',
           'ui:foo-feature/show',
-          'ui:navLinks/kibana:foo-feature',
         ],
       },
     },
