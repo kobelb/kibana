@@ -17,12 +17,16 @@ describe('#buildFeaturesPrivileges', () => {
       {
         id: 'foo',
         name: '',
-        privileges: {},
+        privileges: {
+          kibana: {},
+        },
       },
       {
         id: 'bar',
         name: '',
-        privileges: {},
+        privileges: {
+          kibana: {},
+        },
       },
     ];
     const result = builder.buildFeaturesPrivileges(features);
@@ -40,13 +44,15 @@ describe('#buildFeaturesPrivileges', () => {
         id: 'foo',
         name: '',
         privileges: {
-          bar: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -67,14 +73,16 @@ describe('#buildFeaturesPrivileges', () => {
         id: 'foo',
         name: '',
         privileges: {
-          bar: {
-            api: ['foo/operation', 'bar/operation'],
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            bar: {
+              api: ['foo/operation', 'bar/operation'],
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -100,13 +108,15 @@ describe('#buildFeaturesPrivileges', () => {
         id: 'foo',
         name: '',
         privileges: {
-          bar: {
-            app: ['foo-app', 'bar-app'],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            bar: {
+              app: ['foo-app', 'bar-app'],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -132,13 +142,15 @@ describe('#buildFeaturesPrivileges', () => {
         id: 'foo',
         name: '',
         privileges: {
-          bar: {
-            app: [],
-            savedObject: {
-              all: ['foo-type', 'bar-type'],
-              read: [],
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: ['foo-type', 'bar-type'],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -163,13 +175,15 @@ describe('#buildFeaturesPrivileges', () => {
         id: 'foo',
         name: '',
         privileges: {
-          bar: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: ['foo-type', 'bar-type'],
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: ['foo-type', 'bar-type'],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -194,13 +208,17 @@ describe('#buildFeaturesPrivileges', () => {
         id: 'foo',
         name: '',
         privileges: {
-          bar: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {
+                capability: ['foo-ui-capability', 'bar-ui-capability'],
+              },
             },
-            ui: ['foo-ui-capability', 'bar-ui-capability'],
           },
         },
       },
@@ -218,7 +236,7 @@ describe('#buildFeaturesPrivileges', () => {
     });
   });
 
-  test('includes navlink ui capability action when specified', () => {
+  test('includes navlink ui capability action when navLinkId is specified and ui.navLink is true', () => {
     const actions = new Actions(versionNumber);
     const builder = new FeaturesPrivilegesBuilder(actions);
     const features = [
@@ -227,13 +245,17 @@ describe('#buildFeaturesPrivileges', () => {
         name: '',
         navLinkId: 'foo-navlink',
         privileges: {
-          bar: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {
+                navLink: true,
+              },
             },
-            ui: [],
           },
         },
       },
@@ -242,6 +264,68 @@ describe('#buildFeaturesPrivileges', () => {
     expect(result).toEqual({
       foo: {
         bar: [actions.login, actions.version, actions.ui.get('navLinks', 'foo-navlink')],
+      },
+    });
+  });
+
+  test(`doesn't include navlink ui capability action when navLinkId is specified and ui.navLink is false`, () => {
+    const actions = new Actions(versionNumber);
+    const builder = new FeaturesPrivilegesBuilder(actions);
+    const features = [
+      {
+        id: 'foo',
+        name: '',
+        navLinkId: 'foo-navlink',
+        privileges: {
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {
+                navLink: false,
+              },
+            },
+          },
+        },
+      },
+    ];
+    const result = builder.buildFeaturesPrivileges(features);
+    expect(result).toEqual({
+      foo: {
+        bar: [actions.login, actions.version],
+      },
+    });
+  });
+
+  test(`doesn't include navlink ui capability action when navLinkId is specified and ui.navLink isn't specified`, () => {
+    const actions = new Actions(versionNumber);
+    const builder = new FeaturesPrivilegesBuilder(actions);
+    const features = [
+      {
+        id: 'foo',
+        name: '',
+        navLinkId: 'foo-navlink',
+        privileges: {
+          kibana: {
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
+            },
+          },
+        },
+      },
+    ];
+    const result = builder.buildFeaturesPrivileges(features);
+    expect(result).toEqual({
+      foo: {
+        bar: [actions.login, actions.version],
       },
     });
   });
@@ -256,24 +340,26 @@ describe('#getApiReadActions', () => {
         id: 'foo',
         name: '',
         privileges: {
-          // wrong privilege name
-          bar: {
-            app: [],
-            api: ['foo/api'],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            // wrong privilege name
+            bar: {
+              app: [],
+              api: ['foo/api'],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
-          },
-          // no api read privileges
-          read: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+            // no api read privileges
+            read: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -281,15 +367,17 @@ describe('#getApiReadActions', () => {
         id: 'bar',
         name: '',
         privileges: {
-          // this one should show up in the results
-          read: {
-            app: [],
-            api: ['foo/api'],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            // this one should show up in the results
+            read: {
+              app: [],
+              api: ['foo/api'],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
@@ -307,44 +395,56 @@ describe('#getUIReadActions', () => {
       {
         id: 'foo',
         name: '',
+        navLinkId: 'foo',
         privileges: {
-          // wrong privilege name
-          bar: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            // wrong privilege name
+            bar: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
-          },
-          // no ui read privileges
-          read: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+            // no ui read privileges
+            read: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {},
             },
-            ui: [],
           },
         },
       },
       {
         id: 'bar',
         name: '',
+        navLinkId: 'bar-nav-link',
         privileges: {
-          // this ui capability should show up in the results
-          read: {
-            app: [],
-            savedObject: {
-              all: [],
-              read: [],
+          kibana: {
+            // this ui capability should show up in the results
+            read: {
+              app: [],
+              savedObject: {
+                all: [],
+                read: [],
+              },
+              ui: {
+                navLink: true,
+                capability: ['bar-ui-capability'],
+              },
             },
-            ui: ['bar-ui-capability'],
           },
         },
       },
     ];
     const result = builder.getUIReadActions(features);
-    expect(result).toEqual([actions.ui.get('bar', 'bar-ui-capability')]);
+    expect(result).toEqual([
+      actions.ui.get('bar', 'bar-ui-capability'),
+      actions.ui.get('navLinks', 'bar-nav-link'),
+    ]);
   });
 });
