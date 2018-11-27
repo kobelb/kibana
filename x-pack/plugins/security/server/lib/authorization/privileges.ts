@@ -57,7 +57,6 @@ export function privilegesFactory(
             actions.app.all,
             ...actions.savedObject.readOperations(validSavedObjectTypes),
             ...featuresPrivilegesBuilder.getUIReadActions(features),
-            actions.ui.allNavLinks,
           ],
         },
         space: {
@@ -76,7 +75,6 @@ export function privilegesFactory(
             actions.app.all,
             ...actions.savedObject.readOperations(validSavedObjectTypes),
             ...featuresPrivilegesBuilder.getUIReadActions(features),
-            actions.ui.allNavLinks,
           ],
         },
       };

@@ -442,6 +442,9 @@ describe('#getUIReadActions', () => {
       },
     ];
     const result = builder.getUIReadActions(features);
-    expect(result).toEqual([actions.ui.get('bar', 'bar-ui-capability')]);
+    expect(result).toEqual([
+      actions.ui.get('bar', 'bar-ui-capability'),
+      actions.ui.get('navLinks', 'bar-nav-link'),
+    ]);
   });
 });

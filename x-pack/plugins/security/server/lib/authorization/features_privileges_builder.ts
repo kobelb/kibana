@@ -61,6 +61,9 @@ export class FeaturesPrivilegesBuilder {
           ...(ui.capability
             ? ui.capability.map(uiCapability => this.actions.ui.get(feature.id, uiCapability))
             : []),
+          ...(feature.navLinkId && ui.navLink
+            ? [this.actions.ui.get('navLinks', feature.navLinkId)]
+            : []),
         ];
       })
     );

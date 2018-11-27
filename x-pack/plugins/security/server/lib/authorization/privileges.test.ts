@@ -186,7 +186,7 @@ test(`builds privileges correctly`, () => {
         'saved_object:bar-saved-object-type/find',
         'ui:foo-feature/show',
         'ui:bar-feature/show',
-        'ui:navLinks/*',
+        'ui:navLinks/kibana:bar-feature',
       ],
     },
     space: {
@@ -225,7 +225,7 @@ test(`builds privileges correctly`, () => {
         'saved_object:bar-saved-object-type/find',
         'ui:foo-feature/show',
         'ui:bar-feature/show',
-        'ui:navLinks/*',
+        'ui:navLinks/kibana:bar-feature',
       ],
     },
   });
