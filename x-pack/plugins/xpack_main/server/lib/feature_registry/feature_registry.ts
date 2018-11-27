@@ -58,10 +58,19 @@ export interface Feature {
 }
 
 const features: Record<string, Feature> = {};
+const navLinkIds: Set<string> = new Set();
 
 export function registerFeature(feature: Feature) {
   if (feature.id in features) {
     throw new Error(`Feature with id ${feature.id} is already registered.`);
+  }
+
+  if (feature.navLinkId) {
+    if (navLinkIds.has(feature.navLinkId)) {
+      throw new Error(`Feature with navLinkId of ${feature.navLinkId} is already registered`);
+    }
+
+    navLinkIds.add(feature.navLinkId);
   }
 
   features[feature.id] = feature;
