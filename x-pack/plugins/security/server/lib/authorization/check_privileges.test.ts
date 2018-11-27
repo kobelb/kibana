@@ -47,7 +47,7 @@ describe('#atSpace', () => {
         application,
         mockShieldClient
       );
-      const request = Symbol();
+      const request = { foo: Symbol() };
       const checkPrivileges = checkPrivilegesWithRequest(request);
 
       let actualResult;
@@ -308,7 +308,7 @@ describe('#atSpaces', () => {
         application,
         mockShieldClient
       );
-      const request = Symbol();
+      const request = { foo: Symbol() };
       const checkPrivileges = checkPrivilegesWithRequest(request);
 
       let actualResult;
@@ -705,7 +705,7 @@ describe('#globally', () => {
         application,
         mockShieldClient
       );
-      const request = Symbol();
+      const request = { foo: Symbol() };
       const checkPrivileges = checkPrivilegesWithRequest(request);
 
       let actualResult;
