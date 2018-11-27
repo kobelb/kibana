@@ -4,19 +4,19 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { mapValues } from 'lodash';
+import { isBoolean, mapValues } from 'lodash';
 import { UICapabilities } from 'ui/capabilities';
-import { Feature } from '../../../../xpack_main/types';
-import { Actions } from './actions';
-import { CheckPrivilegesAtResourceResponse } from './check_privileges';
-import { CheckPrivilegesDynamically } from './check_privileges_dynamically';
+import { Feature } from '../../../../../xpack_main/types';
+import { Actions } from '../actions';
+import { CheckPrivilegesAtResourceResponse } from '../check_privileges';
+import { CheckPrivilegesDynamically } from '../check_privileges_dynamically';
 import { FeaturesClusterPrivileges } from './features_cluster_privileges';
 
-export function disableUICapabilitesFactory(
-  server: Record<string, any>,
-  request: Record<string, any>
-) {
-  const { authorization } = server.plugins.security;
+export function uiCapabilitesFactory(server: Record<string, any>, request: Record<string, any>) {
+  const {
+    xpack_main: xpackMainPlugin,
+    security: { authorization },
+  } = server.plugins;
   const actions: Actions = authorization.actions;
 
   const disableAll = (uiCapabilities: UICapabilities) => {
@@ -25,7 +25,7 @@ export function disableUICapabilitesFactory(
     );
   };
 
-  const usingPrivileges = async (uiCapabilities: UICapabilities) => {
+  const disableUsingPrivileges = async (uiCapabilities: UICapabilities) => {
     const uiActions = Object.entries(uiCapabilities).reduce<string[]>(
       (acc, [featureId, featureUICapabilities]) => [
         ...acc,
@@ -36,7 +36,7 @@ export function disableUICapabilitesFactory(
       []
     );
 
-    const features: Feature[] = server.plugins.xpack_main.getFeatures();
+    const features: Feature[] = xpackMainPlugin.getFeatures();
     const featuresClusterPrivileges = new FeaturesClusterPrivileges(features, actions);
     const clusterPrivileges = featuresClusterPrivileges.getAllClusterPrivileges();
 
@@ -64,19 +64,23 @@ export function disableUICapabilitesFactory(
         }
 
         const action = actions.ui.get(featureId!, uiCapability!);
-        return (
-          checkPrivilegesResponse.privileges[action] === true ||
-          featuresClusterPrivileges.isActionEnabled(
-            action,
-            checkPrivilegesResponse.clusterPrivileges
-          )
+        const isEnabledByClusterPrivileges = featuresClusterPrivileges.isActionEnabled(
+          action,
+          checkPrivilegesResponse.clusterPrivileges
         );
+        // we need the explicit isBoolean() check here as this can be null
+        // if the action isn't specified by a feature's cluster privileges definition
+        if (isBoolean(isEnabledByClusterPrivileges)) {
+          return isEnabledByClusterPrivileges;
+        }
+
+        return checkPrivilegesResponse.privileges[action] === true;
       });
     });
   };
 
   return {
-    all: disableAll,
-    usingPrivileges,
+    disableAll,
+    disableUsingPrivileges,
   };
 }

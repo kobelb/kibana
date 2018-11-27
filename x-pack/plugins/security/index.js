@@ -20,7 +20,7 @@ import { checkLicense } from './server/lib/check_license';
 import { initAuthenticator } from './server/lib/authentication/authenticator';
 import { SecurityAuditLogger } from './server/lib/audit_logger';
 import { AuditLogger } from '../../server/lib/audit_logger';
-import { createAuthorizationService, disableUICapabilitesFactory, registerPrivilegesWithCluster } from './server/lib/authorization';
+import { createAuthorizationService, registerPrivilegesWithCluster, uiCapabilitesFactory } from './server/lib/authorization';
 import { watchStatusAndLicenseToInitialize } from '../../server/lib/watch_status_and_license_to_initialize';
 import { SecureSavedObjectsClientWrapper } from './server/lib/saved_objects_client/secure_saved_objects_client_wrapper';
 import { deepFreeze } from './server/lib/deep_freeze';
@@ -91,18 +91,18 @@ export const security = (kibana) => new kibana.Plugin({
       };
     },
     replaceInjectedVars: async function (originalInjectedVars, request, server) {
-      const disableUICapabilites = disableUICapabilitesFactory(server, request);
+      const uiCapabilities = uiCapabilitesFactory(server, request);
       // if we're an anonymous route, we disable all ui capabilities
       if (request.route.settings.auth === false) {
         return {
           ...originalInjectedVars,
-          uiCapabilities: disableUICapabilites.all(originalInjectedVars.uiCapabilities)
+          uiCapabilities: uiCapabilities.disableAll(originalInjectedVars.uiCapabilities)
         };
       }
 
       return {
         ...originalInjectedVars,
-        uiCapabilities: await disableUICapabilites.usingPrivileges(originalInjectedVars.uiCapabilities)
+        uiCapabilities: await uiCapabilities.disableUsingPrivileges(originalInjectedVars.uiCapabilities)
       };
     }
   },

@@ -74,11 +74,6 @@ export const ml = (kibana) => {
               ui: {
                 navLink: true,
               },
-            },
-            manage_ccr: {
-              ui: {
-                navLink: true,
-              },
             }
           }
         }

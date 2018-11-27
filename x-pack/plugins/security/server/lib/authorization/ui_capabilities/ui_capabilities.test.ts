@@ -4,22 +4,22 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { Actions } from '.';
-import { disableUICapabilitesFactory } from './disable_ui_capabilities';
-
-interface MockServerOptions {
-  checkPrivileges: {
-    reject?: any;
-    resolve?: any;
-  };
-}
+import { Actions } from '../';
+import { Feature } from '../../../../../xpack_main/types';
+import { uiCapabilitesFactory } from './ui_capabilities';
 
 const actions = new Actions('1.0.0-zeta1');
 const mockRequest = {
   foo: Symbol(),
 };
 
-const createMockServer = (options: MockServerOptions) => {
+const createMockServer = (options: {
+  checkPrivileges: {
+    reject?: any;
+    resolve?: any;
+  };
+  features: Feature[];
+}) => {
   const mockSpacesPlugin = {
     getSpaceId: () => 'foo',
   };
@@ -44,8 +44,13 @@ const createMockServer = (options: MockServerOptions) => {
     },
   };
 
+  const mockXPackMainPlugin = {
+    getFeatures: jest.fn().mockReturnValue(options.features),
+  };
+
   return {
     plugins: {
+      xpack_main: mockXPackMainPlugin,
       spaces: mockSpacesPlugin,
       security: {
         authorization: mockAuthorizationService,
@@ -54,7 +59,7 @@ const createMockServer = (options: MockServerOptions) => {
   };
 };
 
-describe('usingPrivileges', () => {
+describe('disableUsingPrivileges', () => {
   describe('checkPrivileges errors', () => {
     test(`disables all uiCapabilities when a 401 is thrown`, async () => {
       const mockServer = createMockServer({
@@ -63,9 +68,10 @@ describe('usingPrivileges', () => {
             statusCode: 401,
           },
         },
+        features: [],
       });
-      const { usingPrivileges } = disableUICapabilitesFactory(mockServer, mockRequest);
-      const result = await usingPrivileges(
+      const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
+      const result = await disableUsingPrivileges(
         Object.freeze({
           navLinks: {
             foo: true,
@@ -105,9 +111,10 @@ describe('usingPrivileges', () => {
             statusCode: 403,
           },
         },
+        features: [],
       });
-      const { usingPrivileges } = disableUICapabilitesFactory(mockServer, mockRequest);
-      const result = await usingPrivileges(
+      const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
+      const result = await disableUsingPrivileges(
         Object.freeze({
           navLinks: {
             foo: true,
@@ -145,10 +152,11 @@ describe('usingPrivileges', () => {
         checkPrivileges: {
           reject: new Error('something else entirely'),
         },
+        features: [],
       });
-      const { usingPrivileges } = disableUICapabilitesFactory(mockServer, mockRequest);
+      const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
       await expect(
-        usingPrivileges({
+        disableUsingPrivileges({
           navLinks: {
             foo: true,
             bar: false,
@@ -158,7 +166,7 @@ describe('usingPrivileges', () => {
     });
   });
 
-  test(`disables ui capabilities when they don't have privileges`, async () => {
+  test(`disables ui capabilities when they don't have the application privileges`, async () => {
     const mockServer = createMockServer({
       checkPrivileges: {
         resolve: {
@@ -167,24 +175,19 @@ describe('usingPrivileges', () => {
             [actions.ui.get('navLinks', 'bar')]: false,
             [actions.ui.get('fooFeature', 'foo')]: true,
             [actions.ui.get('fooFeature', 'bar')]: false,
-            [actions.ui.get('barFeature', 'foo')]: true,
-            [actions.ui.get('barFeature', 'bar')]: false,
           },
         },
       },
+      features: [],
     });
-    const { usingPrivileges } = disableUICapabilitesFactory(mockServer, mockRequest);
-    const result = await usingPrivileges(
+    const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
+    const result = await disableUsingPrivileges(
       Object.freeze({
         navLinks: {
           foo: true,
           bar: true,
         },
         fooFeature: {
-          foo: true,
-          bar: true,
-        },
-        barFeature: {
           foo: true,
           bar: true,
         },
@@ -200,7 +203,120 @@ describe('usingPrivileges', () => {
         foo: true,
         bar: false,
       },
-      barFeature: {
+    });
+  });
+
+  test(`disables ui capabilities when they don't have the cluster privilege`, async () => {
+    const mockServer = createMockServer({
+      checkPrivileges: {
+        resolve: {
+          privileges: {
+            [actions.ui.get('navLinks', 'foo')]: false,
+            [actions.ui.get('navLinks', 'bar')]: true,
+            [actions.ui.get('fooFeature', 'foo')]: false,
+            [actions.ui.get('fooFeature', 'bar')]: true,
+          },
+          clusterPrivileges: {
+            cluster_foo: false,
+          },
+        },
+      },
+      features: [
+        {
+          id: 'fooFeature',
+          name: 'Foo',
+          privileges: {
+            cluster: {
+              cluster_foo: {
+                ui: {
+                  navLink: true,
+                  capability: ['foo'],
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+    const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
+    const result = await disableUsingPrivileges(
+      Object.freeze({
+        navLinks: {
+          foo: true,
+          bar: true,
+        },
+        fooFeature: {
+          foo: true,
+          bar: true,
+        },
+      })
+    );
+
+    expect(result).toEqual({
+      navLinks: {
+        foo: false,
+        bar: true,
+      },
+      fooFeature: {
+        foo: false,
+        bar: true,
+      },
+    });
+  });
+
+  test(`doesn't disable ui capabilities when they only have the cluster privilege`, async () => {
+    const mockServer = createMockServer({
+      checkPrivileges: {
+        resolve: {
+          privileges: {
+            [actions.ui.get('navLinks', 'foo')]: false,
+            [actions.ui.get('navLinks', 'bar')]: false,
+            [actions.ui.get('fooFeature', 'foo')]: false,
+            [actions.ui.get('fooFeature', 'bar')]: false,
+          },
+          clusterPrivileges: {
+            cluster_foo: true,
+          },
+        },
+      },
+      features: [
+        {
+          id: 'fooFeature',
+          name: 'Foo',
+          navLinkId: 'foo',
+          privileges: {
+            cluster: {
+              cluster_foo: {
+                ui: {
+                  navLink: true,
+                  capability: ['foo'],
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+    const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
+    const result = await disableUsingPrivileges(
+      Object.freeze({
+        navLinks: {
+          foo: true,
+          bar: true,
+        },
+        fooFeature: {
+          foo: true,
+          bar: true,
+        },
+      })
+    );
+
+    expect(result).toEqual({
+      navLinks: {
+        foo: true,
+        bar: false,
+      },
+      fooFeature: {
         foo: true,
         bar: false,
       },
@@ -221,9 +337,10 @@ describe('usingPrivileges', () => {
           },
         },
       },
+      features: [],
     });
-    const { usingPrivileges } = disableUICapabilitesFactory(mockServer, mockRequest);
-    const result = await usingPrivileges(
+    const { disableUsingPrivileges } = uiCapabilitesFactory(mockServer, mockRequest);
+    const result = await disableUsingPrivileges(
       Object.freeze({
         navLinks: {
           foo: false,
@@ -257,15 +374,16 @@ describe('usingPrivileges', () => {
   });
 });
 
-describe('all', () => {
+describe('disableAll', () => {
   test(`disables all uiCapabilities`, () => {
     const mockServer = createMockServer({
       checkPrivileges: {
         reject: new Error(`Don't use me`),
       },
+      features: [],
     });
-    const { all } = disableUICapabilitesFactory(mockServer, mockRequest);
-    const result = all(
+    const { disableAll } = uiCapabilitesFactory(mockServer, mockRequest);
+    const result = disableAll(
       Object.freeze({
         navLinks: {
           foo: true,

@@ -7,7 +7,7 @@
 export { Actions } from './actions';
 // @ts-ignore
 export { createAuthorizationService } from './service';
-export { disableUICapabilitesFactory } from './disable_ui_capabilities';
+export { uiCapabilitesFactory } from './ui_capabilities';
 export { PrivilegeSerializer } from './privilege_serializer';
 // @ts-ignore
 export { registerPrivilegesWithCluster } from './register_privileges_with_cluster';
