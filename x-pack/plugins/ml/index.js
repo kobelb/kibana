@@ -70,7 +70,7 @@ export const ml = (kibana) => {
         navLinkId: 'ml',
         privileges: {
           cluster: {
-            manage_ml: {
+            monitor_ml: {
               ui: {
                 navLink: true,
               },

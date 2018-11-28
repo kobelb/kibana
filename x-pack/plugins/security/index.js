@@ -212,17 +212,6 @@ export const security = (kibana) => new kibana.Plugin({
       const { actions, checkPrivilegesDynamicallyWithRequest } = server.plugins.security.authorization;
       const checkPrivileges = checkPrivilegesDynamicallyWithRequest(req);
 
-      // Enforce app restrictions
-      if (path.startsWith('/app/')) {
-        const appId = path.split('/', 3)[2];
-        const appAction = actions.app.get(appId);
-
-        const checkPrivilegesResponse = await checkPrivileges(appAction);
-        if (!checkPrivilegesResponse.hasAllRequested) {
-          return Boom.notFound();
-        }
-      }
-
       // Enforce API restrictions for associated applications
       if (path.startsWith('/api/')) {
         const { tags = [] } = req.route.settings;
