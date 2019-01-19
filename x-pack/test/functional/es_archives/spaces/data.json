@@ -1,7 +1,11 @@
 {
-  "type": "doc",
+  "type": "_doc",
   "value": {
     "index": ".kibana",
+<<<<<<< HEAD
+=======
+    "type": "_doc",
+>>>>>>> 28d609b711... Fixing spaces es archives
     "id": "config:6.0.0-alpha1",
     "source": {
       "type": "config",
@@ -14,9 +18,13 @@
 }
 
 {
-  "type": "doc",
+  "type": "_doc",
   "value": {
     "index": ".kibana",
+<<<<<<< HEAD
+=======
+    "type": "_doc",
+>>>>>>> 28d609b711... Fixing spaces es archives
     "id": "space:default",
     "source": {
       "type": "space",
@@ -29,9 +37,13 @@
 }
 
 {
-  "type": "doc",
+  "type": "_doc",
   "value": {
     "index": ".kibana",
+<<<<<<< HEAD
+=======
+    "type": "_doc",
+>>>>>>> 28d609b711... Fixing spaces es archives
     "id": "space:another-space",
     "source": {
       "type": "space",
