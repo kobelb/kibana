@@ -3,6 +3,7 @@
 set -e
 trap 'node "$KIBANA_DIR/src/dev/failed_tests/cli"' EXIT
 
+export NODE_OPTIONS="--use-strict"
 yarn run grunt functionalTests:ensureAllTestsInCiGroup;
 
 node scripts/build --debug --oss;
