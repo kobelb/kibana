@@ -36,7 +36,7 @@ describe('SAML authentication routes', () => {
       config: { authc: { providers: ['saml'] } } as ConfigType,
       authc,
       authz: authorizationMock.create(),
-      getLegacyAPI: () => ({ cspRules: 'test-csp-rule' } as LegacyAPI),
+      csp: httpServiceMock.createSetupContract().csp,
     });
   });
 

@@ -77,7 +77,7 @@ describe('Change password', () => {
       config: { authc: { providers: ['saml'] } } as ConfigType,
       authc,
       authz: authorizationMock.create(),
-      getLegacyAPI: () => ({ cspRules: 'test-csp-rule' } as LegacyAPI),
+      csp: httpServiceMock.createSetupContract().csp,
     });
 
     const [changePasswordRouteConfig, changePasswordRouteHandler] = router.post.mock.calls[0];
