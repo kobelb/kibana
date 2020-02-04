@@ -8,14 +8,24 @@ import { schema } from '@kbn/config-schema';
 import { canRedirectRequest } from '../../authentication';
 import { wrapIntoCustomErrorResponse } from '../../errors';
 import { createLicensedRouteHandler } from '../licensed_route_handler';
+import { Version } from '../../version';
 import { RouteDefinitionParams } from '..';
 
 /**
  * Defines routes that are common to various authentication mechanisms.
  */
-export function defineCommonRoutes({ router, authc, basePath, logger }: RouteDefinitionParams) {
+export function defineCommonRoutes({
+  router,
+  authc,
+  basePath,
+  logger,
+  version,
+}: RouteDefinitionParams) {
   // Generate two identical routes with new and deprecated URL and issue a warning if route with deprecated URL is ever used.
-  for (const path of ['/api/security/logout', '/api/security/v1/logout']) {
+  for (const path of [
+    '/api/security/logout',
+    ...(version.before(Version.V_8_0_0) ? ['/api/security/v1/logout'] : []),
+  ]) {
     router.get(
       {
         path,
@@ -26,7 +36,7 @@ export function defineCommonRoutes({ router, authc, basePath, logger }: RouteDef
       },
       async (context, request, response) => {
         const serverBasePath = basePath.serverBasePath;
-        if (path === '/api/security/v1/logout') {
+        if (version.before(Version.V_8_0_0) && path === '/api/security/v1/logout') {
           logger.warn(
             `The "${serverBasePath}${path}" URL is deprecated and will stop working in the next major version, please use "${serverBasePath}/api/security/logout" URL instead.`,
             { tags: ['deprecation'] }
@@ -56,11 +66,14 @@ export function defineCommonRoutes({ router, authc, basePath, logger }: RouteDef
   }
 
   // Generate two identical routes with new and deprecated URL and issue a warning if route with deprecated URL is ever used.
-  for (const path of ['/internal/security/me', '/api/security/v1/me']) {
+  for (const path of [
+    '/internal/security/me',
+    ...(version.before(Version.V_8_0_0) ? ['/api/security/v1/me'] : []),
+  ]) {
     router.get(
       { path, validate: false },
       createLicensedRouteHandler(async (context, request, response) => {
-        if (path === '/api/security/v1/me') {
+        if (version.before(Version.V_8_0_0) && path === '/api/security/v1/me') {
           logger.warn(
             `The "${basePath.serverBasePath}${path}" endpoint is deprecated and will be removed in the next major version.`,
             { tags: ['deprecation'] }

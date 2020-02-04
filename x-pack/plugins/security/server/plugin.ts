@@ -27,6 +27,7 @@ import { SecurityLicenseService, SecurityLicense } from '../common/licensing';
 import { setupSavedObjects } from './saved_objects';
 import { SecurityAuditLogger } from './audit';
 import { elasticsearchClientPlugin } from './elasticsearch_client_plugin';
+import { VersionService } from './version';
 
 export type SpacesService = Pick<
   SpacesPluginSetup['spacesService'],
@@ -88,6 +89,7 @@ export class Plugin {
   private clusterClient?: ICustomClusterClient;
   private spacesService?: SpacesService | symbol = Symbol('not accessed');
   private securityLicenseService?: SecurityLicenseService;
+  private readonly version: VersionService;
 
   private legacyAPI?: LegacyAPI;
   private readonly getLegacyAPI = () => {
@@ -107,6 +109,7 @@ export class Plugin {
   };
 
   constructor(private readonly initializerContext: PluginInitializerContext) {
+    this.version = new VersionService(initializerContext.env.packageInfo.version);
     this.logger = this.initializerContext.logger.get();
   }
 
@@ -164,6 +167,7 @@ export class Plugin {
       authc,
       authz,
       csp: core.http.csp,
+      version: this.version,
     });
 
     return deepFreeze<SecurityPluginSetup>({

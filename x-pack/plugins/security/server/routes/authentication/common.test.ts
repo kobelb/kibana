@@ -26,6 +26,7 @@ import {
 import { mockAuthenticatedUser } from '../../../common/model/authenticated_user.mock';
 import { authenticationMock } from '../../authentication/index.mock';
 import { authorizationMock } from '../../authorization/index.mock';
+import { Version, VersionService } from '../../version';
 
 describe('Common authentication routes', () => {
   let router: jest.Mocked<IRouter>;
@@ -50,6 +51,7 @@ describe('Common authentication routes', () => {
       authc,
       authz: authorizationMock.create(),
       csp: httpServiceMock.createSetupContract().csp,
+      version: new VersionService(Version.V_7_7_0),
     });
   });
 

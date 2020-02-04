@@ -15,6 +15,7 @@ import { defineApiKeysRoutes } from './api_keys';
 import { defineIndicesRoutes } from './indices';
 import { defineUsersRoutes } from './users';
 import { defineRoleMappingRoutes } from './role_mapping';
+import { VersionService } from '../version';
 
 /**
  * Describes parameters used to define HTTP routes.
@@ -28,6 +29,7 @@ export interface RouteDefinitionParams {
   config: ConfigType;
   authc: Authentication;
   authz: Authorization;
+  version: VersionService;
 }
 
 export function defineRoutes(params: RouteDefinitionParams) {
