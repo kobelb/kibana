@@ -26,13 +26,13 @@ describe('App Search Telemetry API', () => {
       router: mockRouter.router,
       getSavedObjectsService: () => savedObjectsServiceMock.create(),
       log: mockLogger,
-    });
+    } as any);
   });
 
   describe('PUT /api/app_search/telemetry', () => {
     it('increments the saved objects counter', async () => {
       const successResponse = { success: true };
-      incrementUICounter.mockImplementation(jest.fn(() => successResponse));
+      (incrementUICounter as jest.Mock).mockImplementation(jest.fn(() => successResponse));
 
       await mockRouter.callRoute({ body: { action: 'viewed', metric: 'setup_guide' } });
 
@@ -45,7 +45,7 @@ describe('App Search Telemetry API', () => {
     });
 
     it('throws an error when incrementing fails', async () => {
-      incrementUICounter.mockImplementation(jest.fn(() => Promise.reject('Failed')));
+      (incrementUICounter as jest.Mock).mockImplementation(jest.fn(() => Promise.reject('Failed')));
 
       await mockRouter.callRoute({ body: { action: 'error', metric: 'error' } });
 
