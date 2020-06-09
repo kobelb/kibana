@@ -15,6 +15,7 @@
     "xpack.drilldowns": "plugins/drilldowns",
     "xpack.embeddableEnhanced": "plugins/embeddable_enhanced",
     "xpack.endpoint": "plugins/endpoint",
+    "xpack.appSearch": "plugins/enterprise_search",
     "xpack.features": "plugins/features",
     "xpack.fileUpload": "plugins/file_upload",
     "xpack.globalSearch": ["plugins/global_search"],
