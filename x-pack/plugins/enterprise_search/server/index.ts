@@ -14,6 +14,8 @@ export const plugin = (initializerContext: PluginInitializerContext) => {
 
 export const configSchema = schema.object({
   host: schema.maybe(schema.string()),
+  enabled: schema.boolean({ defaultValue: true }),
+  privilegeCheckTimeout: schema.number({ defaultValue: 200 }), // the lower this can be without causing issues, the better
 });
 
 type ConfigType = TypeOf<typeof configSchema>;
