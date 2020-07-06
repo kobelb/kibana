@@ -146,6 +146,8 @@ export {
   LifecycleResponseFactory,
   KnownHeaders,
   LegacyRequest,
+  OnPreAuthHandler,
+  OnPreAuthToolkit,
   OnPreRoutingHandler,
   OnPreRoutingToolkit,
   OnPostAuthHandler,
