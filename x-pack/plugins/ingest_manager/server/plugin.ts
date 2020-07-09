@@ -182,27 +182,36 @@ export class IngestManagerPlugin
 
         concurrentRequests += 1;
         console.log('preAuth incremented then next()', concurrentRequests, maxConcurrentRequests);
-        return toolkit.next();
-      }
-    );
-    core.http.registerOnPreResponse(
-      (request: KibanaRequest, preResponse: OnPreResponseInfo, toolkit: OnPreResponseToolkit) => {
-        console.log(
-          'preResponse enter',
-          isAgentRequest(request),
-          preResponse.statusCode,
-          concurrentRequests,
-          maxConcurrentRequests,
-          request.url.pathname
-        );
-        if (isAgentRequest(request) && preResponse.statusCode !== 429) {
+
+        // requests.events.aborted$ has a bug where it's fired even when the request completes...
+        // we can take advantage of this bug just for load testing...
+        request.events.aborted$.toPromise().then(() => {
           concurrentRequests -= 1;
-          console.log('preResponse decremented', concurrentRequests, maxConcurrentRequests);
-        }
+        });
 
         return toolkit.next();
       }
     );
+    // we should need to do the following as well, but the requests.events.aborted$ bug prevents us from
+    // doing so
+    // core.http.registerOnPreResponse(
+    //   (request: KibanaRequest, preResponse: OnPreResponseInfo, toolkit: OnPreResponseToolkit) => {
+    //     console.log(
+    //       'preResponse enter',
+    //       isAgentRequest(request),
+    //       preResponse.statusCode,
+    //       concurrentRequests,
+    //       maxConcurrentRequests,
+    //       request.url.pathname
+    //     );
+    //     if (isAgentRequest(request) && preResponse.statusCode !== 429) {
+    //       concurrentRequests -= 1;
+    //       console.log('preResponse decremented', concurrentRequests, maxConcurrentRequests);
+    //     }
+    //
+    //     return toolkit.next();
+    //   }
+    // );
     this.httpSetup = core.http;
     this.licensing$ = deps.licensing.license$;
     if (deps.security) {
