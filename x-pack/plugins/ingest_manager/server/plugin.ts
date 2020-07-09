@@ -13,6 +13,11 @@ import {
   PluginInitializerContext,
   SavedObjectsServiceStart,
   HttpServiceSetup,
+  KibanaRequest,
+  LifecycleResponseFactory,
+  OnPreAuthToolkit,
+  OnPreResponseToolkit,
+  OnPreResponseInfo,
 } from 'kibana/server';
 import { UsageCollectionSetup } from 'src/plugins/usage_collection/server';
 import { LicensingPluginSetup, ILicense } from '../../licensing/server';
@@ -46,7 +51,7 @@ import {
   registerSettingsRoutes,
   registerAppRoutes,
 } from './routes';
-import { IngestManagerConfigType, NewPackageConfig } from '../common';
+import { IngestManagerConfigType, NewPackageConfig, AGENT_ROUTE_TAG } from '../common';
 import {
   appContextService,
   licenseService,
@@ -155,6 +160,49 @@ export class IngestManagerPlugin
   }
 
   public async setup(core: CoreSetup, deps: IngestManagerSetupDeps) {
+    const maxConcurrentRequests = 100;
+    let concurrentRequests = 0;
+    const isAgentRequest = (request: KibanaRequest) => {
+      const tags = request.route.options.tags;
+      return tags.includes(AGENT_ROUTE_TAG);
+    };
+    core.http.registerOnPreAuth(
+      (request: KibanaRequest, response: LifecycleResponseFactory, toolkit: OnPreAuthToolkit) => {
+        console.log('preAuth enter', request.url.pathname);
+        if (!isAgentRequest(request)) {
+          console.log('preAuth not fleet');
+          return toolkit.next();
+        }
+
+        console.log('preAuth is Fleet', concurrentRequests, maxConcurrentRequests);
+        if (concurrentRequests >= maxConcurrentRequests) {
+          console.log('preAuth return 429', concurrentRequests, maxConcurrentRequests);
+          return response.customError({ body: 'Too Many Agents', statusCode: 429 });
+        }
+
+        concurrentRequests += 1;
+        console.log('preAuth incremented then next()', concurrentRequests, maxConcurrentRequests);
+        return toolkit.next();
+      }
+    );
+    core.http.registerOnPreResponse(
+      (request: KibanaRequest, preResponse: OnPreResponseInfo, toolkit: OnPreResponseToolkit) => {
+        console.log(
+          'preResponse enter',
+          isAgentRequest(request),
+          preResponse.statusCode,
+          concurrentRequests,
+          maxConcurrentRequests,
+          request.url.pathname
+        );
+        if (isAgentRequest(request) && preResponse.statusCode !== 429) {
+          concurrentRequests -= 1;
+          console.log('preResponse decremented', concurrentRequests, maxConcurrentRequests);
+        }
+
+        return toolkit.next();
+      }
+    );
     this.httpSetup = core.http;
     this.licensing$ = deps.licensing.license$;
     if (deps.security) {

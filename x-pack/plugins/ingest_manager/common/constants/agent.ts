@@ -12,6 +12,8 @@ export const AGENT_TYPE_PERMANENT = 'PERMANENT';
 export const AGENT_TYPE_EPHEMERAL = 'EPHEMERAL';
 export const AGENT_TYPE_TEMPORARY = 'TEMPORARY';
 
+export const AGENT_ROUTE_TAG = 'fleet:agent-route';
+
 export const AGENT_POLLING_THRESHOLD_MS = 30000;
 export const AGENT_POLLING_INTERVAL = 1000;
 export const AGENT_UPDATE_LAST_CHECKIN_INTERVAL_MS = 30000;
