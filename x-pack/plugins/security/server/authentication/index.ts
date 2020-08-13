@@ -5,6 +5,7 @@
  */
 import { UnwrapPromise } from '@kbn/utility-types';
 import {
+  IClusterClient,
   ILegacyClusterClient,
   CoreSetup,
   KibanaRequest,
@@ -41,6 +42,7 @@ interface SetupAuthenticationParams {
   getFeatureUsageService: () => SecurityFeatureUsageServiceStart;
   http: CoreSetup['http'];
   clusterClient: ILegacyClusterClient;
+  futureNewClusterClient: Promise<IClusterClient>;
   config: ConfigType;
   license: SecurityLicense;
   loggers: LoggerFactory;
@@ -53,6 +55,7 @@ export async function setupAuthentication({
   getFeatureUsageService,
   http,
   clusterClient,
+  futureNewClusterClient,
   config,
   license,
   loggers,
@@ -92,6 +95,7 @@ export async function setupAuthentication({
     getFeatureUsageService,
     getCurrentUser,
     clusterClient,
+    futureNewClusterClient,
     basePath: http.basePath,
     config: { session: config.session, authc: config.authc },
     license,

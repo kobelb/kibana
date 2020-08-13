@@ -10,6 +10,7 @@ import {
   HttpServiceSetup,
   ILegacyClusterClient,
   Headers,
+  IClusterClient,
 } from '../../../../../../src/core/server';
 import { deepFreeze } from '../../../../../../src/core/server';
 import { AuthenticatedUser } from '../../../common/model';
@@ -24,6 +25,7 @@ export interface AuthenticationProviderOptions {
   name: string;
   basePath: HttpServiceSetup['basePath'];
   client: ILegacyClusterClient;
+  futureNewClusterClient: Promise<IClusterClient>;
   logger: Logger;
   tokens: PublicMethodsOf<Tokens>;
   urls: {
@@ -108,11 +110,17 @@ export abstract class BaseAuthenticationProvider {
    * @param [authHeaders] Optional `Headers` dictionary to send with the request.
    */
   protected async getUser(request: KibanaRequest, authHeaders: Headers = {}) {
-    return deepFreeze({
-      ...(await this.options.client
-        .asScoped({ headers: { ...request.headers, ...authHeaders } })
-        .callAsCurrentUser('shield.authenticate')),
+    const client = await this.options.futureNewClusterClient;
+    const response = await client
+      .asScoped({ headers: { ...request.headers, ...authHeaders } })
+      .asCurrentUser.security.authenticate();
+    if (response.statusCode !== 200) {
+      throw new Error(`Expected status code ${200}, received ${response.statusCode}`);
+    }
+    const authenticatedUser = ({
+      ...response.body,
       authentication_provider: this.options.name,
-    } as AuthenticatedUser);
+    } as unknown) as AuthenticatedUser;
+    return deepFreeze(authenticatedUser);
   }
 }

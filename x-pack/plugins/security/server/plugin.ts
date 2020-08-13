@@ -144,11 +144,16 @@ export class Plugin {
     const audit = this.auditService.setup({ license, config: config.audit });
     const auditLogger = new SecurityAuditLogger(audit.getLogger());
 
+    const futureNewClusterClient = core.getStartServices().then(([{ elasticsearch }]) => {
+      return elasticsearch.client;
+    });
+
     const authc = await setupAuthentication({
       auditLogger,
       getFeatureUsageService: this.getFeatureUsageService,
       http: core.http,
       clusterClient: this.clusterClient,
+      futureNewClusterClient,
       config,
       license,
       loggers: this.initializerContext.logger,

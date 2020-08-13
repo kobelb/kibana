@@ -13,6 +13,7 @@ import {
   Logger,
   HttpServiceSetup,
   ILegacyClusterClient,
+  IClusterClient,
 } from '../../../../../src/core/server';
 import { SecurityLicense } from '../../common/licensing';
 import { AuthenticatedUser } from '../../common/model';
@@ -102,6 +103,7 @@ export interface AuthenticatorOptions {
   license: SecurityLicense;
   loggers: LoggerFactory;
   clusterClient: ILegacyClusterClient;
+  futureNewClusterClient: Promise<IClusterClient>;
   sessionStorageFactory: SessionStorageFactory<ProviderSession>;
 }
 
@@ -237,6 +239,7 @@ export class Authenticator {
 
     const providerCommonOptions = {
       client: this.options.clusterClient,
+      futureNewClusterClient: this.options.futureNewClusterClient,
       basePath: this.options.basePath,
       tokens: new Tokens({
         client: this.options.clusterClient,
