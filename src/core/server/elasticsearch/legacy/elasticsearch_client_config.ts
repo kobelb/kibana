@@ -89,7 +89,7 @@ export function parseElasticsearchClientConfig(
   { ignoreCertAndKey = false, auth = true }: LegacyElasticsearchClientConfigOverrides = {}
 ) {
   const esClientConfig: ExtendedConfigOptions = {
-    keepAlive: true,
+    keepAlive: false,
     ...pick(config, [
       'apiVersion',
       'sniffOnStart',
