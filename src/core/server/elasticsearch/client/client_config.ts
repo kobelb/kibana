@@ -62,6 +62,10 @@ export function parseClientOptions(
     sniffOnStart: config.sniffOnStart,
     sniffOnConnectionFault: config.sniffOnConnectionFault,
     headers: config.customHeaders,
+    agent: {
+      keepAlive: config.keepAlive,
+      maxSockets: Infinity,
+    },
   };
 
   if (config.pingTimeout != null) {
@@ -75,11 +79,6 @@ export function parseClientOptions(
       typeof config.sniffInterval === 'boolean'
         ? config.sniffInterval
         : getDurationAsMs(config.sniffInterval);
-  }
-  if (config.keepAlive) {
-    clientOptions.agent = {
-      keepAlive: config.keepAlive,
-    };
   }
 
   if (config.username && config.password && !scoped) {
