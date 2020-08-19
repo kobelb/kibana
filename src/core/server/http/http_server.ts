@@ -108,7 +108,15 @@ export class HttpServer {
   public async setup(config: HttpConfig): Promise<HttpServerSetup> {
     const serverOptions = getServerOptions(config);
     const listenerOptions = getListenerOptions(config);
-    this.server = createServer(serverOptions, listenerOptions);
+    this.server = createServer(
+      {
+        ...serverOptions,
+        autoListen: false,
+        port: undefined,
+        host: undefined,
+      },
+      listenerOptions
+    );
     await this.server.register([HapiStaticFiles]);
     this.config = config;
 
@@ -206,12 +214,25 @@ export class HttpServer {
     }
 
     await this.server.start();
+    await new Promise((resolve, reject) => {
+      const onError = (err: Error) => {
+        reject(err);
+        return;
+      };
+
+      this.server!.listener.once('error', onError);
+
+      this.server!.listener.listen(this.config!.port, this.config!.host, 50000, () => {
+        this.server!.listener.removeListener('error', onError);
+        resolve();
+      });
+    });
     const serverPath =
       this.config && this.config.rewriteBasePath && this.config.basePath !== undefined
         ? this.config.basePath
         : '';
 
-    this.log.info(`http server running at ${this.server.info.uri}${serverPath}`);
+    this.log.info(`http server running at ${this.config!.host}${serverPath}`);
   }
 
   public async stop() {

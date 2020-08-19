@@ -198,6 +198,6 @@ export class HttpService
           .header('Retry-After', '30');
       },
     });
-    await this.notReadyServer.start();
+    await httpServer.start();
   }
 }
