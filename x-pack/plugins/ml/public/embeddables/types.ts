@@ -7,7 +7,7 @@
 import { CoreStart } from 'kibana/public';
 import { JobId } from '../../common/types/anomaly_detection_jobs';
 import { SwimlaneType } from '../application/explorer/explorer_constants';
-import { Filter } from '../../../../../src/plugins/data/common/es_query/filters';
+import { Filter } from '../../../../../src/platform/es_query/common/filters';
 import { Query, RefreshInterval, TimeRange } from '../../../../../src/plugins/data/common/query';
 import {
   EmbeddableInput,

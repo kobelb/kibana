@@ -256,7 +256,7 @@ export const esFilters: {
 //
 // @public (undocumented)
 export const esKuery: {
-    nodeTypes: import("../common/es_query/kuery/node_types").NodeTypes;
+    nodeTypes: import("../../../platform/common/es_query/kuery/node_types").NodeTypes;
     fromKueryExpression: (expression: any, parseOptions?: Partial<import("../common").KueryParseOptions>) => import("../common").KueryNode;
     toElasticsearchQuery: (node: import("../common").KueryNode, indexPattern?: import("../common").IIndexPattern | undefined, config?: Record<string, any> | undefined, context?: Record<string, any> | undefined) => import("../../kibana_utils/common").JsonObject;
 };

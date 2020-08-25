@@ -3,7 +3,7 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import { FilterStateStore } from '../../../../../../src/plugins/data/common/es_query/filters/meta_filter';
+import { FilterStateStore } from '../../../../../../src/platform/es_query/common/filters/meta_filter';
 
 import { TimelineType, TimelineStatus } from '../../../common/types/timeline';
 

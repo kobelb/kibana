@@ -9,7 +9,7 @@ import React from 'react';
 import { Router } from 'react-router-dom';
 
 import '../../common/mock/match_media';
-import { Filter } from '../../../../../../src/plugins/data/common/es_query';
+import { Filter } from '../../../../../../src/platform/common/es_query';
 import { useWithSource } from '../../common/containers/source';
 import {
   TestProviders,

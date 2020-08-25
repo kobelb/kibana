@@ -18,7 +18,7 @@
  */
 
 import { compareFilters, COMPARE_ALL_OPTIONS } from './compare_filters';
-import { buildEmptyFilter, buildQueryFilter, FilterStateStore } from '../../es_query';
+import { buildEmptyFilter, buildQueryFilter, FilterStateStore } from '../../../../../platform/es_query/common';
 
 describe('filter manager utilities', () => {
   describe('compare filters', () => {

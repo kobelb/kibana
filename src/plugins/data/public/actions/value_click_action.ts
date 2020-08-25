@@ -24,7 +24,7 @@ import {
   UiActionsStart,
 } from '../../../../plugins/ui_actions/public';
 import { createFiltersFromValueClickAction } from './filters/create_filters_from_value_click';
-import type { Filter } from '../../common/es_query/filters';
+import type { Filter } from '../../../../platform/es_query/common/filters';
 import type { ValueClickContext } from '../../../embeddable/public';
 
 export type ValueClickActionContext = ValueClickContext;

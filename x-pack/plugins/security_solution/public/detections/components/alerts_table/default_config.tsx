@@ -12,7 +12,7 @@ import { EuiText } from '@elastic/eui';
 import { RowRendererId } from '../../../../common/types/timeline';
 import { DEFAULT_INDEX_PATTERN } from '../../../../common/constants';
 import { Status } from '../../../../common/detection_engine/schemas/common/schemas';
-import { Filter } from '../../../../../../../src/plugins/data/common/es_query';
+import { Filter } from '../../../../../../../src/platform/common/es_query';
 import {
   TimelineRowAction,
   TimelineRowActionOnClick,

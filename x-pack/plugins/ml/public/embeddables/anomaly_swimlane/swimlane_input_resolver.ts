@@ -27,7 +27,7 @@ import {
   SWIMLANE_TYPE,
   SwimlaneType,
 } from '../../application/explorer/explorer_constants';
-import { Filter } from '../../../../../../src/plugins/data/common/es_query/filters';
+import { Filter } from '../../../../../../src/platform/es_query/common/filters';
 import { Query } from '../../../../../../src/plugins/data/common/query';
 import { esKuery, UI_SETTINGS } from '../../../../../../src/plugins/data/public';
 import { ExplorerJob, OverallSwimlaneData } from '../../application/explorer/explorer_utils';

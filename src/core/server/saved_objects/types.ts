@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+import { KueryNode } from '../../../platform/es_query/common';
 import { SavedObjectsClient } from './service/saved_objects_client';
 import { SavedObjectsTypeMappingDefinition, SavedObjectsTypeMappingDefinitions } from './mappings';
 import { SavedObjectMigrationMap } from './migrations';
@@ -36,9 +36,6 @@ import { LegacyConfig } from '../legacy';
 import { SavedObjectUnsanitizedDoc } from './serialization';
 import { SavedObjectsMigrationLogger } from './migrations/core/migration_logger';
 import { SavedObject } from '../../types';
-
-// eslint-disable-next-line @kbn/eslint/no-restricted-paths
-import { KueryNode } from '../../../plugins/data/common';
 
 export {
   SavedObjectAttributes,

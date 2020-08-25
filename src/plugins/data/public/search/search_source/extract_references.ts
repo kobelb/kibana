@@ -18,7 +18,7 @@
  */
 
 import { SavedObjectReference } from '../../../../../core/types';
-import { Filter } from '../../../common/es_query/filters';
+import { Filter } from '../../../../../platform/es_query/common/filters';
 import { SearchSourceFields } from './types';
 
 export const extractReferences = (

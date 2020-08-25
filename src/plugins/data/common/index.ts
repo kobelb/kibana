@@ -18,7 +18,6 @@
  */
 
 export * from './constants';
-export * from './es_query';
 export * from './field_formats';
 export * from './field_mapping';
 export * from './index_patterns';

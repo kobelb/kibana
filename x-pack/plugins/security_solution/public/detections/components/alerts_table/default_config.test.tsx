@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { Filter } from '../../../../../../../src/plugins/data/common/es_query';
+import { Filter } from '../../../../../../../src/platform/es_query/common';
 import { buildAlertsRuleIdFilter } from './default_config';
 
 jest.mock('./actions');
