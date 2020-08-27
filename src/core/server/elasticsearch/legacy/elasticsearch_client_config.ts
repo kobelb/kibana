@@ -174,6 +174,8 @@ export function parseElasticsearchClientConfig(
     esClientConfig.ssl.passphrase = config.ssl.keyPassphrase;
   }
 
+  esClientConfig.maxSockets = 1000;
+
   // Elasticsearch JS client mutates config object, so all properties that are
   // usually passed by reference should be cloned to avoid any side effects.
   return cloneDeep(esClientConfig);
