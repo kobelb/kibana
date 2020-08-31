@@ -62,6 +62,9 @@ export function getServerOptions(config: HttpConfig, { configureTLS = true } = {
       isHttpOnly: true,
       isSameSite: false, // necessary to allow using Kibana inside an iframe
     },
+    load: {
+      concurrent: 1000,
+    } as any,
   };
 
   if (configureTLS && config.ssl.enabled) {
