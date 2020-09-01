@@ -121,6 +121,7 @@ export class HttpServer {
     const basePathService = new BasePath(config.basePath);
     this.setupBasePathRewrite(config, basePathService);
     this.setupConditionalCompression(config);
+    this.setupRequestPriority();
     this.setupRequestStateAssignment(config);
 
     return {
@@ -308,6 +309,12 @@ export class HttpServer {
         return h.continue;
       });
     }
+  }
+
+  private setupRequestPriority() {
+    this.server!.ext('onRequest', (request, responseToolkit) => {
+      return new Promise((resolve) => process.nextTick(() => resolve(responseToolkit.continue)));
+    });
   }
 
   private setupRequestStateAssignment(config: HttpConfig) {
