@@ -26,7 +26,7 @@ export async function agentCheckin(
     localMetadata?: any;
     status?: 'online' | 'error' | 'degraded';
   },
-  options?: { signal: AbortSignal }
+  options?: { signal: AbortSignal; subscriptionStarted: () => void }
 ) {
   const updateData: Partial<AgentSOAttributes> = {};
   const { updatedErrorEvents } = await processEventsForCheckin(soClient, agent, data.events);
@@ -54,6 +54,9 @@ export async function agentCheckin(
   }
 
   // Wait for new actions
+  if (options?.subscriptionStarted) {
+    options.subscriptionStarted();
+  }
   actions = await agentCheckinState.subscribeToNewActions(soClient, agent, options);
 
   return { actions };

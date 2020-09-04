@@ -65,6 +65,7 @@ import {
 import { CloudSetup } from '../../cloud/server';
 import { agentCheckinState } from './services/agents/checkin/state';
 import { registerIngestManagerUsageCollector } from './collectors/register';
+import { ConcurrentRequests } from './routes/concurrent_requests';
 
 export interface IngestManagerSetupDeps {
   licensing: LicensingPluginSetup;
@@ -235,10 +236,11 @@ export class IngestManagerPlugin
             );
           }
         } else {
+          const concurrentRequests = new ConcurrentRequests(config.fleet.maxConcurrentConnections);
           // we currently only use this global interceptor if fleet is enabled
           // since it would run this func on *every* req (other plugins, CSS, etc)
-          registerLimitedConcurrencyRoutes(core, config);
-          registerAgentRoutes(router, config);
+          registerLimitedConcurrencyRoutes(core, config, concurrentRequests);
+          registerAgentRoutes(router, config, concurrentRequests);
           registerEnrollmentApiKeyRoutes(router);
           registerInstallScriptRoutes({
             router,

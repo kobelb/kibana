@@ -30,6 +30,7 @@ import {
 import * as AgentService from '../../services/agents';
 import * as APIKeyService from '../../services/api_keys';
 import { appContextService } from '../../services/app_context';
+import { ConcurrentRequests } from '../concurrent_requests';
 
 export const getAgentHandler: RequestHandler<TypeOf<
   typeof GetOneAgentRequestSchema.params
@@ -158,61 +159,67 @@ export const updateAgentHandler: RequestHandler<
   }
 };
 
-export const postAgentCheckinHandler: RequestHandler<
-  PostAgentCheckinRequest['params'],
-  undefined,
-  PostAgentCheckinRequest['body']
-> = async (context, request, response) => {
-  try {
-    const soClient = appContextService.getInternalUserSOClient(request);
-    const agent = await AgentService.authenticateAgentWithAccessToken(soClient, request);
-    const abortController = new AbortController();
-    request.events.aborted$.subscribe(() => {
-      abortController.abort();
-    });
-    const signal = abortController.signal;
-    const { actions } = await AgentService.agentCheckin(
-      soClient,
-      agent,
-      {
-        events: request.body.events || [],
-        localMetadata: request.body.local_metadata,
-        status: request.body.status,
-      },
-      { signal }
-    );
-    const body: PostAgentCheckinResponse = {
-      action: 'checkin',
-      actions: actions.map((a) => ({
-        agent_id: agent.id,
-        type: a.type,
-        data: a.data,
-        id: a.id,
-        created_at: a.created_at,
-      })),
-    };
+export const createPostAgentCheckinHandler = (concurrentRequests: ConcurrentRequests) => {
+  const postAgentCheckinHandler: RequestHandler<
+    PostAgentCheckinRequest['params'],
+    undefined,
+    PostAgentCheckinRequest['body']
+  > = async (context, request, response) => {
+    try {
+      const soClient = appContextService.getInternalUserSOClient(request);
+      const agent = await AgentService.authenticateAgentWithAccessToken(soClient, request);
+      const abortController = new AbortController();
+      request.events.aborted$.subscribe(() => {
+        abortController.abort();
+      });
+      const subscriptionStarted = () => {
+        concurrentRequests.remove(request);
+      };
+      const signal = abortController.signal;
+      const { actions } = await AgentService.agentCheckin(
+        soClient,
+        agent,
+        {
+          events: request.body.events || [],
+          localMetadata: request.body.local_metadata,
+          status: request.body.status,
+        },
+        { signal, subscriptionStarted }
+      );
+      const body: PostAgentCheckinResponse = {
+        action: 'checkin',
+        actions: actions.map((a) => ({
+          agent_id: agent.id,
+          type: a.type,
+          data: a.data,
+          id: a.id,
+          created_at: a.created_at,
+        })),
+      };
 
-    return response.ok({ body });
-  } catch (err) {
-    const logger = appContextService.getLogger();
-    if (err.isBoom) {
-      if (err.output.statusCode >= 500) {
-        logger.error(err);
+      return response.ok({ body });
+    } catch (err) {
+      const logger = appContextService.getLogger();
+      if (err.isBoom) {
+        if (err.output.statusCode >= 500) {
+          logger.error(err);
+        }
+
+        return response.customError({
+          statusCode: err.output.statusCode,
+          body: { message: err.output.payload.message },
+        });
       }
 
+      logger.error(err);
+
       return response.customError({
-        statusCode: err.output.statusCode,
-        body: { message: err.output.payload.message },
+        statusCode: 500,
+        body: { message: err.message },
       });
     }
-
-    logger.error(err);
-
-    return response.customError({
-      statusCode: 500,
-      body: { message: err.message },
-    });
-  }
+  };
+  return postAgentCheckinHandler;
 };
 
 export const postAgentEnrollHandler: RequestHandler<

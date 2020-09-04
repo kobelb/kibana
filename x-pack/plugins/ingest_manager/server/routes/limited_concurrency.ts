@@ -12,29 +12,7 @@ import {
 } from 'kibana/server';
 import { LIMITED_CONCURRENCY_ROUTE_TAG } from '../../common';
 import { IngestManagerConfigType } from '../index';
-
-export class MaxCounter {
-  constructor(private readonly max: number = 1) {}
-  private counter = 0;
-  valueOf() {
-    return this.counter;
-  }
-  increase() {
-    if (this.counter < this.max) {
-      this.counter += 1;
-    }
-  }
-  decrease() {
-    if (this.counter > 0) {
-      this.counter -= 1;
-    }
-  }
-  lessThanMax() {
-    return this.counter < this.max;
-  }
-}
-
-export type IMaxCounter = Pick<MaxCounter, 'increase' | 'decrease' | 'lessThanMax'>;
+import { ConcurrentRequests } from './concurrent_requests';
 
 export function isLimitedRoute(request: KibanaRequest) {
   const tags = request.route.options.tags;
@@ -43,10 +21,10 @@ export function isLimitedRoute(request: KibanaRequest) {
 
 export function createLimitedPreAuthHandler({
   isMatch,
-  maxCounter,
+  concurrentRequests,
 }: {
   isMatch: (request: KibanaRequest) => boolean;
-  maxCounter: IMaxCounter;
+  concurrentRequests: ConcurrentRequests;
 }) {
   return function preAuthHandler(
     request: KibanaRequest,
@@ -57,31 +35,35 @@ export function createLimitedPreAuthHandler({
       return toolkit.next();
     }
 
-    if (!maxCounter.lessThanMax()) {
+    if (!concurrentRequests.lessThanMax()) {
       return response.customError({
         body: 'Too Many Requests',
         statusCode: 429,
       });
     }
 
-    maxCounter.increase();
+    concurrentRequests.add(request);
 
     request.events.completed$.toPromise().then(() => {
-      maxCounter.decrease();
+      concurrentRequests.remove(request);
     });
 
     return toolkit.next();
   };
 }
 
-export function registerLimitedConcurrencyRoutes(core: CoreSetup, config: IngestManagerConfigType) {
+export function registerLimitedConcurrencyRoutes(
+  core: CoreSetup,
+  config: IngestManagerConfigType,
+  concurrentRequests: ConcurrentRequests
+) {
   const max = config.fleet.maxConcurrentConnections;
   if (!max) return;
 
   core.http.registerOnPreAuth(
     createLimitedPreAuthHandler({
       isMatch: isLimitedRoute,
-      maxCounter: new MaxCounter(max),
+      concurrentRequests,
     })
   );
 }

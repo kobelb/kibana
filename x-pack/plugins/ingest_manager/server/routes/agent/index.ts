@@ -34,7 +34,7 @@ import {
   updateAgentHandler,
   deleteAgentHandler,
   getAgentEventsHandler,
-  postAgentCheckinHandler,
+  createPostAgentCheckinHandler,
   postAgentEnrollHandler,
   getAgentStatusForAgentPolicyHandler,
   putAgentsReassignHandler,
@@ -45,6 +45,7 @@ import { postNewAgentActionHandlerBuilder } from './actions_handlers';
 import { appContextService } from '../../services';
 import { postAgentsUnenrollHandler } from './unenroll_handler';
 import { IngestManagerConfigType } from '../..';
+import { ConcurrentRequests } from '../concurrent_requests';
 
 const ajv = new Ajv({
   coerceTypes: true,
@@ -69,7 +70,11 @@ function makeValidator(jsonSchema: any) {
   };
 }
 
-export const registerRoutes = (router: IRouter, config: IngestManagerConfigType) => {
+export const registerRoutes = (
+  router: IRouter,
+  config: IngestManagerConfigType,
+  concurrentRequests: ConcurrentRequests
+) => {
   // Get one
   router.get(
     {
@@ -117,7 +122,7 @@ export const registerRoutes = (router: IRouter, config: IngestManagerConfigType)
         body: makeValidator(PostAgentCheckinRequestBodyJSONSchema),
       },
       options: {
-        tags: [],
+        tags: [LIMITED_CONCURRENCY_ROUTE_TAG],
         ...(pollingRequestTimeout
           ? {
               timeout: {
@@ -127,7 +132,7 @@ export const registerRoutes = (router: IRouter, config: IngestManagerConfigType)
           : {}),
       },
     },
-    postAgentCheckinHandler
+    createPostAgentCheckinHandler(concurrentRequests)
   );
 
   // Agent enrollment
