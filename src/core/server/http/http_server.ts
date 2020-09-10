@@ -122,6 +122,7 @@ export class HttpServer {
     const basePathService = new BasePath(config.basePath);
     this.setupBasePathRewrite(config, basePathService);
     this.setupConditionalCompression(config);
+    this.setupConcurrencyControls();
     this.setupRequestStateAssignment(config);
 
     return {
@@ -309,6 +310,18 @@ export class HttpServer {
         return h.continue;
       });
     }
+  }
+
+  private setupConcurrencyControls() {
+    this.server!.ext('onRequest', (request, responseToolkit) => {
+      if (
+        request.url.pathname === '/api/ingest_manager/fleet/agents/enroll' ||
+        /\/api\/ingest_manager\/fleet\/agents\/[^\/]+\/checkin/.test(request.url.pathname!)
+      ) {
+        return responseToolkit.response({ message: 'Too Many Requests' }).code(429).takeover();
+      }
+      return responseToolkit.continue;
+    });
   }
 
   private setupRequestStateAssignment(config: HttpConfig) {
