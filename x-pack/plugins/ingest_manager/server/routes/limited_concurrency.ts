@@ -8,28 +8,32 @@ import {
   CoreSetup,
   KibanaRequest,
   LifecycleResponseFactory,
-  OnPreAuthToolkit,
+  OnPreRoutingToolkit,
 } from 'kibana/server';
-import { LIMITED_CONCURRENCY_ROUTE_TAG } from '../../common';
 import { IngestManagerConfigType } from '../index';
 import { ConcurrentRequests } from './concurrent_requests';
 
 export function isLimitedRoute(request: KibanaRequest) {
-  const tags = request.route.options.tags;
-  return !!tags.includes(LIMITED_CONCURRENCY_ROUTE_TAG);
+  if (request.url.pathname == null) {
+    return false;
+  }
+  return (
+    request.url.pathname === '/api/ingest_manager/fleet/agents/enroll' ||
+    /\/api\/ingest_manager\/fleet\/agents\/[^\/]+\/checkin/.test(request.url.pathname!)
+  );
 }
 
-export function createLimitedPreAuthHandler({
+export function createLimitedOnPreRoutingHandler({
   isMatch,
   concurrentRequests,
 }: {
   isMatch: (request: KibanaRequest) => boolean;
   concurrentRequests: ConcurrentRequests;
 }) {
-  return function preAuthHandler(
+  return function preRoutingHandler(
     request: KibanaRequest,
     response: LifecycleResponseFactory,
-    toolkit: OnPreAuthToolkit
+    toolkit: OnPreRoutingToolkit
   ) {
     if (!isMatch(request)) {
       return toolkit.next();
@@ -60,8 +64,8 @@ export function registerLimitedConcurrencyRoutes(
   const max = config.fleet.maxConcurrentConnections;
   if (!max) return;
 
-  core.http.registerOnPreAuth(
-    createLimitedPreAuthHandler({
+  core.http.registerOnPreRouting(
+    createLimitedOnPreRoutingHandler({
       isMatch: isLimitedRoute,
       concurrentRequests,
     })
