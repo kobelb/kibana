@@ -1,0 +1,7 @@
+{
+  "prefix": "jerkPlugin",
+  "paths": {
+    "jerkPlugin": "."
+  },
+  "translations": ["translations/ja-JP.json"]
+}
