@@ -83,10 +83,16 @@ export abstract class Type<V> {
     this.internalSchema = schema;
   }
 
-  public validate(value: any, context: Record<string, any> = {}, namespace?: string): V {
+  public validate(
+    value: any,
+    context: Record<string, any> = {},
+    namespace?: string,
+    allowUnknown?: boolean
+  ): V {
     const { value: validatedValue, error } = this.internalSchema.validate(value, {
       context,
       presence: 'required',
+      allowUnknown,
     });
 
     if (error) {

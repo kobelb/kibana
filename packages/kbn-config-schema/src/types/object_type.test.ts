@@ -166,6 +166,140 @@ describe('#validate', () => {
       },
     });
   });
+
+  test(`allowUnknowns allows top-level unknown fields`, () => {
+    const type = schema.object({
+      foo: schema.string(),
+    });
+
+    const value = {
+      foo: 'hello world',
+      baz: 'hello world',
+    };
+
+    type.validate(value, undefined, undefined, true);
+  });
+
+  test(`allowUnknowns allows top-level unknown fields and overrides schema options`, () => {
+    const type = schema.object(
+      {
+        foo: schema.string(),
+      },
+      { unknowns: 'forbid' }
+    );
+
+    const value = {
+      foo: 'hello world',
+      baz: 'hello world',
+    };
+
+    type.validate(value, undefined, undefined, true);
+  });
+
+  test(`allowUnknowns allows nested unknown fields`, () => {
+    const type = schema.object({
+      foo: schema.object({
+        foo: schema.string(),
+      }),
+    });
+    const value = {
+      foo: {
+        foo: 'hello world',
+        baz: 'hello world',
+      },
+    };
+
+    type.validate(value, undefined, undefined, true);
+  });
+
+  test(`allowUnknowns allows nested unknown fields and overrides schema options`, () => {
+    const type = schema.object({
+      foo: schema.object(
+        {
+          foo: schema.string(),
+        },
+        { unknowns: 'forbid' }
+      ),
+    });
+    const value = {
+      foo: {
+        foo: 'hello world',
+        baz: 'hello world',
+      },
+    };
+
+    type.validate(value, undefined, undefined, true);
+  });
+
+  test(`allowUnknowns=false disallows top-level unknown fields`, () => {
+    const type = schema.object({
+      foo: schema.string(),
+    });
+
+    const value = {
+      foo: 'hello world',
+      baz: 'hello world',
+    };
+
+    expect(() => {
+      type.validate(value, undefined, undefined, false);
+    }).toThrowErrorMatchingInlineSnapshot(`"[baz]: definition for this key is missing"`);
+  });
+
+  test(`allowUnknowns=false allows top-level unknown fields when schema option unknowns=allow`, () => {
+    const type = schema.object(
+      {
+        foo: schema.string(),
+      },
+      { unknowns: 'allow' }
+    );
+
+    const value = {
+      foo: 'hello world',
+      baz: 'hello world',
+    };
+
+    type.validate(value, undefined, undefined, false);
+  });
+
+  test(`allowUnknowns=false disallows nested unknown fields`, () => {
+    const type = schema.object({
+      bar: schema.object({
+        foo: schema.string(),
+      }),
+    });
+
+    const value = {
+      bar: {
+        foo: 'hello world',
+        baz: 'hello world',
+      },
+    };
+
+    expect(() => {
+      type.validate(value, undefined, undefined, false);
+    }).toThrowErrorMatchingInlineSnapshot(`"[bar.baz]: definition for this key is missing"`);
+  });
+
+  test(`allowUnknowns=false allows nested unknown fields when schema option unknowns=allow`, () => {
+    const type = schema.object({
+      bar: schema.object(
+        {
+          foo: schema.string(),
+        },
+        { unknowns: 'allow' }
+      ),
+    });
+
+    const value = {
+      bar: {
+        foo: 'hello world',
+        baz: 'hello world',
+      },
+    };
+
+    type.validate(value, undefined, undefined, false);
+  });
 });
 
 test('called with wrong type', () => {
