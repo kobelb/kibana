@@ -134,6 +134,7 @@ export const snoozeScheduleSchema = schema.object({
  * Unsanitized (domain) rule schema, used by internal rules clients
  */
 export const ruleDomainSchema = schema.object({
+  foo: schema.maybe(schema.string()),
   id: schema.string(),
   enabled: schema.boolean(),
   name: schema.string(),
@@ -172,6 +173,7 @@ export const ruleDomainSchema = schema.object({
  * Sanitized (non-domain) rule schema, returned by rules clients for other solutions
  */
 export const ruleSchema = schema.object({
+  foo: schema.maybe(schema.string()),
   id: schema.string(),
   enabled: schema.boolean(),
   name: schema.string(),

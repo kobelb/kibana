@@ -87,13 +87,59 @@ export function setupSavedObjects(
     migrations: getMigrations(encryptedSavedObjects, getSearchSourceMigrations(), isPreconfigured),
     mappings: alertMappings,
     modelVersions: {
-      // initial (and current) model version
+      // initial model version
       1: {
         changes: [],
         schemas: {
           // FC schema defining the known fields (indexed or not) for this version
           forwardCompatibility: schema.object(
             {
+              name: schema.string(),
+              tags: schema.arrayOf(schema.string()),
+              enabled: schema.boolean(),
+              alertTypeId: schema.string(),
+              consumer: schema.string(),
+              legacyId: schema.nullable(schema.string()),
+              schedule: schema.object({
+                interval: schema.string(),
+              }),
+              actions: schema.any(),
+              params: schema.any(),
+              mapped_params: schema.maybe(schema.any()),
+              scheduledTaskId: schema.maybe(schema.nullable(schema.string())),
+              createdBy: schema.nullable(schema.string()),
+              updatedBy: schema.nullable(schema.string()),
+              createdAt: schema.string(),
+              updatedAt: schema.string(),
+              apiKey: schema.nullable(schema.string()),
+              apiKeyOwner: schema.nullable(schema.string()),
+              apiKeyCreatedByUser: schema.maybe(schema.nullable(schema.boolean())),
+              throttle: schema.maybe(schema.nullable(schema.string())),
+              notifyWhen: schema.maybe(schema.nullable(schema.any())),
+              muteAll: schema.boolean(),
+              mutedInstanceIds: schema.arrayOf(schema.string()),
+              meta: schema.maybe(schema.any()),
+              executionStatus: schema.any(),
+              monitoring: schema.maybe(schema.any()),
+              snoozeSchedule: schema.maybe(schema.arrayOf(schema.any())),
+              isSnoozedUntil: schema.maybe(schema.nullable(schema.string())),
+              lastRun: schema.maybe(schema.nullable(schema.any())),
+              nextRun: schema.maybe(schema.nullable(schema.string())),
+              revision: schema.number(),
+              running: schema.maybe(schema.nullable(schema.boolean())),
+            },
+            { unknowns: 'ignore' } // note the `unknown: ignore` which is how we're evicting the unknown fields
+          ),
+        },
+      },
+      // adding foo (optional string) to the model version
+      2: {
+        changes: [],
+        schemas: {
+          // FC schema defining the known fields (indexed or not) for this version
+          forwardCompatibility: schema.object(
+            {
+              foo: schema.maybe(schema.string()),
               name: schema.string(),
               tags: schema.arrayOf(schema.string()),
               enabled: schema.boolean(),

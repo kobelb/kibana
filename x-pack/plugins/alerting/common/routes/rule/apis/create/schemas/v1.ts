@@ -80,6 +80,7 @@ export const actionSchema = schema.object({
 });
 
 export const createBodySchema = schema.object({
+  foo: schema.maybe(schema.string()),
   name: schema.string(),
   rule_type_id: schema.string(),
   enabled: schema.boolean({ defaultValue: true }),

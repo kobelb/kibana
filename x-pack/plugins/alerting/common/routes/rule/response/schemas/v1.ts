@@ -225,6 +225,7 @@ export const ruleSnoozeScheduleSchema = schema.object({
 });
 
 export const ruleResponseSchema = schema.object({
+  foo: schema.maybe(schema.string()),
   id: schema.string(),
   enabled: schema.boolean(),
   name: schema.string(),

@@ -40,6 +40,7 @@ export const transformCreateBody = <Params extends RuleParams = never>(
   createBody: CreateRuleRequestBodyV1<Params>
 ): CreateRuleData<Params> => {
   return {
+    ...(createBody.foo ? { foo: createBody.foo } : {}),
     name: createBody.name,
     alertTypeId: createBody.rule_type_id,
     enabled: createBody.enabled,

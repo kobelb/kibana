@@ -76,6 +76,7 @@ export function getPartialRuleFromRaw<Params extends RuleTypeParams>(
   id: string,
   ruleType: UntypedNormalizedRuleType,
   {
+    foo,
     createdAt,
     updatedAt,
     meta,
@@ -116,6 +117,7 @@ export function getPartialRuleFromRaw<Params extends RuleTypeParams>(
     : null;
   const includeMonitoring = monitoring && !excludeFromPublicApi;
   const rule: PartialRule<Params> = {
+    ...(foo ? { foo } : {}),
     id,
     notifyWhen,
     ...omit(partialRawRule, excludeFromPublicApi ? [...context.fieldsToExcludeFromPublicApi] : ''),

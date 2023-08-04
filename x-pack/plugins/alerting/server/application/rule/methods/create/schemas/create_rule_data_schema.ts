@@ -10,6 +10,7 @@ import { validateDuration } from '../../../validation';
 import { notifyWhenSchema, actionAlertsFilterSchema } from '../../../schemas';
 
 export const createRuleDataSchema = schema.object({
+  foo: schema.maybe(schema.string()),
   name: schema.string(),
   alertTypeId: schema.string(),
   enabled: schema.boolean({ defaultValue: true }),

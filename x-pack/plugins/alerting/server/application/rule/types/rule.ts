@@ -52,6 +52,7 @@ export interface RuleExecutionStatus {
 }
 
 export interface Rule<Params extends RuleParams = never> {
+  foo: RuleSchemaType['foo'];
   id: RuleSchemaType['id'];
   enabled: RuleSchemaType['enabled'];
   name: RuleSchemaType['name'];
@@ -86,6 +87,7 @@ export interface Rule<Params extends RuleParams = never> {
 }
 
 export interface RuleDomain<Params extends RuleParams = never> {
+  foo?: RuleDomainSchemaType['foo'];
   id: RuleDomainSchemaType['id'];
   enabled: RuleDomainSchemaType['enabled'];
   name: RuleDomainSchemaType['name'];

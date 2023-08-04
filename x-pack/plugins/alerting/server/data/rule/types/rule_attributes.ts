@@ -168,6 +168,7 @@ interface RuleMetaAttributes {
 }
 
 export interface RuleAttributes {
+  foo?: string;
   name: string;
   tags: string[];
   enabled: boolean;

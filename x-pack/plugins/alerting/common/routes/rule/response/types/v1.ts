@@ -13,6 +13,7 @@ export type RuleSnoozeSchedule = TypeOf<typeof ruleSnoozeScheduleSchemaV1>;
 type RuleResponseSchemaType = TypeOf<typeof ruleResponseSchemaV1>;
 
 export interface RuleResponse<Params extends RuleParams = never> {
+  foo?: RuleResponseSchemaType['foo'];
   id: RuleResponseSchemaType['id'];
   enabled: RuleResponseSchemaType['enabled'];
   name: RuleResponseSchemaType['name'];

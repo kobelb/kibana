@@ -23,6 +23,7 @@ export const transformRuleDomainToRuleAttributes = (
   const mappedParams = getMappedParams(paramsWithRefs);
 
   return {
+    foo: rule.foo,
     name: rule.name,
     tags: rule.tags,
     enabled: rule.enabled,

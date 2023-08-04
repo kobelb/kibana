@@ -21,6 +21,7 @@ const transformRuleLastRun = (lastRun: RuleLastRun): RuleResponseV1['last_run'] 
 export const transformRuleToRuleResponse = <Params extends RuleParams = never>(
   rule: Rule<Params>
 ): RuleResponseV1<RuleParamsV1> => ({
+  ...(rule.foo !== undefined ? { foo: rule.foo } : {}),
   id: rule.id,
   enabled: rule.enabled,
   name: rule.name,

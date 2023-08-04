@@ -170,6 +170,7 @@ export const transformRuleAttributesToRuleDomain = <Params extends RuleParams = 
   })?.map((s) => s.id);
 
   const rule = {
+    foo: esRule.foo,
     id,
     enabled: esRule.enabled,
     name: esRule.name,

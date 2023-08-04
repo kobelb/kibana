@@ -12,6 +12,7 @@ import { RuleParams } from '../../../types';
 type CreateRuleDataType = TypeOf<typeof createRuleDataSchema>;
 
 export interface CreateRuleData<Params extends RuleParams = never> {
+  foo?: CreateRuleDataType['foo'];
   name: CreateRuleDataType['name'];
   alertTypeId: CreateRuleDataType['alertTypeId'];
   enabled: CreateRuleDataType['enabled'];

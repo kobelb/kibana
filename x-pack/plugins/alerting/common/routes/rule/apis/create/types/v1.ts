@@ -20,6 +20,7 @@ export type CreateRuleRequestParams = TypeOf<typeof createParamsSchemaV1>;
 type CreateBodySchema = TypeOf<typeof createBodySchemaV1>;
 
 export interface CreateRuleRequestBody<Params extends RuleParamsV1 = never> {
+  foo?: CreateBodySchema['foo'];
   name: CreateBodySchema['name'];
   rule_type_id: CreateBodySchema['rule_type_id'];
   enabled: CreateBodySchema['enabled'];

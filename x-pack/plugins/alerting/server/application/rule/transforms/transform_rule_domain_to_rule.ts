@@ -18,6 +18,7 @@ export const transformRuleDomainToRule = <Params extends RuleParams = never>(
   const { isPublic = false } = options || {};
 
   const rule: Rule<Params> = {
+    foo: ruleDomain.foo,
     id: ruleDomain.id,
     enabled: ruleDomain.enabled,
     name: ruleDomain.name,

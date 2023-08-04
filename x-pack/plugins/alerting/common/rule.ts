@@ -160,6 +160,7 @@ export interface MappedParamsProperties {
 export type MappedParams = SavedObjectAttributes & MappedParamsProperties;
 
 export interface Rule<Params extends RuleTypeParams = never> {
+  foo?: string;
   id: string;
   enabled: boolean;
   name: string;

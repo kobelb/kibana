@@ -211,6 +211,7 @@ const rawRuleActionSchema = schema.object({
 });
 
 export const rawRuleSchema = schema.object({
+  foo: schema.maybe(schema.string()),
   name: schema.string(),
   enabled: schema.boolean(),
   consumer: schema.string(),
