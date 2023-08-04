@@ -33,6 +33,7 @@ export interface EncryptedSavedObjectTypeRegistration {
   readonly type: string;
   readonly attributesToEncrypt: ReadonlySet<string | AttributeToEncrypt>;
   readonly attributesToExcludeFromAAD?: ReadonlySet<string>;
+  readonly attributesToIncludeInAAD?: ReadonlySet<string>;
 }
 
 /**
@@ -131,6 +132,12 @@ export class EncryptedSavedObjectsService {
   public registerType(typeRegistration: EncryptedSavedObjectTypeRegistration) {
     if (typeRegistration.attributesToEncrypt.size === 0) {
       throw new Error(`The "attributesToEncrypt" array for "${typeRegistration.type}" is empty.`);
+    }
+
+    if (typeRegistration.attributesToExcludeFromAAD && typeRegistration.attributesToIncludeInAAD) {
+      throw new Error(
+        `"${typeRegistration.type}" specified both attributes to exclude in the AAD, and attributes to include in the AAD. Only one must be chosen.`
+      );
     }
 
     if (this.typeDefinitions.has(typeRegistration.type)) {

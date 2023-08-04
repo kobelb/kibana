@@ -15,6 +15,7 @@ import type { EncryptedSavedObjectTypeRegistration } from './encrypted_saved_obj
 export class EncryptedSavedObjectAttributesDefinition {
   public readonly attributesToEncrypt: ReadonlySet<string>;
   private readonly attributesToExcludeFromAAD: ReadonlySet<string> | undefined;
+  private readonly attributesToIncludeInAAD: ReadonlySet<string> | undefined;
   private readonly attributesToStrip: ReadonlySet<string>;
 
   constructor(typeRegistration: EncryptedSavedObjectTypeRegistration) {
@@ -35,6 +36,7 @@ export class EncryptedSavedObjectAttributesDefinition {
     this.attributesToEncrypt = attributesToEncrypt;
     this.attributesToStrip = attributesToStrip;
     this.attributesToExcludeFromAAD = typeRegistration.attributesToExcludeFromAAD;
+    this.attributesToIncludeInAAD = typeRegistration.attributesToIncludeInAAD;
   }
 
   /**
@@ -51,11 +53,19 @@ export class EncryptedSavedObjectAttributesDefinition {
    * @param attributeName Name of the attribute.
    */
   public shouldBeExcludedFromAAD(attributeName: string) {
-    return (
-      this.shouldBeEncrypted(attributeName) ||
-      (this.attributesToExcludeFromAAD != null &&
-        this.attributesToExcludeFromAAD.has(attributeName))
-    );
+    if (this.attributesToExcludeFromAAD != null) {
+      return (
+        this.shouldBeEncrypted(attributeName) || this.attributesToExcludeFromAAD.has(attributeName)
+      );
+    }
+
+    if (this.attributesToIncludeInAAD != null) {
+      return (
+        this.shouldBeEncrypted(attributeName) || !this.attributesToIncludeInAAD.has(attributeName)
+      );
+    }
+
+    return this.shouldBeEncrypted(attributeName);
   }
 
   /**
