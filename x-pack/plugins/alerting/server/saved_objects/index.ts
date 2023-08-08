@@ -31,6 +31,7 @@ import {
 } from '../../common';
 
 export const AlertAttributesIncludedInAAD = [
+  'foo',
   'name',
   'tags',
   'enabled',
