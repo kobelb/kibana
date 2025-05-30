@@ -5,7 +5,8 @@ import type {
   Plugin,
   Logger,
 } from '@kbn/core/server';
-import type { TaskManagerSetupContract, TaskManagerStartContract } from '@kbn/task-manager-plugin/server';
+import type { TaskManagerSetupContract as TaskManagerSetup, TaskManagerStartContract as TaskManagerStart } from '@kbn/task-manager-plugin/server';
+import type { PluginSetupContract as ActionsPluginSetup, PluginStartContract as ActionsPluginStart } from '@kbn/actions-plugin/server';
 
 import type { WorkflowsPluginSetup, WorkflowsPluginStart } from './types';
 import { defineRoutes } from './routes';
@@ -17,7 +18,13 @@ export class WorkflowsPlugin implements Plugin<WorkflowsPluginSetup, WorkflowsPl
     this.logger = initializerContext.logger.get();
   }
 
-  public setup(core: CoreSetup, plugins: { taskManager: TaskManagerSetupContract }) {
+  public setup(
+    core: CoreSetup,
+    plugins: { 
+      taskManager: TaskManagerSetup,
+      actions: ActionsPluginSetup
+    }
+  ) {
     this.logger.debug('workflows: Setup');
     const router = core.http.createRouter();
 
@@ -39,7 +46,13 @@ export class WorkflowsPlugin implements Plugin<WorkflowsPluginSetup, WorkflowsPl
     return {};
   }
 
-  public start(core: CoreStart, plugins: { taskManager: TaskManagerStartContract }) {
+  public start(
+    core: CoreStart,
+    plugins: { 
+      taskManager: TaskManagerStart,
+      actions: ActionsPluginStart
+    }
+  ) {
     this.logger.debug('workflows: Started');
 
      plugins.taskManager.ensureScheduled({
