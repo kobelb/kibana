@@ -1,0 +1,26 @@
+{
+  "type": "plugin",
+  "id": "@kbn/workflows",
+  "owner": [
+    "@elatic/kobelb"
+  ],
+  "group": "platform",
+  "visibility": "shared",
+  "plugin": {
+    "id": "workflows",
+    "browser": true,
+    "server": true,
+    "configPath": [
+      "xpack",
+      "workflows"
+    ],
+    "requiredPlugins": [
+      "alerting",
+      "actions"
+    ],
+    "optionalPlugins": [],
+    "extraPublicDirs": [
+      "common"
+    ]
+  }
+}

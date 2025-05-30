@@ -8113,6 +8113,10 @@
   version "0.0.0"
   uid ""
 
+"@kbn/workflows@link:x-pack/platform/plugins/shared/workflows":
+  version "0.0.0"
+  uid ""
+
 "@kbn/xstate-utils@link:src/platform/packages/shared/kbn-xstate-utils":
   version "0.0.0"
   uid ""

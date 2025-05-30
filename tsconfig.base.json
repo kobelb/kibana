@@ -2188,6 +2188,8 @@
       "@kbn/workchat-app/*": ["x-pack/solutions/chat/plugins/workchat-app/*"],
       "@kbn/workchat-framework-plugin": ["x-pack/solutions/chat/plugins/workchat-framework"],
       "@kbn/workchat-framework-plugin/*": ["x-pack/solutions/chat/plugins/workchat-framework/*"],
+      "@kbn/workflows": ["x-pack/platform/plugins/shared/workflows"],
+      "@kbn/workflows/*": ["x-pack/platform/plugins/shared/workflows/*"],
       "@kbn/xstate-utils": ["src/platform/packages/shared/kbn-xstate-utils"],
       "@kbn/xstate-utils/*": ["src/platform/packages/shared/kbn-xstate-utils/*"],
       "@kbn/yarn-lock-validator": ["packages/kbn-yarn-lock-validator"],
