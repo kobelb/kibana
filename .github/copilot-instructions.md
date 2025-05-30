@@ -1,0 +1,1 @@
+After adding a plugin dependency, also add an entry to the kibana.jsonc file. Ask the user whether it's an optional or required dependency.

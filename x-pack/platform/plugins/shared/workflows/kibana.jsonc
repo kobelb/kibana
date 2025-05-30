@@ -16,7 +16,8 @@
     ],
     "requiredPlugins": [
       "alerting",
-      "actions"
+      "actions",
+      "taskManager"
     ],
     "optionalPlugins": [],
     "extraPublicDirs": [
