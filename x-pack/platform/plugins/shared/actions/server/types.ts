@@ -17,7 +17,7 @@ import type {
   ISavedObjectsRepository,
   IScopedClusterClient,
 } from '@kbn/core/server';
-import type { AnySchema } from 'joi';
+import type { Schema } from '@kbn/config-schema';
 import type { SubActionConnector } from './sub_action_framework/sub_action_connector';
 import type { ServiceParams } from './sub_action_framework/types';
 import type { ActionTypeRegistry } from './action_type_registry';
@@ -118,10 +118,7 @@ export type ExecutorType<
 ) => Promise<ActionTypeExecutorResult<ResultData>>;
 
 export interface ValidatorType<T> {
-  schema: {
-    validate(value: unknown): T;
-    getSchema?: () => AnySchema;
-  };
+  schema: Schema;
   customValidator?: (value: T, validatorServices: ValidatorServices) => void;
 }
 
