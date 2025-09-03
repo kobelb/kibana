@@ -46,13 +46,15 @@ function getFilter(input: string) {
 function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
   // step 1)  iterate over all targets. if they're a package (not a plugin)
   // we add them to a map which is used to track the number of dependents 
-  const dependentPackageMap = new Map<string, string[]>();
+  const dependenciesMap = new Map<string, string[]>();
+  const dependencyGroupMap = new Map<string, string>();
   for (const target of allTargets) {
     
     // there are some TS projects that aren't real packages, and
     // we aren't concerned with those, so we'll skip them.
     if (target.pkg != null && !target.pkg.isPlugin()) {
-      dependentPackageMap.set(target.pkg.name, []);
+      dependenciesMap.set(target.pkg.name, []);
+      dependencyGroupMap.set(target.pkg.name, target.pkg.group)
     }
   }
 
@@ -74,7 +76,7 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
 
       // we already added all packages, if it's not added, it's a plugin
       // that we can ignore
-      const dependentPackage = dependentPackageMap.get(reference);
+      const dependentPackage = dependenciesMap.get(reference);
       if (dependentPackage == null) {
         continue;
       }
@@ -84,9 +86,9 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
   }
 
   // step 3) error on orpans, warn on single dependents
-  log.info(`${dependentPackageMap.size} total packages scanned for orphans`);
+  log.info(`${dependenciesMap.size} total packages scanned for orphans`);
   let orphans = false;
-  for (const [pkg, dependents] of dependentPackageMap) {
+  for (const [pkg, dependents] of dependenciesMap) {
     if (dependents.length === 0) {
       log.error(`${pkg} is orphaned and has no dependents`);
       orphans = true;
@@ -96,8 +98,8 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
   }
 
   // HACK: step 4) writting debug logs for optional additional introspection
-  for (const [pkg, dependents] of dependentPackageMap) {
-    log.debug(`${pkg}\t${dependents.length}\t${dependents}`);
+  for (const [pkg, dependents] of dependenciesMap) {
+    log.debug(`${pkg}\t${dependencyGroupMap.get(pkg)}\t${dependents.length}\t${dependents}`);
   }
   
   return orphans;
