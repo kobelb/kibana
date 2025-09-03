@@ -79,7 +79,7 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
         continue;
       }
 
-      dependentPackage!.push(tsProject.name);
+      dependentPackage!.push(tsProject.pkg!.name);
     }
   }
 
@@ -93,6 +93,11 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
     } else if (dependents.length === 1) {
       log.warning(`${pkg} only has a single dependent, this is dubious`);
     }
+  }
+
+  // HACK: step 4) writting debug logs for optional additional introspection
+  for (const [pkg, dependents] of dependentPackageMap) {
+    log.debug(`${pkg}\t${dependents.length}\t${dependents}`);
   }
   
   return orphans;
