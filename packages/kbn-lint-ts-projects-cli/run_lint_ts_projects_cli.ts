@@ -15,7 +15,7 @@ import type { RepoPath } from '@kbn/repo-path';
 import { getRepoFiles } from '@kbn/get-repo-files';
 import type { SomeDevLog } from '@kbn/some-dev-log';
 import { PackageFileMap, TsProjectFileMap } from '@kbn/repo-file-maps';
-import { getPackages } from '@kbn/repo-packages';
+import { Package, getPackages } from '@kbn/repo-packages';
 import { REPO_ROOT } from '@kbn/repo-info';
 import type { TsProject } from '@kbn/ts-projects';
 import { TS_PROJECTS } from '@kbn/ts-projects';
@@ -139,7 +139,10 @@ run(
       flagsReader.boolean('refs-check') === false || flagsReader.boolean('no-refs-check') === true;
 
     const allFiles = await getRepoFiles();
-    const fileMap = new TsProjectFileMap(new PackageFileMap(packages, allFiles), TS_PROJECTS);
+    const packageFileMap = new PackageFileMap(packages, allFiles);
+    const fileMap = new TsProjectFileMap(packageFileMap, TS_PROJECTS);
+    const noPackageOrphans = validateNoPackageOrphans(allTargets); 
+
     const { lintingErrorCount } = await runLintRules(
       log,
       toLint,
