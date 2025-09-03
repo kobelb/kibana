@@ -98,11 +98,13 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
   }
 
   const orphans = [];
+  let totalPackages = 0;
   for (const target of allTargets) {
     if (target.pkg.isPlugin()) {
       continue;
     }
 
+    totalPackages++;
     if (!dependentMap.has(target.pkg.name)) {
       log.error(`${target.pkg.name} has no dependents`);
       orphans.push(target)
@@ -111,6 +113,7 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
     }
   }
 
+  log.info(`${totalPackages} total packages scanned for orphans`);
   return orphans.length > 0;
 }
 
