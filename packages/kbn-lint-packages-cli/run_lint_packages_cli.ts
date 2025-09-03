@@ -44,26 +44,21 @@ function getFilter(input: string) {
 }
 
 function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
-  const packageMap = new Map<string, PackageLintTarget>();
-  const dependentMap = new Map<string, string[]>();
-
-  // first, we are going to iterate over all of the TS projects
-  // we'll build map of their package name, to their TS project
-  // this is necessary for us to figure out whether a dependency is
-  // a plugin, because we aren't concerned with orphaned plugins, just
-  // packages with no dependencies
+  // step 1)  iterate over all targets. if they're a package (not a plugin)
+  // we add them to a map which is used to track the number of dependents 
+  const dependentPackageMap = new Map<string, string[]>();
   for (const target of allTargets) {
     
     // there are some TS projects that aren't real packages, and
     // we aren't concerned with those, so we'll skip them.
-    if (target.pkg == null) {
-      continue;
+    if (target.pkg != null && !target.pkg.isPlugin()) {
+      dependentPackageMap.set(target.pkg.name, []);
     }
-
-    packageMap.set(target.pkg.name, target);
   }
 
-  for (const target of packageMap.values()) {
+  // step 2) iterate over all targets and their dependencies. use this
+  // to build the list of dependents of each package
+  for (const target of allTargets) {
     const tsProject : TsProject = target.getTsProject();
     const references = tsProject?.config?.kbn_references;
     if (references === undefined) {
@@ -77,44 +72,30 @@ function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
         continue;
       }
 
-      const referencePackage = packageMap.get(reference);
-      if (referencePackage == null) {
-        log.warning(`Unable to find package for ${reference}, which ${target.pkg.name} has a reference to. Ignoring.`);
+      // we already added all packages, if it's not added, it's a plugin
+      // that we can ignore
+      const dependentPackage = dependentPackageMap.get(reference);
+      if (dependentPackage == null) {
         continue;
       }
 
-      // we're fine with plugins that have no dependents, so we won't
-      // be tracking these at all
-      if (referencePackage.pkg?.isPlugin()) {
-        continue;
-      }
-
-      if (!dependentMap.has(reference)) {
-        dependentMap.set(reference, [tsProject.name]);
-      } else {
-        dependentMap.get(reference)!.push(tsProject.name);
-      }
+      dependentPackage!.push(tsProject.name);
     }
   }
 
-  const orphans = [];
-  let totalPackages = 0;
-  for (const target of allTargets) {
-    if (target.pkg.isPlugin()) {
-      continue;
-    }
-
-    totalPackages++;
-    if (!dependentMap.has(target.pkg.name)) {
-      log.error(`${target.pkg.name} has no dependents`);
-      orphans.push(target)
-    } else if (dependentMap.get(target.pkg.name)!.length === 1) {
-      log.warning(`${target.pkg.name} only has a single dependent`);
+  // step 3) error on orpans, warn on single dependents
+  log.info(`${dependentPackageMap.size} total packages scanned for orphans`);
+  let orphans = false;
+  for (const [pkg, dependents] of dependentPackageMap) {
+    if (dependents.length === 0) {
+      log.error(`${pkg} is orphaned and has no dependents`);
+      orphans = true;
+    } else if (dependents.length === 1) {
+      log.warning(`${pkg} only has a single dependent, this is dubious`);
     }
   }
-
-  log.info(`${totalPackages} total packages scanned for orphans`);
-  return orphans.length > 0;
+  
+  return orphans;
 }
 
 run(
