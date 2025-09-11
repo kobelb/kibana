@@ -15,13 +15,12 @@ import { getRepoFiles } from '@kbn/get-repo-files';
 import { PackageFileMap } from '@kbn/repo-file-maps';
 import { updatePackageMap, getPackages } from '@kbn/repo-packages';
 import { REPO_ROOT } from '@kbn/repo-info';
-import { TS_PROJECTS, TsProject } from '@kbn/ts-projects';
+import { TS_PROJECTS } from '@kbn/ts-projects';
 import { makeMatcher } from '@kbn/picomatcher';
 import { runLintRules, PackageLintTarget } from '@kbn/repo-linter';
 
 import { RULES } from './rules';
 import { migratePluginsToPackages } from './migrate_plugins_to_package';
-import { ToolingLog } from '@kbn/tooling-log';
 
 const legacyManifestMatcher = makeMatcher(['**/kibana.json', '!**/{__fixtures__,fixtures}/**']);
 
@@ -41,68 +40,6 @@ function getFilter(input: string) {
     pkg.name === `@kbn/${kebabCase(input)}` ||
     pkg.normalizedRepoRelativeDir === input ||
     repoRel.startsWith(pkg.normalizedRepoRelativeDir + '/');
-}
-
-function findOrphans(allTargets: PackageLintTarget[], log: ToolingLog) {
-  // step 1)  iterate over all targets. if they're a package (not a plugin)
-  // we add them to a map which is used to track the number of dependents 
-  const dependenciesMap = new Map<string, string[]>();
-  const dependencyGroupMap = new Map<string, string>();
-  for (const target of allTargets) {
-    
-    // there are some TS projects that aren't real packages, and
-    // we aren't concerned with those, so we'll skip them.
-    if (target.pkg != null && !target.pkg.isPlugin()) {
-      dependenciesMap.set(target.pkg.name, []);
-      dependencyGroupMap.set(target.pkg.name, target.pkg.group)
-    }
-  }
-
-  // step 2) iterate over all targets and their dependencies. use this
-  // to build the list of dependents of each package
-  for (const target of allTargets) {
-    const tsProject : TsProject = target.getTsProject();
-    const references = tsProject?.config?.kbn_references;
-    if (references === undefined) {
-      continue;
-    }
-
-    for (const reference of references) {
-      // kbn_references can use { path: 'some/path/tsconfig.json' }, but we
-      // aren't concerned with this... this is super awkward anyway
-      if (typeof reference !== 'string') {
-        continue;
-      }
-
-      // we already added all packages, if it's not added, it's a plugin
-      // that we can ignore
-      const dependentPackage = dependenciesMap.get(reference);
-      if (dependentPackage == null) {
-        continue;
-      }
-
-      dependentPackage!.push(tsProject.pkg!.name);
-    }
-  }
-
-  // step 3) error on orpans, warn on single dependents
-  log.info(`${dependenciesMap.size} total packages scanned for orphans`);
-  let orphans = false;
-  for (const [pkg, dependents] of dependenciesMap) {
-    if (dependents.length === 0) {
-      log.error(`${pkg} is orphaned and has no dependents`);
-      orphans = true;
-    } else if (dependents.length === 1) {
-      log.warning(`${pkg} only has a single dependent, this is dubious`);
-    }
-  }
-
-  // HACK: step 4) writting debug logs for optional additional introspection
-  for (const [pkg, dependents] of dependenciesMap) {
-    log.debug(`${pkg}\t${dependencyGroupMap.get(pkg)}\t${dependents.length}\t${dependents}`);
-  }
-  
-  return orphans;
 }
 
 run(
@@ -156,15 +93,13 @@ run(
       )
     ).sort((a, b) => a.repoRel.localeCompare(b.repoRel));
 
-    const orphans = findOrphans(allTargets, log);
-
     const fileMap = new PackageFileMap(packages, allRepoFiles);
     const { lintingErrorCount } = await runLintRules(log, toLint, RULES, {
       fix: flagsReader.boolean('fix'),
       getFiles: (target) => fileMap.getFiles(target.pkg),
     });
 
-    if (!lintingErrorCount && !orphans) {
+    if (!lintingErrorCount) {
       log.success('All packages linted successfully');
     } else {
       throw createFailError('see above errors');

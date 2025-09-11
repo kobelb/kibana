@@ -1138,6 +1138,8 @@
       "@kbn/hapi-mocks/*": ["src/platform/packages/private/kbn-hapi-mocks/*"],
       "@kbn/hardening-plugin": ["src/platform/test/plugin_functional/plugins/hardening"],
       "@kbn/hardening-plugin/*": ["src/platform/test/plugin_functional/plugins/hardening/*"],
+      "@kbn/health-check-cli": ["packages/kbn-health-check-cli"],
+      "@kbn/health-check-cli/*": ["packages/kbn-health-check-cli/*"],
       "@kbn/health-gateway-server": ["src/platform/packages/private/kbn-health-gateway-server"],
       "@kbn/health-gateway-server/*": ["src/platform/packages/private/kbn-health-gateway-server/*"],
       "@kbn/hello-world-plugin": ["examples/hello_world"],
