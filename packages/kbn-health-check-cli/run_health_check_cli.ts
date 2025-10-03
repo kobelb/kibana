@@ -14,18 +14,12 @@ import { TS_PROJECTS, TsProject } from '@kbn/ts-projects';
 import { PackageLintTarget } from '@kbn/repo-linter';
 
 function writePackageSummary(allTargets: PackageLintTarget[]) {
-  // step 1)  iterate over all targets. if they're a package (not a plugin)
-  // we add them to a map which is used to track the number of dependents 
+  // step 1) initialize the dependencies map
   const dependencies = new Map<string, string[]>();
   const packages = new Map<string, PackageLintTarget>();
   for (const target of allTargets) {
+    dependencies.set(target.pkg.name, []);
     packages.set(target.pkg.name, target);
-    
-    // there are some TS projects that aren't real packages, and
-    // we aren't concerned with those, so we'll skip them.
-    if (target.pkg != null && !target.pkg.isPlugin()) {
-      dependencies.set(target.pkg.name, []);
-    }
   }
 
   // step 2) iterate over all targets and their dependencies. use this
@@ -44,19 +38,17 @@ function writePackageSummary(allTargets: PackageLintTarget[]) {
         continue;
       }
 
-      // we already added all packages, if it's not added, it's a plugin
-      // that we can ignore
       const dependency = dependencies.get(reference);
-      if (dependency == null) {
-        continue;
+      if (dependency != null) {
+        dependency.push(tsProject.pkg!.name);
       }
-
-      dependency!.push(tsProject.pkg!.name);
     }
   }
 
-  for (const [dependency, dependents] of dependencies) {
-    console.log(`${dependency} has ${dependents} dependents`)
+  console.log(`name\t package or plugin\t group\t # dependents\t dependents`)
+  for (const [packageName, dependents] of dependencies) {
+    const pkg = packages.get(packageName);
+    console.log(`${packageName}\t ${pkg?.pkg.isPlugin() ? 'plugin' : 'package'}\t ${pkg?.pkg.group!}\t ${dependents.length}\t ${dependents}`)
   }
 }
 
