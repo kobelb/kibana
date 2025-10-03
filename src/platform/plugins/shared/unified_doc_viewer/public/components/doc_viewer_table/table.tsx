@@ -19,8 +19,6 @@ import {
   EuiI18n,
   useResizeObserver,
   EuiSwitch,
-  type UseEuiTheme,
-  euiFontSize,
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { css } from '@emotion/react';
@@ -392,76 +390,11 @@ export const DocViewerTable = ({
 };
 
 const componentStyles = {
-  fieldsGridWrapper: ({ euiTheme }: UseEuiTheme) =>
+  fieldsGridWrapper: () =>
     css({
       minBlockSize: 0,
       display: 'block',
-
-      '.euiDataGridRow': {
-        '&:hover': {
-          // we keep using a deprecated shade until proper token is available
-          backgroundColor: euiTheme.colors.lightestShade,
-        },
-      },
     }),
-  fieldsGrid: (themeContext: UseEuiTheme) => {
-    const { euiTheme } = themeContext;
-    const { fontSize } = euiFontSize(themeContext, 's');
-
-    return css({
-      '&.euiDataGrid--noControls.euiDataGrid--bordersHorizontal .euiDataGridHeader': {
-        borderTop: 'none',
-      },
-
-      '&.euiDataGrid--headerUnderline .euiDataGridHeader': {
-        borderBottom: euiTheme.border.thin,
-      },
-
-      '& [data-gridcell-column-id="name"] .euiDataGridRowCell__content': {
-        paddingTop: 0,
-        paddingBottom: 0,
-      },
-
-      '& [data-gridcell-column-id="pin_field"] .euiDataGridRowCell__content': {
-        padding: `calc(${euiTheme.size.xs} / 2) 0 0 ${euiTheme.size.xs}`,
-      },
-
-      '.kbnDocViewer__fieldName': {
-        padding: euiTheme.size.xs,
-        paddingLeft: 0,
-        lineHeight: euiTheme.font.lineHeightMultiplier,
-
-        '.euiDataGridRowCell__popover &': {
-          fontSize,
-        },
-      },
-
-      '.kbnDocViewer__fieldName_icon': {
-        paddingTop: `calc(${euiTheme.size.xs} * 1.5)`,
-        lineHeight: euiTheme.font.lineHeightMultiplier,
-      },
-
-      '.kbnDocViewer__fieldName_multiFieldBadge': {
-        margin: `${euiTheme.size.xs} 0`,
-        fontWeight: euiTheme.font.weight.regular,
-        fontFamily: euiTheme.font.family,
-      },
-
-      '.kbnDocViewer__fieldsGrid__pinAction': {
-        opacity: 0,
-      },
-
-      '& [data-gridcell-column-id="pin_field"]:focus-within': {
-        '.kbnDocViewer__fieldsGrid__pinAction': {
-          opacity: 1,
-        },
-      },
-
-      '.euiDataGridRow:hover .kbnDocViewer__fieldsGrid__pinAction': {
-        opacity: 1,
-      },
-    });
-  },
   noFieldsFound: css({
     minHeight: 300,
   }),

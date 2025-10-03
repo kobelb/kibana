@@ -122,9 +122,6 @@ EOF
   DEPLOY_TAGGER_SLACK_WEBHOOK_URL=${DEPLOY_TAGGER_SLACK_WEBHOOK_URL:-"$(vault_get kibana-serverless-release-tools DEPLOY_TAGGER_SLACK_WEBHOOK_URL)"}
   export DEPLOY_TAGGER_SLACK_WEBHOOK_URL
 
-  SONAR_LOGIN=$(vault_get sonarqube token)
-  export SONAR_LOGIN
-
   ELASTIC_APM_SERVER_URL=$(vault_get project-kibana-ci-apm apm_server_url)
   export ELASTIC_APM_SERVER_URL
 
@@ -191,6 +188,14 @@ EOF
   KIBANA_SERVICE_ACCOUNT_PROXY_KEY="$(mktemp -d)/kibana-gcloud-service-account.json"
   export KIBANA_SERVICE_ACCOUNT_PROXY_KEY
   vault_get kibana-ci-sa-proxy-key key | base64 -d > "$KIBANA_SERVICE_ACCOUNT_PROXY_KEY"
+}
+
+# Acquire credentials for legacy vault if needed
+{
+  VAULT_ROLE_ID="$(vault_get kibana-buildkite-vault-credentials role-id)"
+  export VAULT_ROLE_ID
+  VAULT_SECRET_ID="$(vault_get kibana-buildkite-vault-credentials secret-id)"
+  export VAULT_SECRET_ID
 }
 
 # Inject moon remote-cache credentials on CI
