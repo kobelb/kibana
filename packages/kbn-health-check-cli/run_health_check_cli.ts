@@ -14,11 +14,16 @@ import { TS_PROJECTS, TsProject } from '@kbn/ts-projects';
 import { PackageLintTarget } from '@kbn/repo-linter';
 
 function writePackageSummary(allTargets: PackageLintTarget[]) {
-  // step 1) initialize the dependencies map
-  const dependencies = new Map<string, string[]>();
+  
+  // key: package name, value: list of packages that depend on the package stored in the key.
+  const dependentsMap = new Map<string, string[]>();
+
+  // key: package name, value: package target.
   const packages = new Map<string, PackageLintTarget>();
+
+  // step 1) seed the dependents map and the packages map with all of the targets.
   for (const target of allTargets) {
-    dependencies.set(target.pkg.name, []);
+    dependentsMap.set(target.pkg.name, []);
     packages.set(target.pkg.name, target);
   }
 
@@ -38,15 +43,17 @@ function writePackageSummary(allTargets: PackageLintTarget[]) {
         continue;
       }
 
-      const dependency = dependencies.get(reference);
-      if (dependency != null) {
-        dependency.push(tsProject.pkg!.name);
+      const pkg = dependentsMap.get(reference);
+      // there are some weird references in the kbn_references field, so we're ignoring the noise
+      // for now. TODO: figure out what's going on here.
+      if (pkg != null) {
+        pkg.push(tsProject.pkg!.name);
       }
     }
   }
 
   console.log(`name\t package or plugin\t group\t # dependents\t dependents`)
-  for (const [packageName, dependents] of dependencies) {
+  for (const [packageName, dependents] of dependentsMap) {
     const pkg = packages.get(packageName);
     console.log(`${packageName}\t ${pkg?.pkg.isPlugin() ? 'plugin' : 'package'}\t ${pkg?.pkg.group!}\t ${dependents.length}\t ${dependents}`)
   }
