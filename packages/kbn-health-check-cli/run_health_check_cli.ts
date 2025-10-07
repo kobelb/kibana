@@ -13,23 +13,20 @@ import { REPO_ROOT } from '@kbn/repo-info';
 import { TS_PROJECTS, TsProject } from '@kbn/ts-projects';
 import { PackageLintTarget } from '@kbn/repo-linter';
 
-function writePackageSummary(allTargets: PackageLintTarget[]) {
-  
+
+function getDependentsMap(packages: Map<string, PackageLintTarget>) {
   // key: package name, value: list of packages that depend on the package stored in the key.
   const dependentsMap = new Map<string, string[]>();
 
-  // key: package name, value: package target.
-  const packages = new Map<string, PackageLintTarget>();
-
   // step 1) seed the dependents map and the packages map with all of the targets.
-  for (const target of allTargets) {
+  for (const target of packages.values()) {
     dependentsMap.set(target.pkg.name, []);
     packages.set(target.pkg.name, target);
   }
 
   // step 2) iterate over all targets and their dependencies. use this
   // to build the list of dependents of each package
-  for (const target of allTargets) {
+  for (const target of packages.values()) {
     const tsProject : TsProject = target.getTsProject();
     const references = tsProject?.config?.kbn_references;
     if (references === undefined) {
@@ -51,6 +48,18 @@ function writePackageSummary(allTargets: PackageLintTarget[]) {
       }
     }
   }
+
+  return dependentsMap;
+}
+
+function writePackageSummary(allTargets: PackageLintTarget[]) {
+  // key: package name, value: package target.
+  const packages = new Map<string, PackageLintTarget>();
+  for (const target of allTargets) {
+    packages.set(target.pkg.name, target);
+  }
+
+  const dependentsMap = getDependentsMap(packages);
 
   console.log(`name\t package or plugin\t group\t # dependents\t dependents`)
   for (const [packageName, dependents] of dependentsMap) {
