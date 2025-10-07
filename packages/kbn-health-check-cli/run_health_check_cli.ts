@@ -26,8 +26,8 @@ function getDependentsMap(packages: Map<string, PackageLintTarget>) {
 
   // step 2) iterate over all targets and their dependencies. use this
   // to build the list of dependents of each package
-  for (const target of packages.values()) {
-    const tsProject : TsProject = target.getTsProject();
+  for (const pkg of packages.values()) {
+    const tsProject : TsProject = pkg.getTsProject();
     const references = tsProject?.config?.kbn_references;
     if (references === undefined) {
       continue;
@@ -40,11 +40,11 @@ function getDependentsMap(packages: Map<string, PackageLintTarget>) {
         continue;
       }
 
-      const pkg = dependentsMap.get(reference);
+      const dependent = dependentsMap.get(reference);
       // there are some weird references in the kbn_references field, so we're ignoring the noise
       // for now. TODO: figure out what's going on here.
-      if (pkg != null) {
-        pkg.push(tsProject.pkg!.name);
+      if (dependent != null) {
+        dependent.push(tsProject.pkg!.name);
       }
     }
   }
@@ -61,10 +61,12 @@ function writePackageSummary(allTargets: PackageLintTarget[]) {
 
   const dependentsMap = getDependentsMap(packages);
 
-  console.log(`name\t package or plugin\t group\t # dependents\t dependents`)
+  console.log(`name\t package or plugin\t group\t # dependents\t # of dependencies\t dependents\t dependencies`)
   for (const [packageName, dependents] of dependentsMap) {
     const pkg = packages.get(packageName);
-    console.log(`${packageName}\t ${pkg?.pkg.isPlugin() ? 'plugin' : 'package'}\t ${pkg?.pkg.group!}\t ${dependents.length}\t ${dependents}`)
+    const tsProject : TsProject = pkg?.getTsProject();
+    const references = tsProject?.config?.kbn_references;
+    console.log(`${packageName}\t ${pkg?.pkg.isPlugin() ? 'plugin' : 'package'}\t ${pkg?.pkg.group!}\t ${dependents.length}\t ${references?.length}\t ${dependents}\t ${references}`);
   }
 }
 
