@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import type { Condition } from '@kbn/streamlang';
+import type { Condition } from '../shared/conditions';
 import { buildEsqlQuery } from './query';
 import type { StreamQuery } from '../queries';
 

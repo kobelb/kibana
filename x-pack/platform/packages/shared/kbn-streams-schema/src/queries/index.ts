@@ -8,8 +8,8 @@
 import { z } from '@kbn/zod';
 import type { QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
 import { NonEmptyString } from '@kbn/zod-helpers';
-import type { Condition } from '@kbn/streamlang';
-import { conditionSchema } from '@kbn/streamlang';
+import type { Condition } from '../shared/conditions';
+import { conditionSchema } from '../shared/conditions';
 import { primitive } from '../shared/record_types';
 import { createIsNarrowSchema } from '../shared/type_guards';
 import { featureTypeSchema, type FeatureType } from '../feature';

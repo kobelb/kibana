@@ -7,7 +7,7 @@
 
 import type { Observable } from 'rxjs';
 import type { ServerSentEventBase } from '@kbn/sse-utils';
-import type { Condition } from '@kbn/streamlang';
+import type { Condition } from '../../shared/conditions';
 import type { ChatCompletionTokenCount } from '@kbn/inference-common';
 import type { StreamQueryKql } from '../../queries';
 import type { FeatureType } from '../../feature';

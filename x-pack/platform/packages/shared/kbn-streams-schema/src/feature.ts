@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import { conditionSchema, isCondition, type Condition } from '@kbn/streamlang';
+import { conditionSchema, isCondition, type Condition } from './shared/conditions';
 import { z } from '@kbn/zod';
 import { streamObjectNameSchema } from './shared/stream_object_name';
 
