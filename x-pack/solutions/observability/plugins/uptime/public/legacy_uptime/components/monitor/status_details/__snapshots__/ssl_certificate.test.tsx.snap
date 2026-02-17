@@ -22,9 +22,11 @@ Array [
     >
       <span
         class="euiToolTipAnchor emotion-euiToolTipAnchor-inlineBlock"
+        id="generated-id-wrapper"
       >
         <div
           class="euiText emotion-euiText-s"
+          tabindex="0"
         >
           <span
             color="success"

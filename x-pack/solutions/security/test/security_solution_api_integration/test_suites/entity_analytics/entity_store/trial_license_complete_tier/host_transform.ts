@@ -17,17 +17,15 @@ import { dataViewRouteHelpersFactory } from '../../utils/data_view';
 import { moveIndexToSlowDataTier } from '../../utils/move_index_to_slow_data_tier';
 import { cleanUpEntityStore } from './infra/teardown';
 import { enableEntityStore } from './infra/setup';
-import { TIMEOUT_MS } from './infra/constants';
+import { COMMON_DATASTREAM_NAME, HOST_INDEX_NAME, TIMEOUT_MS } from './infra/constants';
 import type { HostTransformResult, HostTransformResultHost } from './infra/host_transform';
 import {
   buildHostTransformDocument,
   createDocumentsAndTriggerTransform,
 } from './infra/host_transform';
 
-const DATASTREAM_NAME: string = 'logs-elastic_agent.cloudbeat-test';
 const FROZEN_INDEX_NAME: string = 'test-frozen-index';
 const COLD_INDEX_NAME: string = 'test-cold-index';
-const INDEX_NAME: string = '.entities.v1.latest.security_host_default';
 
 const SMALL_HOST_MAPPING: MappingTypeMapping = {
   properties: {
@@ -51,8 +49,7 @@ export default function (providerContext: FtrProviderContext) {
   const es = providerContext.getService('es');
   const dataView = dataViewRouteHelpersFactory(supertest);
 
-  // Failing: See https://github.com/elastic/kibana/issues/232405
-  describe.skip('@ess Host transform logic', () => {
+  describe('@ess Host transform logic', () => {
     describe('Entity Store is not installed by default', () => {
       it("Should return 200 and status 'not_installed'", async () => {
         const { body } = await supertest.get('/api/entity_store/status').expect(200);
@@ -69,7 +66,7 @@ export default function (providerContext: FtrProviderContext) {
         // Helps avoid "Error initializing entity store: Data view not found 'security-solution-default'"
         await dataView.create('security-solution');
         // Create a test index matching transform's pattern to store test documents
-        await es.indices.createDataStream({ name: DATASTREAM_NAME });
+        await es.indices.createDataStream({ name: COMMON_DATASTREAM_NAME });
         // Create a test index that will be moved to frozen matching transform's pattern to store test documents
         await es.indices.create({ index: FROZEN_INDEX_NAME, mappings: SMALL_HOST_MAPPING });
         // Create a test index that will be moved to cold matching transform's pattern to store test documents
@@ -78,7 +75,7 @@ export default function (providerContext: FtrProviderContext) {
 
       after(async () => {
         const log = providerContext.getService('log');
-        await es.indices.deleteDataStream({ name: DATASTREAM_NAME });
+        await es.indices.deleteDataStream({ name: COMMON_DATASTREAM_NAME });
 
         try {
           await es.indices.deleteAlias({
@@ -102,8 +99,11 @@ export default function (providerContext: FtrProviderContext) {
 
       beforeEach(async () => {
         // Now we can enable the Entity Store...
+        // Only enable 'host' engine - this test only validates host transform logic.
+        // Enabling all engines concurrently causes task conflicts (server-side issue).
         await enableEntityStore(providerContext, {
           extraIndexPatterns: [FROZEN_INDEX_NAME, COLD_INDEX_NAME],
+          entityTypes: ['host'],
         });
       });
 
@@ -111,7 +111,45 @@ export default function (providerContext: FtrProviderContext) {
         await cleanUpEntityStore(providerContext);
       });
 
-      it("Should return 200 and status 'running' for all engines", async () => {
+      it("Should return 200 and status 'running' for host engine", async () => {
+        // Wait for Entity Store and all components to be fully installed
+        await retry.waitForWithTimeout(
+          'Entity Store host engine to be fully running with all components installed',
+          TIMEOUT_MS,
+          async () => {
+            const { body } = await supertest
+              .get('/api/entity_store/status')
+              .query({ include_components: true })
+              .expect(200);
+
+            const response: GetEntityStoreStatusResponse = body as GetEntityStoreStatusResponse;
+
+            if (response.status !== 'running') {
+              return false;
+            }
+
+            if (response.engines.length !== 1) {
+              return false;
+            }
+
+            const hostEngine = response.engines[0];
+            if (hostEngine.type !== 'host' || hostEngine.status !== 'started') {
+              return false;
+            }
+
+            // Check all components are installed
+            if (hostEngine.components) {
+              const allInstalled = hostEngine.components.every((c) => c.installed === true);
+              if (!allInstalled) {
+                return false;
+              }
+            }
+
+            return true;
+          }
+        );
+
+        // Final verification
         const { body } = await supertest
           .get('/api/entity_store/status')
           .query({ include_components: true })
@@ -119,12 +157,12 @@ export default function (providerContext: FtrProviderContext) {
 
         const response: GetEntityStoreStatusResponse = body as GetEntityStoreStatusResponse;
         expect(response.status).to.eql('running');
-        for (const engine of response.engines) {
-          expect(engine.status).to.eql('started');
-          if (!engine.components) {
-            continue;
-          }
-          for (const component of engine.components) {
+        expect(response.engines.length).to.eql(1);
+        const hostEngine = response.engines[0];
+        expect(hostEngine.type).to.eql('host');
+        expect(hostEngine.status).to.eql('started');
+        if (hostEngine.components) {
+          for (const component of hostEngine.components) {
             expect(component.installed).to.be(true);
           }
         }
@@ -141,14 +179,14 @@ export default function (providerContext: FtrProviderContext) {
           { name: hostName, ip: '2.2.2.2' },
         ];
 
-        await createDocumentsAndTriggerTransform(providerContext, testDocs, DATASTREAM_NAME);
+        await createDocumentsAndTriggerTransform(providerContext, testDocs, COMMON_DATASTREAM_NAME);
 
         await retry.waitForWithTimeout(
           'Document to be processed and transformed',
           TIMEOUT_MS,
           async () => {
             const result = await es.search({
-              index: INDEX_NAME,
+              index: HOST_INDEX_NAME,
               query: {
                 term: {
                   'host.name': hostName,
@@ -200,14 +238,14 @@ export default function (providerContext: FtrProviderContext) {
           },
         ];
 
-        await createDocumentsAndTriggerTransform(providerContext, testDocs, DATASTREAM_NAME);
+        await createDocumentsAndTriggerTransform(providerContext, testDocs, COMMON_DATASTREAM_NAME);
 
         await retry.waitForWithTimeout(
           'Document to be processed and transformed',
           TIMEOUT_MS,
           async () => {
             const result = await es.search({
-              index: INDEX_NAME,
+              index: HOST_INDEX_NAME,
               query: {
                 term: {
                   'host.name': hostName,
@@ -252,7 +290,7 @@ export default function (providerContext: FtrProviderContext) {
             { name: `${TEST_DATA_PREFIX}cold-host-0` },
             { name: `${TEST_DATA_PREFIX}cold-host-1` },
           ],
-          [DATASTREAM_NAME]: [
+          [COMMON_DATASTREAM_NAME]: [
             { name: `${TEST_DATA_PREFIX}hot-host-0` },
             { name: `${TEST_DATA_PREFIX}hot-host-1` },
           ],
@@ -292,11 +330,11 @@ export default function (providerContext: FtrProviderContext) {
         ]);
 
         // Start transform
-        await createDocumentsAndTriggerTransform(providerContext, [], DATASTREAM_NAME);
+        await createDocumentsAndTriggerTransform(providerContext, [], COMMON_DATASTREAM_NAME);
 
         await retry.waitForWithTimeout('Fetch only hot node documents', TIMEOUT_MS, async () => {
           const result = await es.search({
-            index: INDEX_NAME,
+            index: HOST_INDEX_NAME,
             query: {
               wildcard: {
                 'host.name': {

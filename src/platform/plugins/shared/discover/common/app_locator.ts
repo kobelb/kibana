@@ -13,6 +13,8 @@ import type { RefreshInterval } from '@kbn/data-plugin/public';
 import type { LocatorDefinition, LocatorPublic } from '@kbn/share-plugin/public';
 import type { DiscoverGridSettings } from '@kbn/saved-search-plugin/common';
 import type { DataViewSpec } from '@kbn/data-views-plugin/common';
+import type { ControlPanelsState } from '@kbn/control-group-renderer';
+import type { OptionsListESQLControlState } from '@kbn/controls-schemas';
 import type { VIEW_MODE, NEW_TAB_ID } from './constants';
 
 export const DISCOVER_APP_LOCATOR = 'DISCOVER_APP_LOCATOR';
@@ -110,9 +112,21 @@ export interface DiscoverAppLocatorParams extends SerializableRecord {
    */
   breakdownField?: string;
   /**
+   * Used to force the chart to be hidden or visible
+   */
+  hideChart?: boolean;
+  /**
+   * Number of rows to sample for Discover grid
+   */
+  sampleSize?: number;
+  /**
    * Used when navigating to particular alert results
    */
   isAlertResults?: boolean;
+  /**
+   * Optionally add some ESQL controls
+   */
+  esqlControls?: ControlPanelsState<OptionsListESQLControlState> & SerializableRecord;
 }
 
 export type DiscoverAppLocator = LocatorPublic<DiscoverAppLocatorParams>;
@@ -122,6 +136,7 @@ export type DiscoverAppLocator = LocatorPublic<DiscoverAppLocatorParams>;
  */
 export interface MainHistoryLocationState {
   dataViewSpec?: DataViewSpec;
+  esqlControls?: ControlPanelsState<OptionsListESQLControlState>;
   isAlertResults?: boolean;
 }
 

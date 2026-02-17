@@ -14,6 +14,7 @@ import {
   type CriteriaWithPagination,
   EuiText,
   EuiSpacer,
+  EuiIconTip,
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n-react';
@@ -21,12 +22,21 @@ import type { Action } from '@elastic/eui/src/components/basic_table/action_type
 
 import { TableIcon } from '../../../../../../../components/package_icon';
 import type { PackageListItem } from '../../../../../../../../common';
-import { type UrlPagination, useLink, useAuthz } from '../../../../../../../hooks';
+import { type UrlPagination, useLink, useAuthz, useLicense } from '../../../../../../../hooks';
+
 import type { InstalledPackageUIPackageListItem } from '../types';
 import { useViewPolicies } from '../hooks/use_url_filters';
 import { useInstalledIntegrationsActions } from '../hooks/use_installed_integrations_actions';
 
 import { ExperimentalFeaturesService } from '../../../../../services';
+
+import {
+  hasPreviousVersion,
+  isRollbackTTLExpired,
+  useRollbackAvailablePackages,
+} from '../hooks/use_rollback_available';
+
+import { wrapTitleWithDeprecated } from '../../../components/utils';
 
 import { InstallationVersionStatus } from './installation_version_status';
 import { DisabledWrapperTooltip } from './disabled_wrapper_tooltip';
@@ -63,9 +73,10 @@ export const InstalledIntegrationsTable: React.FunctionComponent<{
       bulkUpgradeIntegrationsWithConfirmModal,
       bulkRollbackIntegrationsWithConfirmModal,
     },
+    rollingbackIntegrations,
   } = useInstalledIntegrationsActions();
   const { enablePackageRollback } = ExperimentalFeaturesService.get();
-
+  const licenseService = useLicense();
   const { setPagination } = pagination;
   const handleTablePagination = React.useCallback(
     ({ page }: CriteriaWithPagination<InstalledPackageUIPackageListItem>) => {
@@ -83,9 +94,9 @@ export const InstalledIntegrationsTable: React.FunctionComponent<{
     const count = item.packagePoliciesInfo.count;
     return count > 0;
   };
-  const hasPreviousVersion = (item: InstalledPackageUIPackageListItem) => {
-    return !!item.installationInfo?.previous_version;
-  };
+
+  const isRollbackAvailablePackages: Record<string, boolean> =
+    useRollbackAvailablePackages(installedPackages);
 
   return (
     <>
@@ -104,6 +115,9 @@ export const InstalledIntegrationsTable: React.FunctionComponent<{
         items={installedPackages}
         itemId="name"
         rowProps={{ 'data-test-subj': 'installedIntegrationsTableRow' }}
+        tableCaption={i18n.translate('xpack.fleet.epmInstalledIntegrations.tableCaption', {
+          defaultMessage: 'Installed integrations',
+        })}
         pagination={{
           pageIndex: pagination.pagination.currentPage - 1,
           totalItemCount: total,
@@ -131,6 +145,7 @@ export const InstalledIntegrationsTable: React.FunctionComponent<{
               const url = getHref('integration_details_overview', {
                 pkgkey: `${item.name}-${item.installationInfo!.version}`,
               });
+              const isDeprecated = !!item?.deprecated;
 
               return (
                 <EuiLink href={url}>
@@ -147,8 +162,22 @@ export const InstalledIntegrationsTable: React.FunctionComponent<{
                       data-test-subj={`installedIntegrationsTable.integrationNameColumn.${item.name}`}
                       grow={false}
                     >
-                      {item.title}
+                      {wrapTitleWithDeprecated({ title: item.title, deprecated: isDeprecated })}
                     </EuiFlexItem>
+                    {isDeprecated && (
+                      <EuiFlexItem grow={false}>
+                        <EuiIconTip
+                          type="warning"
+                          color="warning"
+                          content={i18n.translate(
+                            'xpack.fleet.installedIntegrations.deprecatedTooltip',
+                            {
+                              defaultMessage: 'This integration is deprecated',
+                            }
+                          )}
+                        />
+                      </EuiFlexItem>
+                    )}
                   </EuiFlexGroup>
                 </EuiLink>
               );
@@ -329,18 +358,46 @@ export const InstalledIntegrationsTable: React.FunctionComponent<{
                         ),
                         icon: 'returnKey',
                         type: 'icon',
-
+                        'data-test-subj': 'rollbackButton',
                         onClick: (item) => bulkRollbackIntegrationsWithConfirmModal([item]),
-                        enabled: (item) => hasPreviousVersion(item),
+                        enabled: (item) => {
+                          const isAvailable = isRollbackAvailablePackages[item.name] ?? false;
+                          const isRollingBack =
+                            rollingbackIntegrations?.some((u) => u.name === item.name) ?? false;
+
+                          return isAvailable && !isRollingBack;
+                        },
                         description: (item) =>
-                          i18n.translate(
-                            'xpack.fleet.epmInstalledIntegrations.rollbackIntegrationLabel',
-                            {
-                              defaultMessage: !hasPreviousVersion(item)
-                                ? "You can't rollback this integration because it does not have a previous version saved."
-                                : 'Rollback integration',
-                            }
-                          ),
+                          !hasPreviousVersion(item)
+                            ? i18n.translate(
+                                'xpack.fleet.epmInstalledIntegrations.rollbackIntegrationsNoPreviousVersionLabel',
+                                {
+                                  defaultMessage:
+                                    "You can't rollback this integration because it does not have a previous version saved.",
+                                }
+                              )
+                            : !licenseService.isEnterprise()
+                            ? i18n.translate(
+                                'xpack.fleet.epmInstalledIntegrations.rollbackIntegrationsNoEnterpriseLabel',
+                                {
+                                  defaultMessage:
+                                    'Rollback integrations requires an enterprise license.',
+                                }
+                              )
+                            : isRollbackTTLExpired(item)
+                            ? i18n.translate(
+                                'xpack.fleet.epmInstalledIntegrations.rollbackIntegrationsTTLExpiredLabel',
+                                {
+                                  defaultMessage:
+                                    'Rollback is no longer allowed for this integration.',
+                                }
+                              )
+                            : i18n.translate(
+                                'xpack.fleet.epmInstalledIntegrations.rollbackIntegrationLabel',
+                                {
+                                  defaultMessage: 'Rollback integration',
+                                }
+                              ),
                       },
                       !authz.integrations.installPackages,
                       i18n.translate(

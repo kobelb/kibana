@@ -19,12 +19,9 @@ import {
 } from '@elastic/eui';
 import type { RuleTypeParamsExpressionProps } from '@kbn/triggers-actions-ui-plugin/public';
 import { getFields } from '@kbn/triggers-actions-ui-plugin/public';
-import { type DataPublicPluginStart, getEsQueryConfig } from '@kbn/data-plugin/public';
-import { getTime } from '@kbn/data-plugin/common';
-import type { IUiSettingsClient } from '@kbn/core/public';
 import { ESQLLangEditor } from '@kbn/esql/public';
 import { getESQLAdHocDataview, getESQLResults } from '@kbn/esql-utils';
-import { type AggregateQuery, buildEsQuery } from '@kbn/es-query';
+import { type AggregateQuery } from '@kbn/es-query';
 import { parseDuration } from '@kbn/alerting-plugin/common';
 import {
   firstFieldOption,
@@ -33,8 +30,9 @@ import {
   isPerRowAggregation,
   parseAggregationResults,
 } from '@kbn/triggers-actions-ui-plugin/public/common';
-import { EsqlQuery } from '@kbn/esql-ast';
+import { EsqlQuery } from '@kbn/esql-language';
 import useDebounce from 'react-use/lib/useDebounce';
+import { UI_SETTINGS } from '@kbn/data-plugin/public';
 import type { EsQueryRuleParams, EsQueryRuleMetaData } from '../types';
 import { SearchType } from '../types';
 import { DEFAULT_VALUES, SERVERLESS_DEFAULT_VALUES } from '../constants';
@@ -43,19 +41,32 @@ import { hasExpressionValidationErrors } from '../validation';
 import { TestQueryRow } from '../test_query_row';
 import { transformToEsqlTable, getEsqlQueryHits, ALERT_ID_SUGGESTED_MAX } from '../../../../common';
 
-const getTimeFilter = (
-  queryService: DataPublicPluginStart['query'],
-  uiSettings: IUiSettingsClient,
-  timeFieldName?: string
-) => {
-  const esQueryConfigs = getEsQueryConfig(uiSettings);
-  const timeFilter =
-    queryService.timefilter.timefilter.getTime() &&
-    getTime(undefined, queryService.timefilter.timefilter.getTime(), {
-      fieldName: timeFieldName,
-    });
-
-  return buildEsQuery(undefined, [], timeFilter ? [timeFilter] : [], esQueryConfigs);
+export const getTimeFilter = (timeField: string, window: string) => {
+  const timeWindow = parseDuration(window);
+  const now = Date.now();
+  const dateEnd = new Date(now).toISOString();
+  const dateStart = new Date(now - timeWindow).toISOString();
+  return {
+    timeRange: {
+      from: dateStart,
+      to: dateEnd,
+    },
+    timeFilter: {
+      bool: {
+        filter: [
+          {
+            range: {
+              [timeField]: {
+                lte: dateEnd,
+                gt: dateStart,
+                format: 'strict_date_optional_time',
+              },
+            },
+          },
+        ],
+      },
+    },
+  };
 };
 
 const ALL_DOCUMENTS = 'all';
@@ -127,7 +138,6 @@ export const EsqlQueryExpression: React.FC<
   });
   const [query, setQuery] = useState<AggregateQuery>(esqlQuery ?? { esql: '' });
   const [timeFieldOptions, setTimeFieldOptions] = useState([firstFieldOption]);
-  const [detectedTimestamp, setDetectedTimestamp] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [radioIdSelected, setRadioIdSelected] = useState(groupBy ?? ALL_DOCUMENTS);
   const [keepWarning, setKeepWarning] = useState<string | undefined>(undefined);
@@ -202,17 +212,15 @@ export const EsqlQueryExpression: React.FC<
       return emptyResult;
     }
     setIsLoading(true);
-    const timeWindow = parseDuration(window);
-    const now = Date.now();
-    const timeFilter = getTimeFilter(data.query, uiSettings, timeField);
+    const { timeFilter, timeRange } = getTimeFilter(timeField, window);
+    const timezone = uiSettings?.get<'Browser' | string>(UI_SETTINGS.DATEFORMAT_TZ);
+
     const table = await getESQLResults({
       esqlQuery: esqlQuery.esql,
       search: data.search.search,
       dropNullColumns: true,
-      timeRange: {
-        from: new Date(now - timeWindow).toISOString(),
-        to: new Date(now).toISOString(),
-      },
+      timeRange,
+      timezone,
       filter: timeFilter,
     });
     if (table.response) {
@@ -249,9 +257,8 @@ export const EsqlQueryExpression: React.FC<
     timeWindowUnit,
     currentRuleParams,
     esqlQuery,
-    data.query,
-    uiSettings,
     data.search.search,
+    uiSettings,
     timeField,
     isServerless,
     groupBy,
@@ -261,7 +268,11 @@ export const EsqlQueryExpression: React.FC<
     async (q: AggregateQuery) => {
       const fetchTimeFieldsData = async (queryObj: AggregateQuery) => {
         try {
-          const esqlDataView = await getESQLAdHocDataview(queryObj.esql, dataViews);
+          const esqlDataView = await getESQLAdHocDataview({
+            dataViewsService: dataViews,
+            query: queryObj.esql,
+            http,
+          });
           const indexPattern: string = esqlDataView.getIndexPattern();
           const currentEsFields = await getFields(http, [indexPattern]);
           const newTimeFieldOptions = getTimeFieldOptions(currentEsFields);
@@ -280,7 +291,6 @@ export const EsqlQueryExpression: React.FC<
       if (!newTimeFieldOptions.find(({ value }) => value === timeField)) {
         clearParam('timeField');
       }
-      setDetectedTimestamp(timestampField);
     },
     [timeField, setParam, clearParam, dataViews, http]
   );
@@ -298,8 +308,6 @@ export const EsqlQueryExpression: React.FC<
           }}
           warning={touched && keepWarning ? keepWarning : undefined}
           onTextLangQuerySubmit={async () => {}}
-          detectedTimestamp={detectedTimestamp}
-          hideRunQueryText
           hideRunQueryButton
           isLoading={isLoading}
           editorIsInline
