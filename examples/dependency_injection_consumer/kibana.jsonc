@@ -1,0 +1,14 @@
+{
+  "type": "plugin",
+  "id": "@kbn/dependency-injection-consumer-example-plugin",
+  "owner": "@elastic/kibana-core",
+  "description": "A server plugin consuming the provider start contract with inversify.",
+  "group": "platform",
+  "visibility": "private",
+  "plugin": {
+    "id": "dependencyInjectionConsumerExample",
+    "server": true,
+    "browser": false,
+    "requiredPlugins": ["dependencyInjectionProviderExample"]
+  }
+}

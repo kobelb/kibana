@@ -1,0 +1,27 @@
+/*
+ * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+ * or more contributor license agreements. Licensed under the "Elastic License
+ * 2.0", the "GNU Affero General Public License v3.0 only", and the "Server Side
+ * Public License v 1"; you may not use this file except in compliance with, at
+ * your election, the "Elastic License 2.0", the "GNU Affero General Public
+ * License v3.0 only", or the "Server Side Public License, v 1".
+ */
+
+import { ContainerModule } from 'inversify';
+import { Start } from '@kbn/core-di';
+import { MessageTransformer } from './message_transformer';
+import type { DependencyInjectionProviderStart } from './contracts';
+
+export type { DependencyInjectionProviderStart } from './contracts';
+
+export const module = new ContainerModule(({ bind }) => {
+  bind(MessageTransformer).toSelf().inSingletonScope();
+  bind(Start)
+    .toResolvedValue(
+      (service: MessageTransformer): DependencyInjectionProviderStart => ({
+        transform: (message: string) => service.transform(message),
+      }),
+      [MessageTransformer]
+    )
+    .inSingletonScope();
+});
